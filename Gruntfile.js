@@ -19,7 +19,7 @@ module.exports = function (grunt) {
             build: {
                 files: [
                     {
-                       '<%=cfg.dist%>/angular-data-router.js': '<%=cfg.src%>/angular-data-router.js'
+                       '<%=cfg.build%>/dist/angular-data-router.js': '<%=cfg.src%>/angular-data-router.js'
                     }
                 ]
             }
@@ -96,6 +96,20 @@ module.exports = function (grunt) {
                 }
             }
         },
+        
+        // Release
+        copy: {
+             dist: {
+                 files: [
+                     {
+                         expand: true,
+                         cwd: '<%=cfg.build%>/dist',
+                         dest: '<%=cfg.dist%>',
+                         src: ['**/*']
+                     }
+                 ]
+             }
+        },
 
         // Demo
         less: {
@@ -132,5 +146,5 @@ module.exports = function (grunt) {
     grunt.registerTask('default', ['jshint:grunt', 'clean', 'javascript', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
     grunt.registerTask('demo', ['jshint:demo', 'less:demo']); // TODO
-    grunt.registerTask('release', ['default', 'bump']);
+    grunt.registerTask('release', ['default', 'copy:release', 'bump']);
 };
