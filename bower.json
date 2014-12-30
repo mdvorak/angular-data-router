@@ -5,7 +5,7 @@
     "Michal Dvořák <mikee@mdvorak.org>"
   ],
   "license": "MIT",
-  "main": "dist/data-router.js",
+  "main": "dist/angular-data-router.js",
   "ignore": [
     "/package.json",
     "/.gitignore",
