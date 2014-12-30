@@ -116,9 +116,21 @@ module.exports = function (grunt) {
                         expand: true,
                         cwd: '<%=cfg.build%>/dist',
                         dest: '<%=cfg.dist%>',
-                        src: ['**/*']
+                        src: ['**']
                     }
                 ]
+            }
+        },
+        gitadd: {
+            dist: {
+                options: {
+                    all: true
+                },
+                files: {
+                    src: [
+                        '<%=cfg.dist%>/**'
+                    ]
+                }
             }
         },
         bump: {
@@ -151,5 +163,5 @@ module.exports = function (grunt) {
     grunt.registerTask('demo', ['jshint:demo', 'less:demo']); // TODO
 
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
-    grunt.registerTask('release', ['dist', 'bump:patch:prerelease']);
+    grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);
 };
