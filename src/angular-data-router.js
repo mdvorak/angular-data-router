@@ -28,7 +28,7 @@
 
     var module = angular.module('mdvorak.dataRouter', []);
 
-    module.provider('$dataRouter', function DataRouterProvider($log, $$DataRouterMatchMap, $RouteError) {
+    module.provider('$dataRouter', function DataRouterProvider($log, $$DataRouterMatchMap) {
         /*jshint newcap:false*/
 
         var provider = this,
@@ -176,6 +176,15 @@
 
             var dataRoute = {
                 /**
+                 * Routing error.
+                 *
+                 * @param msg {String} Error message.
+                 * @param status {Number} Response status code.
+                 * @constructor
+                 */
+                RouteError: RouteError,
+
+                /**
                  * Maps view path to resource URL.
                  * <p>
                  * Opposite of #mapApiUrl().
@@ -282,7 +291,7 @@
                         if (provider.$debug) $log.warn("View " + mimeType + " not found");
 
                         resource = resources.match('$error');
-                        data = new $RouteError("Unknown content type " + mimeType, 999);
+                        data = new dataRoute.RouteError("Unknown content type " + mimeType, 999);
                     }
 
                     if (!resource) {
@@ -374,7 +383,7 @@
                         if (provider.$debug)     $log.error('Failed to load resource ' + url);
                         next.mimeType = '$error';
 
-                        dataRoute.$$setView(next, new $RouteError(err, status), headers, true);
+                        dataRoute.$$setView(next, new dataRoute.RouteError(err, status), headers, true);
                     });
             }
 
@@ -591,13 +600,8 @@
         };
     });
 
-    /**
-     * Routing error.
-     *
-     * @param msg {String} Error message.
-     * @param status {Number} Response status code.
-     * @constructor
-     */
+
+    // RouteError exception
     function RouteError(msg, status) {
         this.message = msg;
         this.status = status;
@@ -607,8 +611,6 @@
     RouteError.prototype = Object.create(Error.prototype);
     RouteError.prototype.name = 'RouteError';
     RouteError.prototype.constructor = RouteError;
-
-    module.constant('$RouteError', RouteError);
 
     // Helper functions
     function joinUrl() {

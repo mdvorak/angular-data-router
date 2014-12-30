@@ -1,4 +1,7 @@
 module.exports = function (grunt) {
+    // Load tasks
+    require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
+
     // Project configuration.
     grunt.initConfig({
         cfg: {
@@ -14,17 +17,7 @@ module.exports = function (grunt) {
             all: ['<%=cfg.dist%>', '<%=cfg.build%>']
         },
 
-        // Compile
-        ngAnnotate: {
-            build: {
-                files: [
-                    {
-                       '<%=cfg.build%>/dist/angular-data-router.js': '<%=cfg.src%>/angular-data-router.js'
-                    }
-                ]
-            }
-        },
-
+        // Validate
         jshint: {
             browser_options: {
                 browser: true,
@@ -41,16 +34,10 @@ module.exports = function (grunt) {
             },
 
             grunt: ['Gruntfile.js'],
-            sources: {
+            src: {
                 options: '<%=jshint.browser_options%>',
                 files: {
                     src: ['<%=cfg.src%>/**/*.js']
-                }
-            },
-            bundle: {
-                options: '<%=jshint.browser_options%>',
-                files: {
-                    src: ['<%=cfg.build%>/dist/**/*.js']
                 }
             },
             demo: {
@@ -58,6 +45,29 @@ module.exports = function (grunt) {
                 files: {
                     src: ['<%=cfg.demo%>/**/*.js']
                 }
+            }
+        },
+
+        // Compile
+        ngAnnotate: {
+            build: {
+                files: [
+                    {
+                        '<%=cfg.build%>/dist/angular-data-router.js': '<%=cfg.src%>/angular-data-router.js'
+                    }
+                ]
+            }
+        },
+        uglify: {
+            build: {
+                options: {
+                    sourceMap: true
+                },
+                files: [{
+                    expand: true,
+                    src: ['<%=cfg.build%>/dist/**/*.js'],
+                    ext: '.min.js'
+                }]
             }
         },
 
@@ -96,19 +106,19 @@ module.exports = function (grunt) {
                 }
             }
         },
-        
+
         // Release
         copy: {
-             dist: {
-                 files: [
-                     {
-                         expand: true,
-                         cwd: '<%=cfg.build%>/dist',
-                         dest: '<%=cfg.dist%>',
-                         src: ['**/*']
-                     }
-                 ]
-             }
+            dist: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: '<%=cfg.build%>/dist',
+                        dest: '<%=cfg.dist%>',
+                        src: ['**/*']
+                    }
+                ]
+            }
         },
 
         // Demo
@@ -124,27 +134,14 @@ module.exports = function (grunt) {
         }
     });
 
-    // Load plugins
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-lesslint');
-    grunt.loadNpmTasks('grunt-ng-annotate');
-
-    // Tests
-    grunt.loadNpmTasks('grunt-contrib-less');
-    grunt.loadNpmTasks('grunt-karma');
-
-    // Build
-    grunt.loadNpmTasks('grunt-bump');
-
-    // Tasks
-    grunt.registerTask('javascript', ['jshint:sources', 'ngAnnotate', 'jshint:bundle']);
-    // TODO minify
+    // Private tasks
+    grunt.registerTask('javascript', ['jshint:src', 'ngAnnotate:build', 'uglify:build']);
 
     // Public tasks
     grunt.registerTask('default', ['jshint:grunt', 'clean', 'javascript', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
     grunt.registerTask('demo', ['jshint:demo', 'less:demo']); // TODO
-    grunt.registerTask('release', ['default', 'copy:release', 'bump']);
+
+    grunt.registerTask('dist', ['default', 'copy:dist']);
+    grunt.registerTask('release', ['dist', 'bump']);
 };
