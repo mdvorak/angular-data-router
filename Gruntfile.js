@@ -121,6 +121,13 @@ module.exports = function (grunt) {
                 ]
             }
         },
+        bump: {
+            options: {
+                pushTo: 'origin',
+                commitMessage: '[release v%VERSION%]',
+                commitFiles: ['package.json', 'dist/**']
+            }
+        },
 
         // Demo
         less: {
@@ -144,5 +151,5 @@ module.exports = function (grunt) {
     grunt.registerTask('demo', ['jshint:demo', 'less:demo']); // TODO
 
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
-    grunt.registerTask('release', ['dist', 'bump']);
+    grunt.registerTask('release', ['dist', 'bump:patch:prerelease']);
 };
