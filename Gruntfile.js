@@ -55,6 +55,24 @@ module.exports = function (grunt) {
                 files: {
                     src: ['<%=cfg.demo%>/**/*.js']
                 }
+            },
+            test: {
+                options: {
+                    sub: true,
+                    globalstrict: true,
+                    globals: {
+                        angular: true,
+                        describe: true,
+                        it: true,
+                        beforeEach: true,
+                        expect: true,
+                        module: true,
+                        inject: true
+                    }
+                },
+                files: {
+                    src: ['<%=cfg.test%>/**/*.js']
+                }
             }
         },
 
@@ -167,7 +185,7 @@ module.exports = function (grunt) {
     grunt.registerTask('javascript', ['jshint:src', 'ngAnnotate:build', 'uglify:build']);
 
     // Public tasks
-    grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'karma:default']);
+    grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'jshint:test', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
     grunt.registerTask('demo', ['jshint:demo', 'less:demo']); // TODO
 
