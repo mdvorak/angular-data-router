@@ -20,21 +20,30 @@ module.exports = function (grunt) {
 
         // Validate
         jshint: {
-            browser_options: {
-                browser: true,
-                sub: true,
+            options: {
                 undef: true,
                 unused: 'vars',
                 nonew: true,
                 nonbsp: true,
-                bitwise: true,
+                bitwise: true
+            },
+            browser_options: {
+                browser: true,
+                sub: true,
 
                 globals: {
                     angular: true
                 }
             },
 
-            grunt: ['Gruntfile.js'],
+            grunt: {
+                options: {
+                    node: true
+                },
+                files: {
+                    src: ['Gruntfile.js']
+                }
+            },
             src: {
                 options: '<%=jshint.browser_options%>',
                 files: {
