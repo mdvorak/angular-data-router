@@ -14,7 +14,8 @@ module.exports = function (grunt) {
             bower: '<%=cfg.basedir%>/bower_components'
         },
         clean: {
-            all: ['<%=cfg.dist%>', '<%=cfg.build%>']
+            build: ['<%=cfg.build%>'],
+            dist: ['<%=cfg.dist%>']
         },
 
         // Validate
@@ -138,10 +139,10 @@ module.exports = function (grunt) {
     grunt.registerTask('javascript', ['jshint:src', 'ngAnnotate:build', 'uglify:build']);
 
     // Public tasks
-    grunt.registerTask('default', ['jshint:grunt', 'clean', 'javascript', 'karma:default']);
+    grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
     grunt.registerTask('demo', ['jshint:demo', 'less:demo']); // TODO
 
-    grunt.registerTask('dist', ['default', 'copy:dist']);
+    grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
     grunt.registerTask('release', ['dist', 'bump']);
 };
