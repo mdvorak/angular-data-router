@@ -1,6 +1,6 @@
 TODO
 
-* Refactor $dataRouter - externalize resource loading and media matching to the service.
+* DONE Refactor $dataRouter - externalize resource loading and media matching to the service.
 * Add new directive datafragment.
 * Create simple demo app with nodejs server.
 * Create unit tests.
