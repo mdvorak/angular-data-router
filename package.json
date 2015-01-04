@@ -1,7 +1,7 @@
 {
   "name": "angular-data-router",
   "version": "0.0.1",
-  "repository": "https://github.com/mdvorak/angular-data-router.git",
+  "homepage": "https://github.com/mdvorak/angular-data-router",
   "private": true,
   "license": "MIT",
   "devDependencies": {
