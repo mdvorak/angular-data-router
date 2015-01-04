@@ -28,7 +28,225 @@
 
     var module = angular.module('mdvorak.dataRouter', []);
 
-    module.provider('$dataRouter', function dataRouterProvider($log, $$dataRouterMatchMap, $dataRouterRegistryProvider) {
+    module.factory('$routeData', function routeDataFactory($rootScope) {
+        var routeData = $rootScope.$new(true);
+
+        // Auto-detachable listeners
+        routeData.$on = function (name, listener, scope) {
+            var remover = $rootScope.$on.call(routeData, name, listener);
+
+            // Automatically detach listener
+            if (scope) scope.$on('$destroy', remover);
+            return remover;
+        };
+
+        /**
+         * Attaches given scope to the service, causing event $routeDataUpdated to be propagated to it.
+         *
+         * @param scope {Scope} Scope that should be attached.
+         */
+        routeData.$attachScope = function (scope) {
+            if (!scope) throw new Error("scope is required");
+
+            return routeData.$on('$routeDataUpdated', function (e, data) {
+                scope.$broadcast('$routeDataUpdated', data);
+            }, scope);
+        };
+
+        return routeData;
+    });
+
+    module.provider('$dataRouterRegistry', function dataRouterRegistryProvider($logProvider, $$dataRouterMatchMap) {
+        var provider = this;
+        var views = provider.$$views = $$dataRouterMatchMap.create();
+        var consoleLog = angular.bind(window.console, (window.console || {}).log || angular.noop); // Primitive safe logging
+
+        /**
+         * Configures view for given content type.
+         * <p>
+         * Note: Wildcard or function matchers are much slower then exact match. The are iterated one by one, in order of registration.
+         * Exact string matchers takes always precedence over function matchers.
+         *
+         * @param mediaType {String|Function} Content type to match. When there is no / in the string, it is considered
+         *                                   subtype of <code>application/</code> type. You should not include suffixes
+         *                                   like <code>+json</code>, it is ignored by the matcher. Wildcards are supported.
+         *                                   <p>
+         *                                   It can be function with signature [Boolean] function([String]) as well.
+         * @param config {Object} Configuration object, similar to ngRoute one. Allowed keys are:
+         *                        <code>template, templateUrl, controller, controllerAs, dataAs, resolve</code>,
+         *                        where either <code>template</code> or <code>templateUrl</code> must be specified.
+         *                        <code>template</code> has precedence over <code>templateUrl</code>.
+         *                        <code>controller</code> is optional. Can be either String reference or declaration
+         *                        according to $injector rules. <code>resolve</code> is map of resolvables, that are
+         *                        resolved before controller is created, and are injected into controller. Same behavior
+         *                        as in ngRoute.
+         */
+        provider.when = function (mediaType, config) {
+            // Make our copy
+            config = angular.copy(config);
+
+            if (angular.isFunction(mediaType)) {
+                // Matcher function
+                views.addMatcher(mediaType, config);
+
+                if ($logProvider.debugEnabled()) {
+                    consoleLog("Registered media type matcher " + mediaType.name, config);
+                }
+            } else {
+                // Normalize mimeType
+                mediaType = normalizeMediaType(mediaType);
+                // Register
+                views.addMatcher(mediaType, config);
+
+                if ($logProvider.debugEnabled()) {
+                    consoleLog("Registered media type " + mediaType, config);
+                }
+            }
+
+            return provider;
+        };
+
+        /**
+         * Configures view for error page. Displayed when resource or view template cannot be loaded.
+         *
+         * @param config {Object} Configuration object, as in #when().
+         */
+        provider.error = function (config) {
+            views.addMatcher('$error', angular.copy(config));
+            return provider;
+        };
+
+        // Factory
+        this.$get = function () {
+            return {
+                RouteError: RouteError,
+                normalizeMediaType: normalizeMediaType,
+
+                match: function (mediaType) {
+                    return views.match(mediaType);
+                }
+            };
+        };
+    });
+
+    module.factory('$dataRouterLoader', function dataRouterLoaderProvider($sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
+        var dataRouterLoader = {
+            RouteError: RouteError,
+            normalizeMediaType: normalizeMediaType,
+
+            loadData: function loadData(url) {
+                // Fetch data and return promise
+                return $http.get(url).then(function (response) {
+                    // Match existing resource
+                    var mediaType = normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
+                    var view = $dataRouterRegistry.match(mediaType);
+
+                    // Unknown media type
+                    if (!view) {
+                        return $q.reject({
+                            status: 999,
+                            data: "Unknown content type " + mediaType,
+                            config: response.config,
+                            headers: angular.noop
+                        });
+                    }
+
+                    // Success
+                    return {
+                        status: response.status,
+                        headers: response.headers,
+                        config: response.config,
+                        mediaType: mediaType,
+                        data: response.data,
+                        view: view
+                    };
+                });
+            },
+
+            loadView: function loadView(response) {
+                return $q.when(response).then(function (response) {
+                    // Resolve view
+                    if (response.view) {
+                        // Prepare locals
+                        var locals = angular.copy(response.view.resolve);
+                        var template;
+
+                        // Resolve locals
+                        if (locals) {
+                            angular.forEach(locals, function (value, key) {
+                                locals[key] = angular.isString(value) ?
+                                    $injector.get(value) : $injector.invoke(value);
+                            });
+                        } else {
+                            locals = {};
+                        }
+
+                        // Load template
+                        template = dataRouterLoader.$$loadTemplate(response.view);
+
+                        if (angular.isDefined(template)) {
+                            locals['$template'] = template;
+                        }
+
+                        return $q.all(locals).then(function (locals) {
+                            // Built-in locals
+                            locals.$data = response.data;
+                            locals.$dataType = response.mediaType;
+                            locals.$dataUrl = response.url;
+                            locals.$dataResponse = response;
+
+                            // Store locals and continue
+                            response.locals = locals;
+                            return response;
+                        }, function () {
+                            // Failure
+                            return $q.reject({
+                                status: 999,
+                                data: "Failed to resolve view " + response.mediaType,
+                                config: response.config,
+                                headers: angular.noop
+                            });
+                        });
+                    }
+
+                    // Return original object
+                    return response;
+                });
+            },
+
+            $$loadTemplate: function loadTemplate(view) {
+                // Ripped from ngRoute
+                var template, templateUrl;
+
+                if (angular.isDefined(template = view.template)) {
+                    if (angular.isFunction(template)) {
+                        template = template(view.params);
+                    }
+                } else if (angular.isDefined(templateUrl = view.templateUrl)) {
+                    if (angular.isFunction(templateUrl)) {
+                        templateUrl = templateUrl(view.params);
+                    }
+
+                    templateUrl = view.loadedTemplateUrl || $sce.getTrustedResourceUrl(templateUrl);
+
+                    if (angular.isDefined(templateUrl)) {
+                        view.loadedTemplateUrl = templateUrl;
+
+                        template = $http.get(templateUrl, {cache: $templateCache}).
+                            then(function (response) {
+                                return response.data;
+                            });
+                    }
+                }
+
+                return template;
+            }
+        };
+
+        return dataRouterLoader;
+    });
+
+    module.provider('$dataRouter', function dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider) {
         var provider = this;
         var redirects = $$dataRouterMatchMap.create();
 
@@ -148,10 +366,12 @@
             return this;
         };
 
-        this.$get = function dataRouteFactory($location, $rootScope, $q, $browser, $routeData, $dataRouterRegistry, $dataRouterLoader) {
+        this.$get = function dataRouteFactory($log, $location, $rootScope, $q, $browser, $routeData, $dataRouterRegistry, $dataRouterLoader) {
             var baseHref = $browser.baseHref();
 
             var dataRoute = {
+                normalizeMediaType: normalizeMediaType,
+
                 /**
                  * Routing error.
                  *
@@ -328,35 +548,7 @@
         };
     });
 
-    module.factory('$routeData', function routeDataFactory($rootScope) {
-        var routeData = $rootScope.$new(true);
-
-        // Auto-detachable listeners
-        routeData.$on = function (name, listener, scope) {
-            var remover = $rootScope.$on.call(routeData, name, listener);
-
-            // Automatically detach listener
-            if (scope) scope.$on('$destroy', remover);
-            return remover;
-        };
-
-        /**
-         * Attaches given scope to the service, causing event $routeDataUpdated to be propagated to it.
-         *
-         * @param scope {Scope} Scope that should be attached.
-         */
-        routeData.$attachScope = function (scope) {
-            if (!scope) throw new Error("scope is required");
-
-            return routeData.$on('$routeDataUpdated', function (e, data) {
-                scope.$broadcast('$routeDataUpdated', data);
-            }, scope);
-        };
-
-        return routeData;
-    });
-
-    module.directive('dataview', function dataviewFactory($dataRoute, $anchorScroll, $animate) {
+    module.directive('dataview', function dataviewFactory($dataRouter, $anchorScroll, $animate) {
         return {
             restrict: 'ECA',
             terminal: true,
@@ -391,12 +583,12 @@
                 }
 
                 function update() {
-                    var locals = $dataRoute.current && $dataRoute.current.locals,
+                    var locals = $dataRouter.current && $dataRouter.current.locals,
                         template = locals && locals.$template;
 
                     if (angular.isDefined(template)) {
                         var newScope = scope.$new();
-                        var current = $dataRoute.current;
+                        var current = $dataRouter.current;
 
                         // Note: This will also link all children of ng-view that were contained in the original
                         // html. If that content contains controllers, ... they could pollute/change the scope.
@@ -424,7 +616,7 @@
         };
     });
 
-    module.directive('dataview', function dataviewFillContentFactory($compile, $controller, $dataRoute) {
+    module.directive('dataview', function dataviewFillContentFactory($compile, $controller, $dataRouter) {
         // This directive is called during the $transclude call of the first `ngView` directive.
         // It will replace and compile the content of the element with the loaded template.
         // We need this directive so that the element content is already filled when
@@ -434,18 +626,18 @@
             restrict: 'ECA',
             priority: -400,
             link: function (scope, $element) {
-                var current = $dataRoute.current,
+                var current = $dataRouter.current,
                     locals = current.locals;
 
                 $element.html(locals.$template);
 
                 var link = $compile($element.contents());
 
-                if (current.controller) {
+                if (current.view && current.view.controller) {
                     locals.$scope = scope;
-                    var controller = $controller(current.controller, locals);
-                    if (current.controllerAs) {
-                        scope[current.controllerAs] = controller;
+                    var controller = $controller(current.view.controller, locals);
+                    if (current.view.controllerAs) {
+                        scope[current.view.controllerAs] = controller;
                     }
                     $element.data('$ngControllerController', controller);
                     $element.children().data('$ngControllerController', controller);
@@ -454,186 +646,6 @@
                 link(scope);
             }
         };
-    });
-
-    module.provider('$dataRouterRegistry', function dataRouterRegistryProvider($log, $$dataRouterMatchMap) {
-        var provider = this;
-        var views = $$dataRouterMatchMap.create();
-
-        /**
-         * Configures view for given content type.
-         * <p>
-         * Note: Wildcard or function matchers are much slower then exact match. The are iterated one by one, in order of registration.
-         * Exact string matchers takes always precedence over function matchers.
-         *
-         * @param mediaType {String|Function} Content type to match. When there is no / in the string, it is considered
-         *                                   subtype of <code>application/</code> type. You should not include suffixes
-         *                                   like <code>+json</code>, it is ignored by the matcher. Wildcards are supported.
-         *                                   <p>
-         *                                   It can be function with signature [Boolean] function([String]) as well.
-         * @param config {Object} Configuration object, similar to ngRoute one. Allowed keys are:
-         *                        <code>template, templateUrl, controller, controllerAs, dataAs, resolve</code>,
-         *                        where either <code>template</code> or <code>templateUrl</code> must be specified.
-         *                        <code>template</code> has precedence over <code>templateUrl</code>.
-         *                        <code>controller</code> is optional. Can be either String reference or declaration
-         *                        according to $injector rules. <code>resolve</code> is map of resolvables, that are
-         *                        resolved before controller is created, and are injected into controller. Same behavior
-         *                        as in ngRoute.
-         */
-        provider.when = function (mediaType, config) {
-            // Make our copy
-            config = angular.copy(config);
-
-            if (angular.isFunction(mediaType)) {
-                // Matcher function
-                views.addMatcher(mediaType, config);
-                $log.debug("Registered media type matcher " + mediaType.name, config);
-            } else {
-                // Normalize mimeType
-                mediaType = normalizeMediaType(mediaType);
-                // Register
-                views.addMatcher(mediaType, config);
-                $log.debug("Registered media type " + mediaType, config);
-            }
-
-            return provider;
-        };
-
-        /**
-         * Configures view for error page. Displayed when resource or view template cannot be loaded.
-         *
-         * @param config {Object} Configuration object, as in #when().
-         */
-        provider.error = function (config) {
-            views.addMatcher('$error', angular.copy(config));
-            return provider;
-        };
-
-        // Factory
-        this.$get = function () {
-            return {
-                match: function (mediaType) {
-                    return views.match(mediaType);
-                }
-            };
-        };
-    });
-
-    module.factory('$dataRouterLoader', function dataRouterLoaderProvider($sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
-        var dataRouterLoader = {
-            RouteError: RouteError,
-            normalizeMediaType: normalizeMediaType,
-
-            loadData: function loadData(url) {
-                // Fetch data and return promise
-                return $http.get(url).then(function (response) {
-                    // Match existing resource
-                    var mediaType = normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
-                    var view = $dataRouterRegistry.match(mediaType);
-
-                    // Unknown media type
-                    if (!view) {
-                        return $q.reject({
-                            status: 999,
-                            data: "Unknown content type " + mediaType,
-                            config: response.config,
-                            headers: angular.noop
-                        });
-                    }
-
-                    // Success
-                    return {
-                        status: response.status,
-                        headers: response.headers,
-                        config: response.config,
-                        mediaType: mediaType,
-                        data: response.data,
-                        view: view
-                    };
-                });
-            },
-
-            loadView: function loadView(response) {
-                return $q.when(response).then(function (response) {
-                    // Resolve view
-                    if (response.view) {
-                        // Prepare locals
-                        var locals = angular.copy(response.view.resolve);
-                        var template;
-
-                        // Resolve locals
-                        if (locals) {
-                            angular.forEach(locals, function (value, key) {
-                                locals[key] = angular.isString(value) ?
-                                    $injector.get(value) : $injector.invoke(value);
-                            });
-                        } else {
-                            locals = {};
-                        }
-
-                        // Load template
-                        template = dataRouterLoader.$$loadTemplate(response.view);
-
-                        if (angular.isDefined(template)) {
-                            locals['$template'] = template;
-                        }
-
-                        return $q.all(locals).then(function (locals) {
-                            // Built-in locals
-                            locals.$data = response.data;
-                            locals.$dataType = response.mediaType;
-                            locals.$dataUrl = response.url;
-                            locals.$dataResponse = response;
-
-                            // Store locals and continue
-                            response.locals = locals;
-                            return response;
-                        }, function () {
-                            // Failure
-                            return $q.reject({
-                                status: 999,
-                                data: "Failed to resolve view " + response.mediaType,
-                                config: response.config,
-                                headers: angular.noop
-                            });
-                        });
-                    }
-
-                    // Return original object
-                    return response;
-                });
-            },
-
-            $$loadTemplate: function loadTemplate(view) {
-                // Ripped from ngRoute
-                var template, templateUrl;
-
-                if (angular.isDefined(template = view.template)) {
-                    if (angular.isFunction(template)) {
-                        template = template(view.params);
-                    }
-                } else if (angular.isDefined(templateUrl = view.templateUrl)) {
-                    if (angular.isFunction(templateUrl)) {
-                        templateUrl = templateUrl(view.params);
-                    }
-
-                    templateUrl = view.loadedTemplateUrl || $sce.getTrustedResourceUrl(templateUrl);
-
-                    if (angular.isDefined(templateUrl)) {
-                        view.loadedTemplateUrl = templateUrl;
-
-                        template = $http.get(templateUrl, {cache: $templateCache}).
-                            then(function (response) {
-                                return response.data;
-                            });
-                    }
-                }
-
-                return template;
-            }
-        };
-
-        return dataRouterLoader;
     });
 
     /**
