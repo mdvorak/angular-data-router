@@ -119,6 +119,9 @@
         // Factory
         this.$get = function () {
             return {
+                RouteError: RouteError,
+                normalizeMediaType: normalizeMediaType,
+
                 match: function (mediaType) {
                     return views.match(mediaType);
                 }
@@ -367,6 +370,8 @@
             var baseHref = $browser.baseHref();
 
             var dataRoute = {
+                normalizeMediaType: normalizeMediaType,
+
                 /**
                  * Routing error.
                  *
@@ -621,21 +626,29 @@
             restrict: 'ECA',
             priority: -400,
             link: function (scope, $element) {
-                var current = $dataRouter.current,
-                    locals = current.locals;
+                var current = $dataRouter.current;
+                var view = current ? current.view : undefined;
+                var locals = current.locals;
 
                 $element.html(locals.$template);
 
                 var link = $compile($element.contents());
 
-                if (current.controller) {
+                if (view && view.controller) {
                     locals.$scope = scope;
-                    var controller = $controller(current.controller, locals);
-                    if (current.controllerAs) {
-                        scope[current.controllerAs] = controller;
+                    var controller = $controller(view.controller, locals);
+
+                    if (view.controllerAs) {
+                        scope[view.controllerAs] = controller;
                     }
+
                     $element.data('$ngControllerController', controller);
                     $element.children().data('$ngControllerController', controller);
+                }
+
+                if (view && view.dataAs) {
+                    locals.$scope = scope;
+                    scope[view.dataAs] = current.data;
                 }
 
                 link(scope);

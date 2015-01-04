@@ -626,21 +626,29 @@
             restrict: 'ECA',
             priority: -400,
             link: function (scope, $element) {
-                var current = $dataRouter.current,
-                    locals = current.locals;
+                var current = $dataRouter.current;
+                var view = current ? current.view : undefined;
+                var locals = current.locals;
 
                 $element.html(locals.$template);
 
                 var link = $compile($element.contents());
 
-                if (current.view && current.view.controller) {
+                if (view && view.controller) {
                     locals.$scope = scope;
-                    var controller = $controller(current.view.controller, locals);
-                    if (current.view.controllerAs) {
-                        scope[current.view.controllerAs] = controller;
+                    var controller = $controller(view.controller, locals);
+
+                    if (view.controllerAs) {
+                        scope[view.controllerAs] = controller;
                     }
+
                     $element.data('$ngControllerController', controller);
                     $element.children().data('$ngControllerController', controller);
+                }
+
+                if (view && view.dataAs) {
+                    locals.$scope = scope;
+                    scope[view.dataAs] = current.data;
                 }
 
                 link(scope);
