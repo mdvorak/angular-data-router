@@ -24,6 +24,7 @@
   "scripts": {
     "postinstall": "bower install",
     "test": "grunt default",
-    "release": "grunt release"
+    "release": "grunt release",
+    "dist": "grunt dist"
   }
 }
