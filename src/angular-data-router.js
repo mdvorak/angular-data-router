@@ -133,126 +133,148 @@
         };
     });
 
-    module.factory('$dataRouterLoader', function dataRouterLoaderProvider($sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
-        var dataRouterLoader = {
-            RouteError: RouteError,
-            normalizeMediaType: normalizeMediaType,
+    module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
+        var provider = this;
 
-            loadData: function loadData(url) {
-                // Fetch data and return promise
-                return $http.get(url).then(function (response) {
-                    // Match existing resource
-                    var mediaType = normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
-                    var view = $dataRouterRegistry.match(mediaType);
+        provider.globalResolve = function (resolve) {
+            if (resolve) {
+                if (!provider.$globalResolve) {
+                    provider.$globalResolve = {};
+                }
 
-                    // Unknown media type
-                    if (!view) {
-                        return $q.reject({
-                            status: 999,
-                            data: "Unknown content type " + mediaType,
-                            config: response.config,
-                            headers: angular.noop
-                        });
-                    }
+                angular.extend(provider.$globalResolve, resolve);
+            }
 
-                    // Success
-                    return {
-                        status: response.status,
-                        headers: response.headers,
-                        config: response.config,
-                        mediaType: mediaType,
-                        data: response.data,
-                        view: view
-                    };
-                });
-            },
+            return provider;
+        };
 
-            loadView: function loadView(response) {
-                return $q.when(response).then(function (response) {
-                    // Resolve view
-                    if (response.view) {
-                        // Prepare locals
-                        var locals = angular.copy(response.view.resolve);
-                        var template;
+        this.$get = function dataRouterLoaderFactory($sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
+            var dataRouterLoader = {
+                RouteError: RouteError,
+                normalizeMediaType: normalizeMediaType,
 
-                        // Resolve locals
-                        if (locals) {
-                            angular.forEach(locals, function (value, key) {
-                                locals[key] = angular.isString(value) ?
-                                    $injector.get(value) : $injector.invoke(value);
-                            });
-                        } else {
-                            locals = {};
-                        }
+                loadData: function loadData(url) {
+                    // Fetch data and return promise
+                    return $http.get(url).then(function (response) {
+                        // Match existing resource
+                        var mediaType = normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
+                        var view = $dataRouterRegistry.match(mediaType);
 
-                        // Load template
-                        template = dataRouterLoader.$$loadTemplate(response.view);
-
-                        if (angular.isDefined(template)) {
-                            locals['$template'] = template;
-                        }
-
-                        return $q.all(locals).then(function (locals) {
-                            // Built-in locals
-                            locals.$data = response.data;
-                            locals.$dataType = response.mediaType;
-                            locals.$dataUrl = response.url;
-                            locals.$dataResponse = response;
-
-                            // Store locals and continue
-                            response.locals = locals;
-                            return response;
-                        }, function () {
-                            // Failure
+                        // Unknown media type
+                        if (!view) {
                             return $q.reject({
                                 status: 999,
-                                data: "Failed to resolve view " + response.mediaType,
+                                data: "Unknown content type " + mediaType,
                                 config: response.config,
                                 headers: angular.noop
                             });
-                        });
-                    }
+                        }
 
-                    // Return original object
-                    return response;
-                });
-            },
+                        // Success
+                        return {
+                            status: response.status,
+                            headers: response.headers,
+                            config: response.config,
+                            mediaType: mediaType,
+                            data: response.data,
+                            view: view
+                        };
+                    });
+                },
 
-            $$loadTemplate: function loadTemplate(view) {
-                // Ripped from ngRoute
-                var template, templateUrl;
+                loadView: function loadView(response) {
+                    return $q.when(response).then(function (response) {
+                        // Resolve view
+                        if (response.view) {
+                            // Prepare locals
+                            var locals = angular.extend({}, provider.$globalResolve, response.view.resolve);
+                            var template;
 
-                if (angular.isDefined(template = view.template)) {
-                    if (angular.isFunction(template)) {
-                        template = template(view.params);
-                    }
-                } else if (angular.isDefined(templateUrl = view.templateUrl)) {
-                    if (angular.isFunction(templateUrl)) {
-                        templateUrl = templateUrl(view.params);
-                    }
+                            // Built-in locals
+                            var builtInLocals = {
+                                $data: response.data,
+                                $dataType: response.mediaType,
+                                $dataUrl: response.url,
+                                $dataResponse: response
+                            };
 
-                    templateUrl = view.loadedTemplateUrl || $sce.getTrustedResourceUrl(templateUrl);
+                            // Resolve locals
+                            if (locals) {
+                                angular.forEach(locals, function (value, key) {
+                                    locals[key] = angular.isString(value) ?
+                                        $injector.get(value) : $injector.invoke(value, '$dataRouterLoader', builtInLocals);
+                                });
+                            } else {
+                                locals = {};
+                            }
 
-                    if (angular.isDefined(templateUrl)) {
-                        view.loadedTemplateUrl = templateUrl;
+                            // Load template
+                            template = dataRouterLoader.$$loadTemplate(response.view);
 
-                        template = $http.get(templateUrl, {cache: $templateCache}).
-                            then(function (response) {
-                                return response.data;
+                            if (angular.isDefined(template)) {
+                                locals['$template'] = template;
+                            }
+
+                            return $q.all(locals).then(function (locals) {
+                                // Built-in locals
+                                angular.extend(locals, builtInLocals);
+
+                                // Store locals and continue
+                                response.locals = locals;
+                                return response;
+                            }, function () {
+                                // Failure
+                                return $q.reject({
+                                    status: 999,
+                                    data: "Failed to resolve view " + response.mediaType,
+                                    config: response.config,
+                                    headers: angular.noop
+                                });
                             });
+                        }
+
+                        // Return original object
+                        return response;
+                    });
+                },
+
+                $$loadTemplate: function loadTemplate(view) {
+                    // Ripped from ngRoute
+                    var template, templateUrl;
+
+                    if (angular.isDefined(template = view.template)) {
+                        if (angular.isFunction(template)) {
+                            template = template(view.params);
+                        }
+                    } else if (angular.isDefined(templateUrl = view.templateUrl)) {
+                        if (angular.isFunction(templateUrl)) {
+                            templateUrl = templateUrl(view.params);
+                        }
+
+                        templateUrl = view.loadedTemplateUrl || $sce.getTrustedResourceUrl(templateUrl);
+
+                        if (angular.isDefined(templateUrl)) {
+                            view.loadedTemplateUrl = templateUrl;
+
+                            template = $http.get(templateUrl, {cache: $templateCache}).
+                                then(function (response) {
+                                    return response.data;
+                                });
+                        }
                     }
+
+                    return template;
                 }
+            };
 
-                return template;
-            }
+            return dataRouterLoader;
         };
-
-        return dataRouterLoader;
     });
 
-    module.provider('$dataRouter', function dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider) {
+    module.provider('$dataRouter', function dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
         var provider = this;
-        var redirects = provider.$redirects = $$dataRouterMatchMap.create();
+
+        provider.$redirects = $$dataRouterMatchMap.create();
 
         /**
          * Api prefix variable. Do not modify directly, use accessor function.
@@ -364,9 +386,14 @@
          */
         provider.redirect = function (path, redirectTo) {
             if (redirectTo) {
-                redirects.addMatcher(path, redirectTo);
+                provider.$redirects.addMatcher(path, redirectTo);
             }
 
+            return provider;
+        };
+
+        provider.globalResolve = function (resolve) {
+            $dataRouterLoaderProvider.globalResolve(resolve);
             return provider;
         };
 
@@ -458,7 +485,7 @@
                     var next = dataRoute.next = {};
 
                     // Home redirect
-                    if ((redirectTo = redirects.match(path))) {
+                    if ((redirectTo = provider.$redirects.match(path))) {
                         $log.debug("Redirecting to " + redirectTo);
                         $location.path(redirectTo).replace();
                         return;

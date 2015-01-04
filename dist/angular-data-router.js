@@ -124,131 +124,157 @@
 
                 match: function (mediaType) {
                     return views.match(mediaType);
+                },
+
+                isKnownType: function (type) {
+                    return type && !!this.match(normalizeMediaType(type));
                 }
             };
         };
     }]);
 
-    module.factory('$dataRouterLoader', ["$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function dataRouterLoaderProvider($sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
-        var dataRouterLoader = {
-            RouteError: RouteError,
-            normalizeMediaType: normalizeMediaType,
+    module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
+        var provider = this;
 
-            loadData: function loadData(url) {
-                // Fetch data and return promise
-                return $http.get(url).then(function (response) {
-                    // Match existing resource
-                    var mediaType = normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
-                    var view = $dataRouterRegistry.match(mediaType);
+        provider.globalResolve = function (resolve) {
+            if (resolve) {
+                if (!provider.$globalResolve) {
+                    provider.$globalResolve = {};
+                }
 
-                    // Unknown media type
-                    if (!view) {
-                        return $q.reject({
-                            status: 999,
-                            data: "Unknown content type " + mediaType,
-                            config: response.config,
-                            headers: angular.noop
-                        });
-                    }
+                angular.extend(provider.$globalResolve, resolve);
+            }
 
-                    // Success
-                    return {
-                        status: response.status,
-                        headers: response.headers,
-                        config: response.config,
-                        mediaType: mediaType,
-                        data: response.data,
-                        view: view
-                    };
-                });
-            },
+            return provider;
+        };
 
-            loadView: function loadView(response) {
-                return $q.when(response).then(function (response) {
-                    // Resolve view
-                    if (response.view) {
-                        // Prepare locals
-                        var locals = angular.copy(response.view.resolve);
-                        var template;
+        this.$get = ["$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function dataRouterLoaderFactory($sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
+            var dataRouterLoader = {
+                RouteError: RouteError,
+                normalizeMediaType: normalizeMediaType,
 
-                        // Resolve locals
-                        if (locals) {
-                            angular.forEach(locals, function (value, key) {
-                                locals[key] = angular.isString(value) ?
-                                    $injector.get(value) : $injector.invoke(value);
-                            });
-                        } else {
-                            locals = {};
-                        }
+                loadData: function loadData(url) {
+                    // Fetch data and return promise
+                    return $http.get(url).then(function (response) {
+                        // Match existing resource
+                        var mediaType = normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
+                        var view = $dataRouterRegistry.match(mediaType);
 
-                        // Load template
-                        template = dataRouterLoader.$$loadTemplate(response.view);
-
-                        if (angular.isDefined(template)) {
-                            locals['$template'] = template;
-                        }
-
-                        return $q.all(locals).then(function (locals) {
-                            // Built-in locals
-                            locals.$data = response.data;
-                            locals.$dataType = response.mediaType;
-                            locals.$dataUrl = response.url;
-                            locals.$dataResponse = response;
-
-                            // Store locals and continue
-                            response.locals = locals;
-                            return response;
-                        }, function () {
-                            // Failure
+                        // Unknown media type
+                        if (!view) {
                             return $q.reject({
                                 status: 999,
-                                data: "Failed to resolve view " + response.mediaType,
+                                data: "Unknown content type " + mediaType,
                                 config: response.config,
                                 headers: angular.noop
                             });
-                        });
-                    }
+                        }
 
-                    // Return original object
-                    return response;
-                });
-            },
+                        // Success
+                        return {
+                            status: response.status,
+                            headers: response.headers,
+                            config: response.config,
+                            mediaType: mediaType,
+                            data: response.data,
+                            view: view
+                        };
+                    });
+                },
 
-            $$loadTemplate: function loadTemplate(view) {
-                // Ripped from ngRoute
-                var template, templateUrl;
+                loadView: function loadView(response) {
+                    return $q.when(response).then(function (response) {
+                        // Resolve view
+                        if (response.view) {
+                            // Prepare locals
+                            var locals = angular.extend({}, provider.$globalResolve, response.view.resolve);
+                            var template;
 
-                if (angular.isDefined(template = view.template)) {
-                    if (angular.isFunction(template)) {
-                        template = template(view.params);
-                    }
-                } else if (angular.isDefined(templateUrl = view.templateUrl)) {
-                    if (angular.isFunction(templateUrl)) {
-                        templateUrl = templateUrl(view.params);
-                    }
+                            // Built-in locals
+                            var builtInLocals = {
+                                $data: response.data,
+                                $dataType: response.mediaType,
+                                $dataUrl: response.url,
+                                $dataResponse: response
+                            };
 
-                    templateUrl = view.loadedTemplateUrl || $sce.getTrustedResourceUrl(templateUrl);
+                            // Resolve locals
+                            if (locals) {
+                                angular.forEach(locals, function (value, key) {
+                                    locals[key] = angular.isString(value) ?
+                                        $injector.get(value) : $injector.invoke(value, '$dataRouterLoader', builtInLocals);
+                                });
+                            } else {
+                                locals = {};
+                            }
 
-                    if (angular.isDefined(templateUrl)) {
-                        view.loadedTemplateUrl = templateUrl;
+                            // Load template
+                            template = dataRouterLoader.$$loadTemplate(response.view);
 
-                        template = $http.get(templateUrl, {cache: $templateCache}).
-                            then(function (response) {
-                                return response.data;
+                            if (angular.isDefined(template)) {
+                                locals['$template'] = template;
+                            }
+
+                            return $q.all(locals).then(function (locals) {
+                                // Built-in locals
+                                angular.extend(locals, builtInLocals);
+
+                                // Store locals and continue
+                                response.locals = locals;
+                                return response;
+                            }, function () {
+                                // Failure
+                                return $q.reject({
+                                    status: 999,
+                                    data: "Failed to resolve view " + response.mediaType,
+                                    config: response.config,
+                                    headers: angular.noop
+                                });
                             });
+                        }
+
+                        // Return original object
+                        return response;
+                    });
+                },
+
+                $$loadTemplate: function loadTemplate(view) {
+                    // Ripped from ngRoute
+                    var template, templateUrl;
+
+                    if (angular.isDefined(template = view.template)) {
+                        if (angular.isFunction(template)) {
+                            template = template(view.params);
+                        }
+                    } else if (angular.isDefined(templateUrl = view.templateUrl)) {
+                        if (angular.isFunction(templateUrl)) {
+                            templateUrl = templateUrl(view.params);
+                        }
+
+                        templateUrl = view.loadedTemplateUrl || $sce.getTrustedResourceUrl(templateUrl);
+
+                        if (angular.isDefined(templateUrl)) {
+                            view.loadedTemplateUrl = templateUrl;
+
+                            template = $http.get(templateUrl, {cache: $templateCache}).
+                                then(function (response) {
+                                    return response.data;
+                                });
+                        }
                     }
+
+                    return template;
                 }
+            };
 
-                return template;
-            }
-        };
+            return dataRouterLoader;
+        }];
+    });
 
-        return dataRouterLoader;
-    }]);
-
-    module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", function dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider) {
+    module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", function dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
         var provider = this;
-        var redirects = $$dataRouterMatchMap.create();
+
+        provider.$redirects = $$dataRouterMatchMap.create();
 
         /**
          * Api prefix variable. Do not modify directly, use accessor function.
@@ -256,7 +282,7 @@
          * @type {string} Api prefix, relative to website base.
          * @protected
          */
-        this.$apiPrefix = 'api/';
+        provider.$apiPrefix = 'api/';
 
         /**
          * Configures prefix for default view to resource mapping.
@@ -264,7 +290,7 @@
          *
          * @param prefix {String} API url prefix, relative to website base.
          */
-        this.apiPrefix = function (prefix) {
+        provider.apiPrefix = function (prefix) {
             // Always end with /
             if (prefix[prefix.length - 1] !== '/') {
                 prefix += '/';
@@ -288,7 +314,7 @@
          * @param path {String} View path, as in $location.path().
          * @returns {String} Resource url, for e.g. HTTP requests.
          */
-        this.mapViewPath = function mapPath(baseHref, path) {
+        provider.mapViewPath = function mapPath(baseHref, path) {
             return joinUrl(baseHref, provider.$apiPrefix, path);
         };
 
@@ -302,7 +328,7 @@
          * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
          * @returns {String} View path.
          */
-        this.mapApiUrl = function (baseHref, url) {
+        provider.mapApiUrl = function (baseHref, url) {
             if (baseHref[baseHref.length - 1] !== '/') {
                 baseHref += '/';
             }
@@ -337,9 +363,9 @@
          *                        resolved before controller is created, and are injected into controller. Same behavior
          *                        as in ngRoute.
          */
-        this.when = function (mediaType, config) {
+        provider.when = function (mediaType, config) {
             $dataRouterRegistryProvider.when(mediaType, config);
-            return this;
+            return provider;
         };
 
         /**
@@ -347,9 +373,9 @@
          *
          * @param config {Object} Configuration object, as in #when().
          */
-        this.error = function (config) {
+        provider.error = function (config) {
             $dataRouterRegistryProvider.error(angular.copy(config));
-            return this;
+            return provider;
         };
 
         /**
@@ -358,12 +384,17 @@
          * @param path {String} View to force redirect on. Supports wildcards. Parameters are not supported
          * @param redirectTo {String} View path which should be redirected to.
          */
-        this.redirect = function (path, redirectTo) {
+        provider.redirect = function (path, redirectTo) {
             if (redirectTo) {
-                redirects.addMatcher(path, redirectTo);
+                provider.$redirects.addMatcher(path, redirectTo);
             }
 
-            return this;
+            return provider;
+        };
+
+        provider.globalResolve = function (resolve) {
+            $dataRouterLoaderProvider.globalResolve(resolve);
+            return provider;
         };
 
         this.$get = ["$log", "$location", "$rootScope", "$q", "$browser", "$routeData", "$dataRouterRegistry", "$dataRouterLoader", function dataRouteFactory($log, $location, $rootScope, $q, $browser, $routeData, $dataRouterRegistry, $dataRouterLoader) {
@@ -412,7 +443,7 @@
                  * @returns {boolean} true if type is ahs registered view, false otherwise.
                  */
                 isKnownType: function (type) {
-                    return type && !!$dataRouterRegistry.match(normalizeMediaType(type));
+                    return $dataRouterRegistry.isKnownType(type);
                 },
 
                 /**
@@ -454,7 +485,7 @@
                     var next = dataRoute.next = {};
 
                     // Home redirect
-                    if ((redirectTo = redirects.match(path))) {
+                    if ((redirectTo = provider.$redirects.match(path))) {
                         $log.debug("Redirecting to " + redirectTo);
                         $location.path(redirectTo).replace();
                         return;
