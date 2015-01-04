@@ -124,6 +124,10 @@
 
                 match: function (mediaType) {
                     return views.match(mediaType);
+                },
+
+                isKnownType: function (type) {
+                    return type && !!this.match(normalizeMediaType(type));
                 }
             };
         };
@@ -412,7 +416,7 @@
                  * @returns {boolean} true if type is ahs registered view, false otherwise.
                  */
                 isKnownType: function (type) {
-                    return type && !!$dataRouterRegistry.match(normalizeMediaType(type));
+                    return $dataRouterRegistry.isKnownType(type);
                 },
 
                 /**
