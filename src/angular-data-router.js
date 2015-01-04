@@ -32,18 +32,6 @@
         var provider = this;
         var redirects = $$dataRouterMatchMap.create();
 
-        // Debugging disabled by default
-        this.$debug = false;
-
-        /**
-         * Enables or disabled logging.
-         *
-         * @param debug {boolean} true to enable debug logging, false to disable it.
-         */
-        this.debug = function (debug) {
-            provider.$debug = !!debug;
-        };
-
         /**
          * Api prefix variable. Do not modify directly, use accessor function.
          *
@@ -247,20 +235,14 @@
 
                     // Home redirect
                     if ((redirectTo = redirects.match(path))) {
-                        if (provider.$debug) {
-                            $log.info("Redirecting to " + redirectTo);
-                        }
-
+                        $log.debug("Redirecting to " + redirectTo);
                         $location.path(redirectTo).replace();
                         return;
                     }
 
                     // Load resource
                     url = dataRoute.mapViewPath($location.path());
-
-                    if (provider.$debug) {
-                        $log.info("Loading resource " + url);
-                    }
+                    $log.debug("Loading resource " + url);
 
                     // Load data and view
                     $dataRouterLoader.loadData(url).then(function loadDataSuccess(response) {
@@ -268,9 +250,7 @@
                         if (dataRoute.next === next) {
                             // Check whether whole view needs to be refreshed
                             if (!forceReload && isSameView(dataRoute.current, response)) {
-                                if (provider.$debug) {
-                                    $log.info("Replacing current data");
-                                }
+                                $log.debug("Replacing current data");
 
                                 // Update current
                                 dataRoute.next = undefined;
@@ -330,9 +310,7 @@
                  * @param response {Object} Next view config.
                  */
                 $$setView: function $$setView(response) {
-                    if (provider.$debug) {
-                        $log.info("Setting view to " + response.mediaType);
-                    }
+                    $log.debug("Setting view to " + response.mediaType);
 
                     // Update view data
                     dataRoute.$$updateView(response);
@@ -509,19 +487,13 @@
             if (angular.isFunction(mediaType)) {
                 // Matcher function
                 views.addMatcher(mediaType, config);
-
-                if (provider.$debug) {
-                    $log.log("Registered media type matcher " + mediaType.name, config);
-                }
+                $log.debug("Registered media type matcher " + mediaType.name, config);
             } else {
                 // Normalize mimeType
                 mediaType = normalizeMediaType(mediaType);
                 // Register
                 views.addMatcher(mediaType, config);
-
-                if (provider.$debug) {
-                    $log.log("Registered media type " + mediaType, config);
-                }
+                $log.debug("Registered media type " + mediaType, config);
             }
 
             return provider;
