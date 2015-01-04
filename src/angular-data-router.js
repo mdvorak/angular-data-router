@@ -252,7 +252,7 @@
 
     module.provider('$dataRouter', function dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider) {
         var provider = this;
-        var redirects = $$dataRouterMatchMap.create();
+        var redirects = provider.$redirects = $$dataRouterMatchMap.create();
 
         /**
          * Api prefix variable. Do not modify directly, use accessor function.
@@ -260,7 +260,7 @@
          * @type {string} Api prefix, relative to website base.
          * @protected
          */
-        this.$apiPrefix = 'api/';
+        provider.$apiPrefix = 'api/';
 
         /**
          * Configures prefix for default view to resource mapping.
@@ -268,7 +268,7 @@
          *
          * @param prefix {String} API url prefix, relative to website base.
          */
-        this.apiPrefix = function (prefix) {
+        provider.apiPrefix = function (prefix) {
             // Always end with /
             if (prefix[prefix.length - 1] !== '/') {
                 prefix += '/';
@@ -292,7 +292,7 @@
          * @param path {String} View path, as in $location.path().
          * @returns {String} Resource url, for e.g. HTTP requests.
          */
-        this.mapViewPath = function mapPath(baseHref, path) {
+        provider.mapViewPath = function mapPath(baseHref, path) {
             return joinUrl(baseHref, provider.$apiPrefix, path);
         };
 
@@ -306,7 +306,7 @@
          * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
          * @returns {String} View path.
          */
-        this.mapApiUrl = function (baseHref, url) {
+        provider.mapApiUrl = function (baseHref, url) {
             if (baseHref[baseHref.length - 1] !== '/') {
                 baseHref += '/';
             }
@@ -341,9 +341,9 @@
          *                        resolved before controller is created, and are injected into controller. Same behavior
          *                        as in ngRoute.
          */
-        this.when = function (mediaType, config) {
+        provider.when = function (mediaType, config) {
             $dataRouterRegistryProvider.when(mediaType, config);
-            return this;
+            return provider;
         };
 
         /**
@@ -351,9 +351,9 @@
          *
          * @param config {Object} Configuration object, as in #when().
          */
-        this.error = function (config) {
+        provider.error = function (config) {
             $dataRouterRegistryProvider.error(angular.copy(config));
-            return this;
+            return provider;
         };
 
         /**
@@ -362,12 +362,12 @@
          * @param path {String} View to force redirect on. Supports wildcards. Parameters are not supported
          * @param redirectTo {String} View path which should be redirected to.
          */
-        this.redirect = function (path, redirectTo) {
+        provider.redirect = function (path, redirectTo) {
             if (redirectTo) {
                 redirects.addMatcher(path, redirectTo);
             }
 
-            return this;
+            return provider;
         };
 
         this.$get = function dataRouteFactory($log, $location, $rootScope, $q, $browser, $routeData, $dataRouterRegistry, $dataRouterLoader) {
