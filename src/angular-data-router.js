@@ -164,6 +164,7 @@
                         if (!view) {
                             return $q.reject({
                                 status: 999,
+                                statusText: "Application Error",
                                 data: "Unknown content type " + mediaType,
                                 config: response.config,
                                 headers: angular.noop
@@ -173,6 +174,7 @@
                         // Success
                         return {
                             status: response.status,
+                            statusText: response.statusText,
                             headers: response.headers,
                             config: response.config,
                             mediaType: mediaType,
@@ -226,6 +228,7 @@
                                 // Failure
                                 return $q.reject({
                                     status: 999,
+                                    statusText: "Application Error",
                                     data: "Failed to resolve view " + response.mediaType,
                                     config: response.config,
                                     headers: angular.noop
