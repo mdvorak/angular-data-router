@@ -194,7 +194,7 @@
                             var builtInLocals = {
                                 $data: response.data,
                                 $dataType: response.mediaType,
-                                $dataUrl: response.url,
+                                $dataUrl: response.config.url,
                                 $dataResponse: response
                             };
 
@@ -282,7 +282,7 @@
          * @type {string} Api prefix, relative to website base.
          * @protected
          */
-        provider.$apiPrefix = 'api/';
+        provider.$apiPrefix = '';
 
         /**
          * Configures prefix for default view to resource mapping.
@@ -291,17 +291,21 @@
          * @param prefix {String} API url prefix, relative to website base.
          */
         provider.apiPrefix = function (prefix) {
-            // Always end with /
-            if (prefix[prefix.length - 1] !== '/') {
-                prefix += '/';
+            if (arguments.length > 0) {
+                // Always end with /
+                if (prefix[prefix.length - 1] !== '/') {
+                    prefix += '/';
+                }
+
+                // Never start with /
+                if (prefix[0] === '/') {
+                    prefix = prefix.substring(1);
+                }
+
+                provider.$apiPrefix = prefix;
             }
 
-            // Never start with /
-            if (prefix[0] === '/') {
-                prefix = prefix.substring(1);
-            }
-
-            provider.$apiPrefix = prefix;
+            return provider.$apiPrefix;
         };
 
         /**
@@ -551,7 +555,7 @@
                 $$updateView: function $$updateView(response) {
                     $routeData.data = response.data;
                     $routeData.type = response.mediaType;
-                    $routeData.url = response.url;
+                    $routeData.url = response.config.url;
                     $routeData.headers = response.headers;
                 },
 
