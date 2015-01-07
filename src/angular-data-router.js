@@ -194,7 +194,7 @@
                             var builtInLocals = {
                                 $data: response.data,
                                 $dataType: response.mediaType,
-                                $dataUrl: response.url,
+                                $dataUrl: response.config.url,
                                 $dataResponse: response
                             };
 
@@ -555,7 +555,7 @@
                 $$updateView: function $$updateView(response) {
                     $routeData.data = response.data;
                     $routeData.type = response.mediaType;
-                    $routeData.url = response.url;
+                    $routeData.url = response.config.url;
                     $routeData.headers = response.headers;
                 },
 
