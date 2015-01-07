@@ -528,7 +528,13 @@
                         if (dataRoute.next === next) {
                             // Load error view
                             response.mediaType = '$error';
-                            return $dataRouterLoader.loadView(response);
+                            response.view = $dataRouterRegistry.match('$error');
+
+                            if (response.view) {
+                                return $dataRouterLoader.loadView(response);
+                            } else {
+                                return $q.reject(response);
+                            }
                         }
                     }).then(showView, function noErrorView(response) {
                         // Error handler
