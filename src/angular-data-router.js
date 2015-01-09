@@ -26,7 +26,7 @@
 (function (angular) {
     "use strict";
 
-    var module = angular.module('mdvorak.dataRouter', []);
+    var module = angular.module('mdvorakDataRouter', []);
 
     module.factory('$routeData', function routeDataFactory($rootScope) {
         var routeData = $rootScope.$new(true);
