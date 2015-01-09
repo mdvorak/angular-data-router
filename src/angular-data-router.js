@@ -59,6 +59,7 @@
     module.provider('$dataRouterRegistry', function dataRouterRegistryProvider($logProvider, $$dataRouterMatchMap) {
         var provider = this;
         var views = provider.$$views = $$dataRouterMatchMap.create();
+
         var consoleLog = angular.bind(window.console, (window.console || {}).log || angular.noop); // Primitive safe logging
 
         /**
@@ -148,7 +149,7 @@
             return provider;
         };
 
-        this.$get = function dataRouterLoaderFactory($sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
+        this.$get = function dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
             var dataRouterLoader = {
                 RouteError: RouteError,
                 normalizeMediaType: normalizeMediaType,
@@ -245,6 +246,7 @@
                     var view = $dataRouterRegistry.match(mediaType);
 
                     if (view) {
+                        $log.debug("Prefetching template for " + mediaType);
                         dataRouterLoader.$$loadTemplate(view);
                     } else {
                         $log.debug("Cannot prefetch template for " + mediaType + ", type is not registered");
@@ -305,16 +307,6 @@
          */
         provider.apiPrefix = function (prefix) {
             if (arguments.length > 0) {
-                // Always end with /
-                if (prefix[prefix.length - 1] !== '/') {
-                    prefix += '/';
-                }
-
-                // Never start with /
-                if (prefix[0] === '/') {
-                    prefix = prefix.substring(1);
-                }
-
                 provider.$apiPrefix = prefix;
             }
 
@@ -332,7 +324,13 @@
          * @returns {String} Resource url, for e.g. HTTP requests.
          */
         provider.mapViewPath = function mapPath(baseHref, path) {
-            return joinUrl(baseHref, provider.$apiPrefix, path);
+            if (provider.$apiPrefix[0] === '/') {
+                // Absolute URL
+                return joinUrl(provider.$apiPrefix, path);
+            } else {
+                // Base-relative URL
+                return joinUrl(baseHref, provider.$apiPrefix, path);
+            }
         };
 
         /**
@@ -346,18 +344,24 @@
          * @returns {String} View path.
          */
         provider.mapApiUrl = function (baseHref, url) {
-            if (baseHref[baseHref.length - 1] !== '/') {
-                baseHref += '/';
+            // Only for relative URLs
+            if (provider.$apiPrefix[0] !== '/') {
+                if (url.indexOf(baseHref) === 0) {
+                    // Strip base
+                    url = url.substring(baseHref.length);
+                } else {
+                    // Invalid URL, ignore
+                    return null;
+                }
             }
 
-            if (url.indexOf(baseHref) === 0) {
-                url = url.substring(baseHref.length);
-            }
-
-            // Always contains trailing /
+            // Strip API prefix
             if (url.indexOf(provider.$apiPrefix) === 0) {
                 return url.substring(3);
             }
+
+            // Otherwise ignore, unable to map
+            return null;
         };
 
         /**
@@ -417,7 +421,11 @@
         this.$get = function dataRouteFactory($log, $location, $rootScope, $q, $browser, $routeData, $dataRouterRegistry, $dataRouterLoader) {
             var baseHref = $browser.baseHref();
 
-            var dataRoute = {
+            if (baseHref[baseHref.length - 1] !== '/') {
+                $log.warn("base href does not end with /, configuration error");
+            }
+
+            var dataRouter = {
                 normalizeMediaType: normalizeMediaType,
 
                 /**
@@ -472,11 +480,11 @@
                 url: function (url) {
                     // Getter
                     if (arguments.length < 1) {
-                        return dataRoute.mapViewPath($location.path());
+                        return dataRouter.mapViewPath($location.path());
                     }
 
                     // Setter
-                    var path = dataRoute.mapApiUrl(url);
+                    var path = dataRouter.mapApiUrl(url);
 
                     if (path) {
                         $location.path(path);
@@ -499,7 +507,7 @@
                     var path = $location.path() || '/';
                     var redirectTo;
                     var url;
-                    var next = dataRoute.next = {};
+                    var next = dataRouter.next = {};
 
                     // Home redirect
                     if ((redirectTo = provider.$redirects.match(path))) {
@@ -509,23 +517,23 @@
                     }
 
                     // Load resource
-                    url = dataRoute.mapViewPath($location.path());
+                    url = dataRouter.mapViewPath($location.path());
                     $log.debug("Loading resource " + url);
 
                     // Load data and view
                     $dataRouterLoader.loadData(url).then(function loadDataSuccess(response) {
                         // It is worth continuing?
-                        if (dataRoute.next === next) {
+                        if (dataRouter.next === next) {
                             // Check whether whole view needs to be refreshed
-                            if (!forceReload && isSameView(dataRoute.current, response)) {
+                            if (!forceReload && isSameView(dataRouter.current, response)) {
                                 $log.debug("Replacing current data");
 
                                 // Update current
-                                dataRoute.next = undefined;
-                                dataRoute.current = response;
+                                dataRouter.next = undefined;
+                                dataRouter.current = response;
 
                                 // Update data
-                                dataRoute.$$updateView(response);
+                                dataRouter.$$updateView(response);
                                 $routeData.$emit('$routeDataUpdated', response.data);
                                 return;
                             }
@@ -535,7 +543,7 @@
                         }
                     }).then(showView, function loadError(response) {
                         // Error handler
-                        if (dataRoute.next === next) {
+                        if (dataRouter.next === next) {
                             // Load error view
                             response.mediaType = '$error';
                             response.view = $dataRouterRegistry.match('$error');
@@ -548,7 +556,7 @@
                         }
                     }).then(showView, function noErrorView(response) {
                         // Error handler
-                        if (dataRoute.next === next) {
+                        if (dataRouter.next === next) {
                             // Show error view
                             $log.error("Failed to load view or data and no error view defined", response);
                             $rootScope.$emit('$routeChangeFailed');
@@ -556,13 +564,13 @@
                     });
 
                     function showView(response) {
-                        if (dataRoute.next === next) {
+                        if (dataRouter.next === next) {
                             // Update current
-                            dataRoute.next = undefined;
-                            dataRoute.current = response;
+                            dataRouter.next = undefined;
+                            dataRouter.current = response;
 
                             // Show view
-                            dataRoute.$$setView(response);
+                            dataRouter.$$setView(response);
                         }
                     }
 
@@ -587,7 +595,7 @@
                     $log.debug("Setting view to " + response.mediaType);
 
                     // Update view data
-                    dataRoute.$$updateView(response);
+                    dataRouter.$$updateView(response);
 
                     // Emit event
                     $rootScope.$emit('$routeChangeSuccess');
@@ -595,10 +603,10 @@
             };
 
             $rootScope.$on('$locationChangeSuccess', function () {
-                dataRoute.reload(true);
+                dataRouter.reload(true);
             });
 
-            return dataRoute;
+            return dataRouter;
         };
     });
 
@@ -749,6 +757,40 @@
             }
         };
     }
+
+    module.directive('apiHref', function ($dataRouter, $dataRouterLoader, $location) {
+        return {
+            restrict: 'AC',
+            link: function (scope, element, attrs) {
+                // Update href accordingly
+                scope.$watch(attrs.apiHref, function (apiHref) {
+                    var href = $dataRouter.mapApiUrl(apiHref);
+
+                    if (href) {
+                        // Hashbang mode
+                        if (!$location.$$html5) {
+                            href = '#' + href;
+                        }
+
+                        attrs.$set('href', href);
+                    } else {
+                        attrs.$set('href', null);
+                    }
+                });
+
+                // Don't watch for type if it is not defined at all
+                if ('type' in attrs) {
+                    element.click(function () {
+                        if (attrs.type) {
+                            scope.$applyAsync(function () {
+                                $dataRouterLoader.prefetchTemplate(scope.$eval(attrs.type));
+                            });
+                        }
+                    });
+                }
+            }
+        };
+    });
 
     module.constant('$$dataRouterMatchMap', {
         create: function create() {
