@@ -345,6 +345,9 @@
          */
         provider.mapApiUrl = function (baseHref, url) {
             // TODO handle absolute URLS with current domain and protocol
+            // TODO two courses:
+            // TODO compare host and protocol by hand (port is big question, but i think it should be compared as well)
+            // TODO sanitize prefix to absolute url and then sanitize every mapped url
 
             // Only for relative URLs
             if (provider.$apiPrefix[0] !== '/') {
