@@ -241,6 +241,16 @@
                     });
                 },
 
+                prefetchTemplate: function prefetchTemplate(mediaType) {
+                    var view = $dataRouterRegistry.match(mediaType);
+
+                    if (view) {
+                        dataRouterLoader.$$loadTemplate(view);
+                    } else {
+                        $log.debug("Cannot prefetch template for " + mediaType + ", type is not registered");
+                    }
+                },
+
                 $$loadTemplate: function loadTemplate(view) {
                     // Ripped from ngRoute
                     var template, templateUrl;
