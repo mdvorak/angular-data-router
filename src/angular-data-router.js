@@ -344,6 +344,8 @@
          * @returns {String} View path.
          */
         provider.mapApiUrl = function (baseHref, url) {
+            // TODO handle absolute URLS with current domain and protocol
+
             // Only for relative URLs
             if (provider.$apiPrefix[0] !== '/') {
                 if (url.indexOf(baseHref) === 0) {
