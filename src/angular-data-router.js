@@ -330,7 +330,14 @@
          * @returns {String} Resource url, for e.g. HTTP requests.
          */
         provider.mapViewToApi = function mapViewToApi(path) {
-            return joinUrl(provider.$apiPrefix, path);
+            // Path should always begin with slash, remove it
+            if (path && path[0] === '/') {
+                path = path.substring(1);
+            }
+
+            // Join
+            // Note: API prefix MUST end with a slash, otherwise it will work as configured, which is most likely wrong.
+            return provider.$apiPrefix + path;
         };
 
         /**
@@ -807,10 +814,6 @@
     RouteError.prototype.constructor = RouteError;
 
     // Helper functions
-    function joinUrl() {
-        return Array.prototype.join.call(arguments, '/').replace(/\/+/g, '/');
-    }
-
     function wildcardMatcherFactory(wildcard) {
         var pattern = new RegExp('^' + wildcardToRegex(wildcard) + '$');
 
