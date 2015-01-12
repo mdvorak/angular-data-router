@@ -56,11 +56,9 @@
         return routeData;
     });
 
-    module.provider('$dataRouterRegistry', function dataRouterRegistryProvider($logProvider, $$dataRouterMatchMap) {
+    module.provider('$dataRouterRegistry', function dataRouterRegistryProvider($$dataRouterMatchMap) {
         var provider = this;
         var views = provider.$$views = $$dataRouterMatchMap.create();
-
-        var consoleLog = angular.bind(window.console, (window.console || {}).log || angular.noop); // Primitive safe logging
 
         /**
          * Configures view for given content type.
@@ -89,19 +87,11 @@
             if (angular.isFunction(mediaType)) {
                 // Matcher function
                 views.addMatcher(mediaType, config);
-
-                if ($logProvider.debugEnabled()) {
-                    consoleLog("Registered media type matcher " + mediaType.name, config);
-                }
             } else {
                 // Normalize mimeType
                 mediaType = normalizeMediaType(mediaType);
                 // Register
                 views.addMatcher(mediaType, config);
-
-                if ($logProvider.debugEnabled()) {
-                    consoleLog("Registered media type " + mediaType, config);
-                }
             }
 
             return provider;
