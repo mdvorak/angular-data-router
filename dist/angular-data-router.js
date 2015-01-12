@@ -330,7 +330,14 @@
          * @returns {String} Resource url, for e.g. HTTP requests.
          */
         provider.mapViewToApi = function mapViewToApi(path) {
-            return joinUrl(provider.$apiPrefix, path);
+            // Path should always begin with slash, remove it
+            if (path && path[0] === '/') {
+                path = path.substring(1);
+            }
+
+            // Join
+            // Note: API prefix MUST end with a slash, otherwise it will work as configured, which is most likely wrong.
+            return provider.$apiPrefix + path;
         };
 
         /**
@@ -759,9 +766,16 @@
         return {
             restrict: 'AC',
             link: function (scope, element, attrs) {
-                // Update href accordingly
-                scope.$watch(attrs.apiHref, function (apiHref) {
-                    var href = $dataRouter.mapApiToView(apiHref);
+                function updateHref() {
+                    // Do we have a type? And it is supported?
+                    if (attrs.type && !$dataRouter.isKnownType(attrs.type)) {
+                        // If not, do not modify the URL
+                        attrs.$set('href', attrs.apiHref);
+                        return;
+                    }
+
+                    // Map URL
+                    var href = $dataRouter.mapApiToView(attrs.apiHref);
 
                     if (href) {
                         // Hashbang mode
@@ -771,16 +785,22 @@
 
                         attrs.$set('href', href);
                     } else {
-                        attrs.$set('href', null);
+                        // Use URL on its own
+                        attrs.$set('href', attrs.apiHref);
                     }
-                });
+                }
+
+                // Update href accordingly
+                attrs.$observe('apiHref', updateHref);
 
                 // Don't watch for type if it is not defined at all
                 if ('type' in attrs) {
+                    attrs.$observe('type', updateHref);
+
                     element.click(function () {
                         if (attrs.type) {
                             scope.$applyAsync(function () {
-                                $dataRouterLoader.prefetchTemplate(scope.$eval(attrs.type));
+                                $dataRouterLoader.prefetchTemplate(attrs.type);
                             });
                         }
                     });
@@ -807,10 +827,6 @@
     RouteError.prototype.constructor = RouteError;
 
     // Helper functions
-    function joinUrl() {
-        return Array.prototype.join.call(arguments, '/').replace(/\/+/g, '/');
-    }
-
     function wildcardMatcherFactory(wildcard) {
         var pattern = new RegExp('^' + wildcardToRegex(wildcard) + '$');
 
