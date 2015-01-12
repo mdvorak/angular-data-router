@@ -26,7 +26,7 @@
 (function (angular) {
     "use strict";
 
-    var module = angular.module('mdvorak.dataRouter', []);
+    var module = angular.module('mdvorakDataRouter', []);
 
     module.factory('$routeData', ["$rootScope", function routeDataFactory($rootScope) {
         var routeData = $rootScope.$new(true);
@@ -56,11 +56,9 @@
         return routeData;
     }]);
 
-    module.provider('$dataRouterRegistry', ["$logProvider", "$$dataRouterMatchMap", function dataRouterRegistryProvider($logProvider, $$dataRouterMatchMap) {
+    module.provider('$dataRouterRegistry', ["$$dataRouterMatchMap", function dataRouterRegistryProvider($$dataRouterMatchMap) {
         var provider = this;
         var views = provider.$$views = $$dataRouterMatchMap.create();
-
-        var consoleLog = angular.bind(window.console, (window.console || {}).log || angular.noop); // Primitive safe logging
 
         /**
          * Configures view for given content type.
@@ -89,19 +87,11 @@
             if (angular.isFunction(mediaType)) {
                 // Matcher function
                 views.addMatcher(mediaType, config);
-
-                if ($logProvider.debugEnabled()) {
-                    consoleLog("Registered media type matcher " + mediaType.name, config);
-                }
             } else {
                 // Normalize mimeType
                 mediaType = normalizeMediaType(mediaType);
                 // Register
                 views.addMatcher(mediaType, config);
-
-                if ($logProvider.debugEnabled()) {
-                    consoleLog("Registered media type " + mediaType, config);
-                }
             }
 
             return provider;
@@ -136,17 +126,26 @@
 
     module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         var provider = this;
+        // Intentionally using document object instead of $document
+        var urlParsingNode = document.createElement("a");
 
-        provider.globalResolve = function (resolve) {
-            if (resolve) {
-                if (!provider.$globalResolve) {
-                    provider.$globalResolve = {};
-                }
+        provider.global = function global(config) {
+            if (!config) return;
 
-                angular.extend(provider.$globalResolve, resolve);
+            if (angular.isObject(config.resolve)) {
+                provider.$globalResolve = angular.extend(provider.$globalResolve || {}, config.resolve);
             }
 
             return provider;
+        };
+
+        provider.$$normalizeUrl = function $$normalizeUrl(href) {
+            if (href) {
+                urlParsingNode.setAttribute("href", href);
+                return urlParsingNode.href;
+            }
+
+            return null;
         };
 
         this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
@@ -253,6 +252,10 @@
                     }
                 },
 
+                $$normalizeUrl: function $$normalizeUrl(href) {
+                    return provider.$$normalizeUrl(href);
+                },
+
                 $$loadTemplate: function loadTemplate(view) {
                     // Ripped from ngRoute
                     var template, templateUrl;
@@ -289,78 +292,65 @@
     module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", function dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
         var provider = this;
 
+        /**
+         * Map of redirects. Do not modify directly, use redirect function.
+         * @type {Object}
+         */
         provider.$redirects = $$dataRouterMatchMap.create();
 
         /**
          * Api prefix variable. Do not modify directly, use accessor function.
          *
-         * @type {string} Api prefix, relative to website base.
+         * @type {string}
          * @protected
          */
         provider.$apiPrefix = '';
 
         /**
          * Configures prefix for default view to resource mapping.
-         * Default is 'api/'.
          *
-         * @param prefix {String} API url prefix, relative to website base.
+         * @param prefix {String} Relative URL prefix, relative to base href.
+         * @return {string} API URL prefix. It's absolute URL, includes base href.
          */
-        provider.apiPrefix = function (prefix) {
+        provider.apiPrefix = function apiPrefix(prefix) {
             if (arguments.length > 0) {
-                provider.$apiPrefix = prefix;
+                provider.$apiPrefix = $dataRouterLoaderProvider.$$normalizeUrl(prefix);
             }
 
             return provider.$apiPrefix;
         };
 
         /**
-         * Maps view path to resource URL. Can be overriden during configuration.
+         * Maps view path to resource URL. Can be overridden during configuration.
          * By default it maps path to API one to one.
          * <p>
-         * Opposite of #mapApiUrl().
+         * Counterpart to #mapApiToView(). If you override one, override the other as well.
          *
-         * @param baseHref {String} Website base URL.
          * @param path {String} View path, as in $location.path().
          * @returns {String} Resource url, for e.g. HTTP requests.
          */
-        provider.mapViewPath = function mapPath(baseHref, path) {
-            if (provider.$apiPrefix[0] === '/') {
-                // Absolute URL
-                return joinUrl(provider.$apiPrefix, path);
-            } else {
-                // Base-relative URL
-                return joinUrl(baseHref, provider.$apiPrefix, path);
-            }
+        provider.mapViewToApi = function mapViewToApi(path) {
+            return joinUrl(provider.$apiPrefix, path);
         };
 
         /**
-         * Maps resource URL to view path. Can be overriden during configuration.
+         * Maps resource URL to view path. Can be overridden during configuration.
          * By default it maps APU url to view paths one to one.
          * <p>
-         * Opposite of #mapViewPath().
+         * Counterpart to #mapViewToApi(). If you override one, override the other as well.
          *
-         * @param baseHref {String} Website base URL.
          * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
          * @returns {String} View path.
          */
-        provider.mapApiUrl = function (baseHref, url) {
-            // Only for relative URLs
-            if (provider.$apiPrefix[0] !== '/') {
-                if (url.indexOf(baseHref) === 0) {
-                    // Strip base
-                    url = url.substring(baseHref.length);
-                } else {
-                    // Invalid URL, ignore
-                    return null;
-                }
+        provider.mapApiToView = function mapApiToView(url) {
+            // Normalize
+            url = $dataRouterLoaderProvider.$$normalizeUrl(url);
+
+            if (url && url.indexOf(provider.$apiPrefix) === 0) {
+                return url.substring(provider.$apiPrefix.length);
             }
 
-            // Strip API prefix
-            if (url.indexOf(provider.$apiPrefix) === 0) {
-                return url.substring(3);
-            }
-
-            // Otherwise ignore, unable to map
+            // Unable to map
             return null;
         };
 
@@ -383,8 +373,9 @@
          *                        according to $injector rules. <code>resolve</code> is map of resolvables, that are
          *                        resolved before controller is created, and are injected into controller. Same behavior
          *                        as in ngRoute.
+         * @returns {Object} Returns provider.
          */
-        provider.when = function (mediaType, config) {
+        provider.when = function when(mediaType, config) {
             $dataRouterRegistryProvider.when(mediaType, config);
             return provider;
         };
@@ -393,8 +384,9 @@
          * Configures view for error page. Displayed when resource or view template cannot be loaded.
          *
          * @param config {Object} Configuration object, as in #when().
+         * @returns {Object} Returns provider.
          */
-        provider.error = function (config) {
+        provider.error = function error(config) {
             $dataRouterRegistryProvider.error(angular.copy(config));
             return provider;
         };
@@ -404,8 +396,9 @@
          *
          * @param path {String} View to force redirect on. Supports wildcards. Parameters are not supported
          * @param redirectTo {String} View path which should be redirected to.
+         * @returns {Object} Returns provider.
          */
-        provider.redirect = function (path, redirectTo) {
+        provider.redirect = function redirect(path, redirectTo) {
             if (redirectTo) {
                 provider.$redirects.addMatcher(path, redirectTo);
             }
@@ -413,18 +406,19 @@
             return provider;
         };
 
-        provider.globalResolve = function (resolve) {
-            $dataRouterLoaderProvider.globalResolve(resolve);
+        /**
+         * Sets global router configuration, applicable for all routes.<br>
+         * Currently only resolve is supported.
+         *
+         * @param config {Object} Configuration object. Only resolve key is currently supported.
+         * @returns {Object} Returns provider.
+         */
+        provider.global = function global(config) {
+            $dataRouterLoaderProvider.global(config);
             return provider;
         };
 
-        this.$get = ["$log", "$location", "$rootScope", "$q", "$browser", "$routeData", "$dataRouterRegistry", "$dataRouterLoader", function dataRouteFactory($log, $location, $rootScope, $q, $browser, $routeData, $dataRouterRegistry, $dataRouterLoader) {
-            var baseHref = $browser.baseHref();
-
-            if (baseHref[baseHref.length - 1] !== '/') {
-                $log.warn("base href does not end with /, configuration error");
-            }
-
+        this.$get = ["$log", "$location", "$rootScope", "$q", "$routeData", "$dataRouterRegistry", "$dataRouterLoader", function dataRouteFactory($log, $location, $rootScope, $q, $routeData, $dataRouterRegistry, $dataRouterLoader) {
             var dataRouter = {
                 normalizeMediaType: normalizeMediaType,
 
@@ -438,27 +432,30 @@
                 RouteError: RouteError,
 
                 /**
-                 * Maps view path to resource URL.
+                 * Maps view path to resource URL. Can be overridden during configuration.
+                 * By default it maps path to API one to one.
                  * <p>
-                 * Opposite of #mapApiUrl().
+                 * Counterpart to #mapApiToView(). If you override one, override the other as well.
                  *
                  * @param path {String} View path, as in $location.path().
                  * @returns {String} Resource url, for e.g. HTTP requests.
                  */
-                mapViewPath: function (path) {
-                    return provider.mapViewPath(baseHref, path);
+                mapViewToApi: function (path) {
+                    return provider.mapViewToApi(path);
                 },
 
+
                 /**
-                 * Maps resource URL to view path.
+                 * Maps resource URL to view path. Can be overridden during configuration.
+                 * By default it maps APU url to view paths one to one.
                  * <p>
-                 * Opposite of #mapViewPath().
+                 * Counterpart to #mapViewToApi(). If you override one, override the other as well.
                  *
                  * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
                  * @returns {String} View path.
                  */
-                mapApiUrl: function (url) {
-                    return provider.mapApiUrl(baseHref, url);
+                mapApiToView: function (url) {
+                    return provider.mapApiToView(url);
                 },
 
                 /**
@@ -480,11 +477,11 @@
                 url: function (url) {
                     // Getter
                     if (arguments.length < 1) {
-                        return dataRouter.mapViewPath($location.path());
+                        return dataRouter.mapViewToApi($location.path());
                     }
 
                     // Setter
-                    var path = dataRouter.mapApiUrl(url);
+                    var path = dataRouter.mapApiToView(url);
 
                     if (path) {
                         $location.path(path);
@@ -517,7 +514,7 @@
                     }
 
                     // Load resource
-                    url = dataRouter.mapViewPath($location.path());
+                    url = dataRouter.mapViewToApi($location.path());
                     $log.debug("Loading resource " + url);
 
                     // Load data and view
@@ -764,7 +761,7 @@
             link: function (scope, element, attrs) {
                 // Update href accordingly
                 scope.$watch(attrs.apiHref, function (apiHref) {
-                    var href = $dataRouter.mapApiUrl(apiHref);
+                    var href = $dataRouter.mapApiToView(apiHref);
 
                     if (href) {
                         // Hashbang mode
