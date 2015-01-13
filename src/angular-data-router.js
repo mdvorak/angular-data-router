@@ -834,7 +834,7 @@
                 if ('type' in attrs) {
                     attrs.$observe('type', updateHref);
 
-                    element.click(function () {
+                    element.on('click', function () {
                         // Invoke apply only if needed
                         if (attrs.type) {
                             scope.$applyAsync(function () {
