@@ -31,26 +31,32 @@
     module.factory('$routeData', ["$rootScope", function routeDataFactory($rootScope) {
         var routeData = $rootScope.$new(true);
 
-        // Auto-detachable listeners
-        routeData.$on = function (name, listener, scope) {
-            var remover = $rootScope.$on.call(routeData, name, listener);
+        /**
+         * Listen to $routeDataUpdated event. It is fired whenever data are updated by the router, without
+         * reloading the view. This occurs as result of calling $dataRouter.reload() method without true parameter.
+         * <p>
+         * If you don't provide scope context for the listener, you must unregister it manually using remover function.
+         *
+         * @param listener {Function} Listener function.
+         * @param scope {Object?} Context, in which the listener exists. When given scope is destroyed, listener
+         *                        is removed as well automatically.
+         * @returns {Function} Listener remover function.
+         */
+        routeData.onRouteDataUpdated = function (listener, scope) {
+            var remover = routeData.$on('$routeDataUpdated', listener);
 
             // Automatically detach listener
-            if (scope) scope.$on('$destroy', remover);
-            return remover;
-        };
+            if (scope) {
+                var off = scope.$on('$destroy', remover);
 
-        /**
-         * Attaches given scope to the service, causing event $routeDataUpdated to be propagated to it.
-         *
-         * @param scope {Scope} Scope that should be attached.
-         */
-        routeData.$attachScope = function (scope) {
-            if (!scope) throw new Error("scope is required");
-
-            return routeData.$on('$routeDataUpdated', function (e, data) {
-                scope.$broadcast('$routeDataUpdated', data);
-            }, scope);
+                // Stop listening to $destroy event as well
+                return function () {
+                    remover();
+                    off();
+                };
+            } else {
+                return remover;
+            }
         };
 
         return routeData;
@@ -501,8 +507,9 @@
                  * and $routeDataUpdated event is invoked on routeData object. If content type differs,
                  * full view refresh is performed (that is, controller is destroyed and recreated).
                  * <p>
-                 * If you refresh only data, it is recommended to use routeData object instead of $data injector,
-                 * and you must listen to $routeDataUpdated event to catch the change.
+                 * If you refresh data, it is recommended to use $routeData object instead of $data injector.
+                 * You should then listen to $routeDataUpdated event on $routeData or $rootScope, to catch the change.<br>
+                 * There is a shortcut for listening to this event, see #onRouteDataUpdated() method.
                  *
                  * @param forceReload {boolean} If true, page is always refreshed (controller recreated). Otherwise only
                  *                              when needed.
@@ -538,7 +545,7 @@
 
                                 // Update data
                                 dataRouter.$$updateView(response);
-                                $routeData.$emit('$routeDataUpdated', response.data);
+                                $routeData.$emit('$routeDataUpdated', response.data, response.headers);
                                 return;
                             }
 
@@ -766,11 +773,21 @@
         return {
             restrict: 'AC',
             link: function (scope, element, attrs) {
+                var hasTarget = 'target' in attrs;
+
+                function setHref(href, target) {
+                    attrs.$set('href', href);
+
+                    if (!hasTarget) {
+                        attrs.$set('target', href ? target : null);
+                    }
+                }
+
                 function updateHref() {
                     // Do we have a type? And it is supported?
                     if (attrs.type && !$dataRouter.isKnownType(attrs.type)) {
                         // If not, do not modify the URL
-                        attrs.$set('href', attrs.apiHref);
+                        setHref(attrs.apiHref, '_self');
                         return;
                     }
 
@@ -783,10 +800,10 @@
                             href = '#' + href;
                         }
 
-                        attrs.$set('href', href);
+                        setHref(href, null);
                     } else {
                         // Use URL on its own
-                        attrs.$set('href', attrs.apiHref);
+                        setHref(attrs.apiHref, '_self');
                     }
                 }
 
@@ -798,9 +815,13 @@
                     attrs.$observe('type', updateHref);
 
                     element.click(function () {
+                        // Invoke apply only if needed
                         if (attrs.type) {
                             scope.$applyAsync(function () {
-                                $dataRouterLoader.prefetchTemplate(attrs.type);
+                                // Race condition
+                                if (attrs.type) {
+                                    $dataRouterLoader.prefetchTemplate(attrs.type);
+                                }
                             });
                         }
                     });
