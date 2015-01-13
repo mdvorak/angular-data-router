@@ -28,8 +28,9 @@
 
     var module = angular.module('mdvorakDataRouter', []);
 
-    module.factory('$routeData', function routeDataFactory($rootScope) {
+    module.factory('$routeData', function routeDataFactory($rootScope, $injector) {
         var routeData = $rootScope.$new(true);
+        var dataRouter = $injector.get('dataRouter', '$routeData'); // Avoid cyclic dependency
 
         /**
          * Listen to $routeDataUpdated event. It is fired whenever data are updated by the router, without
@@ -57,6 +58,16 @@
             } else {
                 return remover;
             }
+        };
+
+        /**
+         * Reloads the data, without refreshing the view. If the data are successfully loaded,
+         * $routeDataUpdated event is fired. If it fails, error view is shown.
+         * <p>
+         * Does not allow page refresh via parameter, unlike $dataRouter.reload(boolean).
+         */
+        routeData.reload = function reload() {
+            dataRouter.reload(false);
         };
 
         return routeData;
