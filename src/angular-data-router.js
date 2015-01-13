@@ -766,11 +766,21 @@
         return {
             restrict: 'AC',
             link: function (scope, element, attrs) {
+                var hasTarget = 'target' in attrs;
+
+                function setHref(href, target) {
+                    attrs.$set('href', href);
+
+                    if (!hasTarget) {
+                        attrs.$set('target', href ? target : null);
+                    }
+                }
+
                 function updateHref() {
                     // Do we have a type? And it is supported?
                     if (attrs.type && !$dataRouter.isKnownType(attrs.type)) {
                         // If not, do not modify the URL
-                        attrs.$set('href', attrs.apiHref);
+                        setHref(attrs.apiHref, '_self');
                         return;
                     }
 
@@ -783,10 +793,10 @@
                             href = '#' + href;
                         }
 
-                        attrs.$set('href', href);
+                        setHref(href, null);
                     } else {
                         // Use URL on its own
-                        attrs.$set('href', attrs.apiHref);
+                        setHref(attrs.apiHref, '_self');
                     }
                 }
 
@@ -798,9 +808,13 @@
                     attrs.$observe('type', updateHref);
 
                     element.click(function () {
+                        // Invoke apply only if needed
                         if (attrs.type) {
                             scope.$applyAsync(function () {
-                                $dataRouterLoader.prefetchTemplate(attrs.type);
+                                // Race condition
+                                if (attrs.type) {
+                                    $dataRouterLoader.prefetchTemplate(attrs.type);
+                                }
                             });
                         }
                     });
