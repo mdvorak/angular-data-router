@@ -42,7 +42,7 @@
          *                        is removed as well automatically.
          * @returns {Function} Listener remover function.
          */
-        routeData.onRouteDataUpdated = function (listener, scope) {
+        routeData.onRouteDataUpdated = function onRouteDataUpdated(listener, scope) {
             var remover = routeData.$on('$routeDataUpdated', listener);
 
             // Automatically detach listener
@@ -50,7 +50,7 @@
                 var off = scope.$on('$destroy', remover);
 
                 // Stop listening to $destroy event as well
-                return function () {
+                return function combinedRemover() {
                     remover();
                     off();
                 };
@@ -86,7 +86,7 @@
          *                        resolved before controller is created, and are injected into controller. Same behavior
          *                        as in ngRoute.
          */
-        provider.when = function (mediaType, config) {
+        provider.when = function when(mediaType, config) {
             // Make our copy
             config = angular.copy(config);
 
@@ -108,7 +108,7 @@
          *
          * @param config {Object} Configuration object, as in #when().
          */
-        provider.error = function (config) {
+        provider.error = function error(config) {
             views.addMatcher('$error', angular.copy(config));
             return provider;
         };
@@ -119,11 +119,11 @@
                 RouteError: RouteError,
                 normalizeMediaType: normalizeMediaType,
 
-                match: function (mediaType) {
+                match: function match(mediaType) {
                     return views.match(mediaType);
                 },
 
-                isKnownType: function (type) {
+                isKnownType: function isKnownType(type) {
                     return type && !!this.match(normalizeMediaType(type));
                 }
             };
@@ -191,7 +191,7 @@
                 },
 
                 loadView: function loadView(response) {
-                    return $q.when(response).then(function (response) {
+                    return $q.when(response).then(function responseReady(response) {
                         // Resolve view
                         if (response.view) {
                             // Prepare locals
@@ -223,14 +223,14 @@
                                 locals['$template'] = template;
                             }
 
-                            return $q.all(locals).then(function (locals) {
+                            return $q.all(locals).then(function localsLoaded(locals) {
                                 // Built-in locals
                                 angular.extend(locals, builtInLocals);
 
                                 // Store locals and continue
                                 response.locals = locals;
                                 return response;
-                            }, function () {
+                            }, function localsError() {
                                 // Failure
                                 return $q.reject({
                                     status: 999,
@@ -453,7 +453,7 @@
                  * @param path {String} View path, as in $location.path().
                  * @returns {String} Resource url, for e.g. HTTP requests.
                  */
-                mapViewToApi: function (path) {
+                mapViewToApi: function mapViewToApi(path) {
                     return provider.mapViewToApi(path);
                 },
 
@@ -467,7 +467,7 @@
                  * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
                  * @returns {String} View path.
                  */
-                mapApiToView: function (url) {
+                mapApiToView: function mapApiToView(url) {
                     return provider.mapApiToView(url);
                 },
 
@@ -477,8 +477,23 @@
                  * @param type {String} Matched content type.
                  * @returns {boolean} true if type is ahs registered view, false otherwise.
                  */
-                isKnownType: function (type) {
+                isKnownType: function isKnownType(type) {
                     return $dataRouterRegistry.isKnownType(type);
+                },
+
+                /**
+                 * Listen to $routeDataUpdated event. It is fired whenever data are updated by the router, without
+                 * reloading the view. This occurs as result of calling $dataRouter.reload() method without true parameter.
+                 * <p>
+                 * If you don't provide scope context for the listener, you must unregister it manually using remover function.
+                 *
+                 * @param listener {Function} Listener function.
+                 * @param scope {Object?} Context, in which the listener exists. When given scope is destroyed, listener
+                 *                        is removed as well automatically.
+                 * @returns {Function} Listener remover function.
+                 */
+                onRouteDataUpdated: function onRouteDataUpdated(listener, scope) {
+                    $routeData.onRouteDataUpdated(listener, scope);
                 },
 
                 /**
@@ -487,7 +502,7 @@
                  * @param url {String?} New resource url. Performs location change.
                  * @returns {String} Resource url that is being currently viewed.
                  */
-                url: function (url) {
+                url: function urlFn(url) {
                     // Getter
                     if (arguments.length < 1) {
                         return dataRouter.mapViewToApi($location.path());
@@ -613,7 +628,7 @@
                 }
             };
 
-            $rootScope.$on('$locationChangeSuccess', function () {
+            $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
                 dataRouter.reload(true);
             });
 
@@ -722,6 +737,11 @@
                 if (view && view.dataAs) {
                     locals.$scope = scope;
                     scope[view.dataAs] = current.data;
+
+                    // Listen for changes
+                    $dataRouter.onRouteDataUpdated(function routeDataUpdated(data) {
+                        scope[view.dataAs] = data;
+                    }, scope);
                 }
 
                 link(scope);
