@@ -28,11 +28,12 @@
 
     var module = angular.module('mdvorakDataRouter', []);
 
-    module.factory('$routeData', ["$rootScope", function routeDataFactory($rootScope) {
+    module.factory('$routeData', ["$rootScope", "$injector", function $routeDataFactory($rootScope, $injector) {
         var routeData = $rootScope.$new(true);
+        var dataRouter;
 
         /**
-         * Listen to $routeDataUpdated event. It is fired whenever data are updated by the router, without
+         * Listen to $routeUpdate event. It is fired whenever data are updated by the router, without
          * reloading the view. This occurs as result of calling $dataRouter.reload() method without true parameter.
          * <p>
          * If you don't provide scope context for the listener, you must unregister it manually using remover function.
@@ -43,7 +44,7 @@
          * @returns {Function} Listener remover function.
          */
         routeData.onRouteDataUpdated = function onRouteDataUpdated(listener, scope) {
-            var remover = routeData.$on('$routeDataUpdated', listener);
+            var remover = routeData.$on('$routeUpdate', listener);
 
             // Automatically detach listener
             if (scope) {
@@ -59,10 +60,26 @@
             }
         };
 
+        /**
+         * Reloads the data, without refreshing the view. If the data are successfully loaded,
+         * $routeUpdate event is fired. If it fails, error view is shown.
+         * <p>
+         * Does not allow page refresh via parameter, unlike $dataRouter.reload(boolean).
+         */
+        routeData.reload = function reload() {
+            // Avoid cyclic dependency
+            if (!dataRouter) {
+                dataRouter = $injector.get('$dataRouter', '$routeData');
+            }
+
+            // Reload
+            dataRouter.reload(false);
+        };
+
         return routeData;
     }]);
 
-    module.provider('$dataRouterRegistry', ["$$dataRouterMatchMap", function dataRouterRegistryProvider($$dataRouterMatchMap) {
+    module.provider('$dataRouterRegistry', ["$$dataRouterMatchMap", function $dataRouterRegistryProvider($$dataRouterMatchMap) {
         var provider = this;
         var views = provider.$$views = $$dataRouterMatchMap.create();
 
@@ -114,7 +131,7 @@
         };
 
         // Factory
-        this.$get = function () {
+        this.$get = function $dataRouterRegistryFactory() {
             return {
                 RouteError: RouteError,
                 normalizeMediaType: normalizeMediaType,
@@ -146,15 +163,23 @@
         };
 
         provider.$$normalizeUrl = function $$normalizeUrl(href) {
-            if (href) {
+            if (href === '') {
+                // Special case - browser interprets empty string as current URL, while we need
+                // what it considers a base if no base href is given.
+                // Add /X to the path and then remove it.
+                urlParsingNode.setAttribute("href", 'X');
+                return urlParsingNode.href.replace(/\/X$/, '');
+            } else if (href) {
+                // Normalize thru href property
                 urlParsingNode.setAttribute("href", href);
                 return urlParsingNode.href;
             }
 
+            // Empty
             return null;
         };
 
-        this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
+        this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
             var dataRouterLoader = {
                 RouteError: RouteError,
                 normalizeMediaType: normalizeMediaType,
@@ -295,7 +320,7 @@
         }];
     });
 
-    module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", function dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
+    module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
         var provider = this;
 
         /**
@@ -310,7 +335,7 @@
          * @type {string}
          * @protected
          */
-        provider.$apiPrefix = '';
+        provider.$apiPrefix = $dataRouterLoaderProvider.$$normalizeUrl('');
 
         /**
          * Configures prefix for default view to resource mapping.
@@ -358,6 +383,7 @@
         provider.mapApiToView = function mapApiToView(url) {
             // Normalize
             url = $dataRouterLoaderProvider.$$normalizeUrl(url);
+            window.console.log(url, provider.$apiPrefix);
 
             if (url && url.indexOf(provider.$apiPrefix) === 0) {
                 return url.substring(provider.$apiPrefix.length);
@@ -431,7 +457,7 @@
             return provider;
         };
 
-        this.$get = ["$log", "$location", "$rootScope", "$q", "$routeData", "$dataRouterRegistry", "$dataRouterLoader", function dataRouteFactory($log, $location, $rootScope, $q, $routeData, $dataRouterRegistry, $dataRouterLoader) {
+        this.$get = ["$log", "$location", "$rootScope", "$q", "$routeData", "$dataRouterRegistry", "$dataRouterLoader", function $dataRouterFactory($log, $location, $rootScope, $q, $routeData, $dataRouterRegistry, $dataRouterLoader) {
             var dataRouter = {
                 normalizeMediaType: normalizeMediaType,
 
@@ -482,7 +508,7 @@
                 },
 
                 /**
-                 * Listen to $routeDataUpdated event. It is fired whenever data are updated by the router, without
+                 * Listen to $routeUpdate event. It is fired whenever data are updated by the router, without
                  * reloading the view. This occurs as result of calling $dataRouter.reload() method without true parameter.
                  * <p>
                  * If you don't provide scope context for the listener, you must unregister it manually using remover function.
@@ -519,11 +545,11 @@
 
                 /**
                  * Reloads data at current location. If content type remains same, only data are refreshed,
-                 * and $routeDataUpdated event is invoked on routeData object. If content type differs,
+                 * and $routeUpdate event is invoked on routeData object. If content type differs,
                  * full view refresh is performed (that is, controller is destroyed and recreated).
                  * <p>
                  * If you refresh data, it is recommended to use $routeData object instead of $data injector.
-                 * You should then listen to $routeDataUpdated event on $routeData or $rootScope, to catch the change.<br>
+                 * You should then listen to $routeUpdate event on $routeData or $rootScope, to catch the change.<br>
                  * There is a shortcut for listening to this event, see #onRouteDataUpdated() method.
                  *
                  * @param forceReload {boolean} If true, page is always refreshed (controller recreated). Otherwise only
@@ -560,7 +586,7 @@
 
                                 // Update data
                                 dataRouter.$$updateView(response);
-                                $routeData.$emit('$routeDataUpdated', response.data, response.headers);
+                                $routeData.$emit('$routeUpdate', response.data, response.headers);
                                 return;
                             }
 
@@ -749,46 +775,6 @@
         };
     }]);
 
-    /**
-     * Collection of matchers, both exact and matcher functions.
-     * @constructor
-     */
-    function DataRouterMatchMap() {
-        this.$exact = {};
-        this.$matchers = [];
-
-        this.addMatcher = function (pattern, data) {
-            if (angular.isFunction(pattern)) {
-                this.$matchers.push({
-                    m: pattern,
-                    d: data
-                });
-            } else if (pattern.indexOf('*') > -1) {
-                // Register matcher
-                this.$matchers.push({
-                    m: wildcardMatcherFactory(pattern),
-                    d: data
-                });
-            } else {
-                // Exact match
-                this.$exact[pattern] = data;
-            }
-        };
-
-        this.match = function (s) {
-            // Exact match
-            var data = this.$exact[s], i, matchers;
-            if (data) return data;
-
-            // Iterate matcher functions
-            for (matchers = this.$matchers, i = 0; i < matchers.length; i++) {
-                if (matchers[i].m(s)) {
-                    return matchers[i].d;
-                }
-            }
-        };
-    }
-
     module.directive('apiHref', ["$dataRouter", "$dataRouterLoader", "$location", function ($dataRouter, $dataRouterLoader, $location) {
         return {
             restrict: 'AC',
@@ -849,6 +835,46 @@
             }
         };
     }]);
+
+    /**
+     * Collection of matchers, both exact and matcher functions.
+     * @constructor
+     */
+    function DataRouterMatchMap() {
+        this.$exact = {};
+        this.$matchers = [];
+
+        this.addMatcher = function (pattern, data) {
+            if (angular.isFunction(pattern)) {
+                this.$matchers.push({
+                    m: pattern,
+                    d: data
+                });
+            } else if (pattern.indexOf('*') > -1) {
+                // Register matcher
+                this.$matchers.push({
+                    m: wildcardMatcherFactory(pattern),
+                    d: data
+                });
+            } else {
+                // Exact match
+                this.$exact[pattern] = data;
+            }
+        };
+
+        this.match = function (s) {
+            // Exact match
+            var data = this.$exact[s], i, matchers;
+            if (data) return data;
+
+            // Iterate matcher functions
+            for (matchers = this.$matchers, i = 0; i < matchers.length; i++) {
+                if (matchers[i].m(s)) {
+                    return matchers[i].d;
+                }
+            }
+        };
+    }
 
     module.constant('$$dataRouterMatchMap', {
         create: function create() {
