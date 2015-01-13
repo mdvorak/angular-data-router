@@ -53,7 +53,7 @@
                 return function () {
                     remover();
                     off();
-                }
+                };
             } else {
                 return remover;
             }
