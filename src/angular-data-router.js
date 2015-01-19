@@ -242,7 +242,7 @@
                             }
 
                             // Load template
-                            template = dataRouterLoader.$$loadTemplate(response.view);
+                            template = dataRouterLoader.$$loadTemplate(response.view, response.mediaType);
 
                             if (angular.isDefined(template)) {
                                 locals['$template'] = template;
@@ -277,7 +277,7 @@
 
                     if (view) {
                         $log.debug("Prefetching template for " + mediaType);
-                        dataRouterLoader.$$loadTemplate(view);
+                        dataRouterLoader.$$loadTemplate(view, mediaType);
                     } else {
                         $log.debug("Cannot prefetch template for " + mediaType + ", type is not registered");
                     }
@@ -287,17 +287,17 @@
                     return provider.$$normalizeUrl(href);
                 },
 
-                $$loadTemplate: function loadTemplate(view) {
+                $$loadTemplate: function loadTemplate(view, mediaType) {
                     // Ripped from ngRoute
                     var template, templateUrl;
 
                     if (angular.isDefined(template = view.template)) {
                         if (angular.isFunction(template)) {
-                            template = template(view.params);
+                            template = template(mediaType);
                         }
                     } else if (angular.isDefined(templateUrl = view.templateUrl)) {
                         if (angular.isFunction(templateUrl)) {
-                            templateUrl = templateUrl(view.params);
+                            templateUrl = templateUrl(mediaType);
                         }
 
                         templateUrl = view.loadedTemplateUrl || $sce.getTrustedResourceUrl(templateUrl);
