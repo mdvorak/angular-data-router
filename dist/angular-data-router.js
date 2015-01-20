@@ -627,7 +627,17 @@
                             dataRouter.current = response;
 
                             // Show view
-                            dataRouter.$$setView(response);
+                            $log.debug("Setting view to " + response.mediaType);
+
+                            // Update view data
+                            dataRouter.$$updateView(response);
+
+                            // Emit event
+                            if (response.mediaType !== '$error') {
+                                $rootScope.$emit('$routeChangeSuccess', response);
+                            } else {
+                                $rootScope.$emit('$routeChangeError', response);
+                            }
                         }
                     }
 
@@ -641,21 +651,6 @@
                     $routeData.type = response.mediaType;
                     $routeData.url = response.config.url;
                     $routeData.headers = response.headers;
-                },
-
-                /**
-                 * Performs the view reload.
-                 *
-                 * @param response {Object} Next view config.
-                 */
-                $$setView: function $$setView(response) {
-                    $log.debug("Setting view to " + response.mediaType);
-
-                    // Update view data
-                    dataRouter.$$updateView(response);
-
-                    // Emit event
-                    $rootScope.$emit('$routeChangeSuccess', response);
                 }
             };
 
