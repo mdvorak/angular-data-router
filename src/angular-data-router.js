@@ -383,7 +383,6 @@
         provider.mapApiToView = function mapApiToView(url) {
             // Normalize
             url = $dataRouterLoaderProvider.$$normalizeUrl(url);
-            window.console.log(url, provider.$apiPrefix);
 
             if (url && url.indexOf(provider.$apiPrefix) === 0) {
                 return url.substring(provider.$apiPrefix.length);
