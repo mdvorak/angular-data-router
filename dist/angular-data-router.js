@@ -203,7 +203,7 @@
                         }
 
                         // Success
-                        return {
+                        var result = {
                             status: response.status,
                             statusText: response.statusText,
                             headers: response.headers,
@@ -212,6 +212,12 @@
                             data: response.data,
                             view: view
                         };
+
+                        if (view.transformResponse) {
+                            return view.transformResponse(result);
+                        } else {
+                            return result;
+                        }
                     });
                 },
 
@@ -383,7 +389,6 @@
         provider.mapApiToView = function mapApiToView(url) {
             // Normalize
             url = $dataRouterLoaderProvider.$$normalizeUrl(url);
-            window.console.log(url, provider.$apiPrefix);
 
             if (url && url.indexOf(provider.$apiPrefix) === 0) {
                 return url.substring(provider.$apiPrefix.length);
