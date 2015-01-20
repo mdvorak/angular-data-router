@@ -659,6 +659,14 @@
                 }
             };
 
+            $rootScope.$on('$locationChangeStart', function locationChangeStart($locationEvent) {
+                if ($rootScope.$broadcast('$routeChangeStart').defaultPrevented) {
+                    if ($locationEvent) {
+                        $locationEvent.preventDefault();
+                    }
+                }
+            });
+
             $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
                 dataRouter.reload(true);
             });
