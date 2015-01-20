@@ -676,7 +676,7 @@
             link: function (scope, $element, attr, ctrl, $transclude) {
                 var currentScope,
                     currentElement,
-                    previousElement,
+                    previousLeaveAnimation,
                     autoScrollExp = attr.autoscroll,
                     onloadExp = attr.onload || '';
 
@@ -684,19 +684,20 @@
                 update();
 
                 function cleanupLastView() {
-                    if (previousElement) {
-                        previousElement.remove();
-                        previousElement = null;
+                    if (previousLeaveAnimation) {
+                        $animate.cancel(previousLeaveAnimation);
+                        previousLeaveAnimation = null;
                     }
+
                     if (currentScope) {
                         currentScope.$destroy();
                         currentScope = null;
                     }
                     if (currentElement) {
-                        $animate.leave(currentElement, function () {
-                            previousElement = null;
+                        previousLeaveAnimation = $animate.leave(currentElement);
+                        previousLeaveAnimation.then(function () {
+                            previousLeaveAnimation = null;
                         });
-                        previousElement = currentElement;
                         currentElement = null;
                     }
                 }
@@ -716,7 +717,7 @@
                         // function is called before linking the content, which would apply child
                         // directives to non existing elements.
                         currentElement = $transclude(newScope, function (clone) {
-                            $animate.enter(clone, null, currentElement || $element, function onNgViewEnter() {
+                            $animate.enter(clone, null, currentElement || $element).then(function onNgViewEnter() {
                                 if (angular.isDefined(autoScrollExp) && (!autoScrollExp || scope.$eval(autoScrollExp))) {
                                     $anchorScroll();
                                 }
