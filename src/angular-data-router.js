@@ -611,7 +611,7 @@
                         if (dataRouter.next === next) {
                             // Show error view
                             $log.error("Failed to load view or data and no error view defined", response);
-                            $rootScope.$emit('$routeChangeFailed');
+                            $rootScope.$emit('$routeChangeFailed', response);
                         }
                     });
 
@@ -650,7 +650,7 @@
                     dataRouter.$$updateView(response);
 
                     // Emit event
-                    $rootScope.$emit('$routeChangeSuccess');
+                    $rootScope.$emit('$routeChangeSuccess', response);
                 }
             };
 
