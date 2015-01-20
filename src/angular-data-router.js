@@ -203,7 +203,7 @@
                         }
 
                         // Success
-                        return {
+                        var result = {
                             status: response.status,
                             statusText: response.statusText,
                             headers: response.headers,
@@ -212,6 +212,12 @@
                             data: response.data,
                             view: view
                         };
+
+                        if (view.transformResponse) {
+                            return view.transformResponse(result);
+                        } else {
+                            return result;
+                        }
                     });
                 },
 
