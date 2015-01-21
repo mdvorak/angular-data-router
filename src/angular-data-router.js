@@ -837,7 +837,14 @@
                     var forceReload = attr.reload ? scope.$eval(attr.reload) : true;
 
                     var next = attr.next = {};
-                    $dataRouterLoader.prepareView(href, scope.$dataCurrent, forceReload).then(update, update);
+
+                    if (href) {
+                        // Load data
+                        $dataRouterLoader.prepareView(href, scope.$dataCurrent, forceReload).then(update, update);
+                    } else {
+                        // Reset
+                        update();
+                    }
 
                     function update(response) {
                         if (next === attr.next) {
@@ -848,12 +855,12 @@
                             // TODO support soft data reload
 
                             // Show view
-                            $log.debug("Setting fragment view for " + response.mediaType);
-
                             var locals = response && response.locals,
                                 template = locals && locals.$template;
 
                             if (angular.isDefined(template)) {
+                                $log.debug("Setting fragment view to " + response.mediaType);
+
                                 var newScope = scope.$new();
 
                                 // Note: This will also link all children of ng-view that were contained in the original
@@ -870,6 +877,7 @@
                                 currentScope = response.scope = newScope;
                                 currentScope.$eval(onloadExp);
                             } else {
+                                $log.debug("Resetting fragment view, got no response");
                                 cleanupLastView();
                             }
                         }
