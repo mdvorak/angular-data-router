@@ -215,7 +215,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              *                        is removed automatically as well.
              * @returns {Function} Listener remover function.
              */
-            onRouteDataUpdated: function onRouteDataUpdated(listener, scope) {
+            onRouteUpdate: function onRouteUpdate(listener, scope) {
                 var remover = $rootScope.$on('$routeUpdate', listener);
 
                 // Automatically detach listener
@@ -259,7 +259,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              * full view refresh is performed (that is, controller is destroyed and recreated).
              * <p>
              * If you refresh data, you must listen to the $routeUpdate event on $rootScope, to be notified of the change.<br>
-             * There is a shortcut for listening to this event, see #onRouteDataUpdated() method.
+             * There is a shortcut for listening to this event, see #onRouteUpdate() method.
              *
              * @param forceReload {boolean} If true, page is always refreshed (controller recreated). Otherwise only
              *                              when needed.
