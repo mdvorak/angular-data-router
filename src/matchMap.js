@@ -1,5 +1,12 @@
 "use strict";
 
+// Note: It is constant so it can be used during config phase
+module.constant('$$dataRouterMatchMap', {
+    create: function create() {
+        return new DataRouterMatchMap();
+    }
+});
+
 /**
  * Collection of matchers, both exact and matcher functions.
  * @constructor
@@ -38,26 +45,20 @@ function DataRouterMatchMap() {
             }
         }
     };
-}
 
-module.constant('$$dataRouterMatchMap', {
-    create: function create() {
-        return new DataRouterMatchMap();
+    // Helper functions
+    function wildcardMatcherFactory(wildcard) {
+        var pattern = new RegExp('^' + wildcardToRegex(wildcard) + '$');
+
+        // Register matcher
+        return function wildcardMatcher(s) {
+            return pattern.test(s);
+        };
     }
-});
 
-// Helper functions
-function wildcardMatcherFactory(wildcard) {
-    var pattern = new RegExp('^' + wildcardToRegex(wildcard) + '$');
-
-    // Register matcher
-    return function wildcardMatcher(s) {
-        return pattern.test(s);
-    };
-}
-
-function wildcardToRegex(s) {
-    return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1')
-        .replace(/\x08/g, '\\x08')
-        .replace(/[*]+/, '.*');
+    function wildcardToRegex(s) {
+        return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1')
+            .replace(/\x08/g, '\\x08')
+            .replace(/[*]+/, '.*');
+    }
 }

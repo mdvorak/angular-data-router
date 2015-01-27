@@ -138,6 +138,13 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
     this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader) {
         var $dataRouter = {
+            /**
+             * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+             * just subtype.
+             *
+             * @param mimeType {String} Media type to match.
+             * @returns {String} Normalized media type.
+             */
             normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
             /**
@@ -304,6 +311,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
             }
         };
 
+        // Broadcast $routeChangeStart and cancel location change if it is prevented
         $rootScope.$on('$locationChangeStart', function locationChangeStart($locationEvent) {
             if ($rootScope.$broadcast('$routeChangeStart').defaultPrevented) {
                 if ($locationEvent) {
@@ -312,6 +320,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
             }
         });
 
+        // Reload view on location change
         $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
             $dataRouter.reload(true);
         });

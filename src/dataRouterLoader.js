@@ -5,6 +5,12 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     // Intentionally using document object instead of $document
     var urlParsingNode = document.createElement("a");
 
+    /**
+     * Sets global configuration for all routes.
+     *
+     * @param config {Object} Configuration object. Currently only "resolve" key is supported.
+     * @returns {dataRouterLoaderProvider} Reference to self.
+     */
     provider.global = function global(config) {
         if (!config) return;
 
@@ -15,6 +21,12 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         return provider;
     };
 
+    /**
+     * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
+     *
+     * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
+     * @returns {String} Normalized URL, including full hostname.
+     */
     provider.$$normalizeUrl = function $$normalizeUrl(href) {
         if (href === '') {
             // Special case - browser interprets empty string as current URL, while we need
@@ -34,19 +46,52 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
     this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
         var $dataRouterLoader = {
+            /**
+             * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+             * just subtype.
+             *
+             * @param mimeType {String} Media type to match.
+             * @returns {String} Normalized media type.
+             */
             normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
+            /**
+             * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
+             *
+             * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
+             * @returns {String} Normalized URL, including full hostname.
+             */
+            normalizeUrl: function normalizeUrl(href) {
+                return provider.$$normalizeUrl(href);
+            },
+
+            /**
+             * Eagerly fetches the template for the given media type. If media type is unknown, nothing happens.
+             * This method returns immediately, no promise is returned.
+             *
+             * @param mediaType {String} Media type for which we want to prefetch the template.
+             */
             prefetchTemplate: function prefetchTemplate(mediaType) {
                 var view = $dataRouterRegistry.match(mediaType);
 
                 if (view) {
-                    $log.debug("Prefetching template for " + mediaType);
+                    $log.debug("Pre-fetching template for " + mediaType);
                     $dataRouterLoader.$$loadTemplate(view, mediaType);
                 } else {
                     $log.debug("Cannot prefetch template for " + mediaType + ", type is not registered");
                 }
             },
 
+            /**
+             * Prepares the view to be displayed. Loads data from given URL, resolves view by its content type,
+             * and then finally resolves template and all other resolvables.
+             *
+             * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
+             * @param current {Object?} Current response data. If provided and forceReload is false, $routeDataUpdate flag
+             *                          of the response may be set, indicating that view doesn't have to be reloaded.
+             * @param forceReload {boolean?} Set to false to allow just data update. Without current parameter does nothing.
+             * @returns {Object} Promise of completely initialized response, including template and locals.
+             */
             prepareView: function prepareView(url, current, forceReload) {
                 // Load data and view
                 return $dataRouterLoader.$$loadData(url)
@@ -133,16 +178,6 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         return result;
                     }
                 });
-            },
-
-            /**
-             * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
-             *
-             * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
-             * @returns {String} Normalized URL, including full hostname.
-             */
-            normalizeUrl: function normalizeUrl(href) {
-                return provider.$$normalizeUrl(href);
             },
 
             /**
