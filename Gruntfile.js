@@ -10,11 +10,12 @@ module.exports = function (grunt) {
             demo: 'demo',
             build: 'build',
             dist: 'dist',
+            docs: 'docs',
             bower: 'bower_components'
         },
         clean: {
             build: ['<%=cfg.build%>'],
-            dist: ['<%=cfg.dist%>'],
+            dist: ['<%=cfg.dist%>', '<%=cfg.docs%>'],
             tmp: ['<%=cfg.build%>/bundle.js']
         },
 
@@ -215,7 +216,8 @@ module.exports = function (grunt) {
                 },
                 files: {
                     src: [
-                        '<%=cfg.dist%>/**'
+                        '<%=cfg.dist%>/**',
+                        '<%=cfg.docs%>/**'
                     ]
                 }
             }
@@ -225,6 +227,18 @@ module.exports = function (grunt) {
                 pushTo: 'origin',
                 commitMessage: '[release v%VERSION%]',
                 commitFiles: ['package.json', 'dist/**']
+            }
+        },
+
+        // Docs
+        ngdocs: {
+            options: {
+                dest: 'docs',
+                html5Mode: false
+            },
+            api: {
+                src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/**/*.spec.js'],
+                title: 'DataRouter Documentation'
             }
         },
 
@@ -238,6 +252,14 @@ module.exports = function (grunt) {
                     '<%=cfg.build%>/demo/demo.css': '<%=cfg.demo%>/demo.less'
                 }
             }
+        },
+        connect: {
+            docs: {
+                options: {
+                    hostname: 'localhost',
+                    port: 9000
+                }
+            }
         }
     });
 
@@ -247,7 +269,7 @@ module.exports = function (grunt) {
     // Public tasks
     grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'clean:tmp', 'jshint:test', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
-    grunt.registerTask('demo', ['jshint:demo', 'less:demo']); // TODO
+    grunt.registerTask('demo', ['jshint:demo', 'less:demo', 'connect:server']);
 
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
     grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);

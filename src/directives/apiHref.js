@@ -1,5 +1,21 @@
 "use strict";
 
+/**
+ * @ngdoc directive
+ * @name mdvorakDataRouter:apiHref
+ * @element a
+ * @function
+ *
+ * @description
+ * Translates api URL into view URL.
+ *
+ * @example
+ <example module="mdvorakDataRouter">
+ <file name="index.html">
+ <a api-href="api/users/12347">User Detail</a>
+ </file>
+ </example>
+ */
 module.directive('apiHref', function apiHrefFactory($dataRouter, $dataRouterLoader, $location) {
     return {
         restrict: 'AC',
