@@ -124,6 +124,10 @@ module.directive('datafragment', function datafragmentFillContentFactory($compil
             if (view && view.dataAs) {
                 locals.$scope = scope;
                 scope[view.dataAs] = current.data;
+
+                current.on('$routeUpdate', function routeDataUpdated(data) {
+                    scope[view.dataAs] = data;
+                }, scope);
             }
 
             link(scope);

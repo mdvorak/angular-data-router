@@ -135,7 +135,6 @@
         };
     }]);
 
-
     module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         var provider = this;
         // Intentionally using document object instead of $document
@@ -183,6 +182,11 @@
         this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
             var $dataRouterLoader = {
                 /**
+                 * RouteData class.
+                 */
+                RouteData: RouteData,
+
+                /**
                  * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
                  * just subtype.
                  *
@@ -225,7 +229,7 @@
                  * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
                  * @param current {Object?} Current response data. If provided and forceReload is false, $routeDataUpdate flag
                  *                          of the response may be set, indicating that view doesn't have to be reloaded.
-                 * @param forceReload {boolean?} Set to false to allow just data update. Without current parameter does nothing.
+                 * @param forceReload {boolean?} When false, it allows just data update. Without current parameter does nothing.
                  * @returns {Object} Promise of completely initialized response, including template and locals.
                  */
                 prepareView: function prepareView(url, current, forceReload) {
@@ -245,11 +249,11 @@
 
                             // Update data
                             response.$routeDataUpdate = true;
-                            return response;
+                            return asRouteData(response);
                         }
 
                         // Load view
-                        return $dataRouterLoader.$$loadView(response);
+                        return $dataRouterLoader.$$loadView(response).then(asRouteData);
                     }
 
                     function loadError(response) {
@@ -259,14 +263,18 @@
                         response.$routeError = true;
 
                         if (response.view) {
-                            return $dataRouterLoader.$$loadView(response);
+                            return $dataRouterLoader.$$loadView(response).then(asRouteData);
                         } else {
-                            return $q.reject(response);
+                            return $q.reject(asRouteData(response));
                         }
                     }
 
                     function isSameView(current, next) {
                         return current && next && current.url === next.url && current.mediaType === next.mediaType;
+                    }
+
+                    function asRouteData(response) {
+                        return new RouteData(response);
                     }
                 },
 
@@ -303,12 +311,12 @@
                             headers: response.headers,
                             config: response.config,
                             mediaType: mediaType,
-                            originalData: response.data,
                             data: response.data,
                             view: view
                         };
 
                         if (view.transformResponse) {
+                            result.originalData = response.data;
                             return view.transformResponse(result);
                         } else {
                             return result;
@@ -411,6 +419,78 @@
 
             return $dataRouterLoader;
         }];
+
+        // RouteData class
+        // TODO this should be in standalone file probably
+        function RouteData(data) {
+            angular.extend(this, data);
+
+            this.$$nextUid = 1;
+            this.$$routeUpdateListeners = {};
+        }
+
+        RouteData.prototype = {
+            constructor: RouteData,
+
+            on: function on(name, listener, scope) {
+                if (listener) {
+                    if (name === "$routeUpdate") {
+                        // Register listener
+                        return addListener(this.$$routeUpdateListeners, this.$$nextUid++, listener, scope);
+                    }
+
+                    // Ignore everything else
+                }
+
+                return angular.noop;
+            },
+
+            $$broadcast: function $$broadcast(name, args, $exceptionHandler) {
+                if (name === "$routeUpdate") {
+                    var event = {
+                        name: name,
+                        preventDefault: function preventDefault() {
+                            event.defaultPrevented = true;
+                        },
+                        defaultPrevented: false
+                    };
+
+                    // Prepend event
+                    args = [event].concat(args);
+
+                    // Fire
+                    angular.forEach(this.$$routeUpdateListeners, function routeUpdateBroadcast(listener) {
+                        try {
+                            listener.apply(null, args);
+                        } catch (e) {
+                            $exceptionHandler(e);
+                        }
+                    });
+                }
+            }
+        };
+
+        function addListener(map, uid, listener, scope) {
+            map[uid] = listener;
+
+            // Remove function
+            function listenerRemover() {
+                delete map[uid];
+            }
+
+            // If there is scope, register for destroy
+            if (scope) {
+                var destroyRemove = scope.$on('$destroy', listenerRemover);
+
+                return function combinedRemover() {
+                    listenerRemover();
+                    destroyRemove();
+                };
+            } else {
+                // Return remover
+                return listenerRemover;
+            }
+        }
     });
 
     module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
@@ -549,7 +629,7 @@
             return provider;
         };
 
-        this.$get = ["$log", "$location", "$rootScope", "$q", "$dataRouterRegistry", "$dataRouterLoader", function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader) {
+        this.$get = ["$log", "$location", "$rootScope", "$q", "$exceptionHandler", "$dataRouterRegistry", "$dataRouterLoader", function $dataRouterFactory($log, $location, $rootScope, $q, $exceptionHandler, $dataRouterRegistry, $dataRouterLoader) {
             $log.debug("Using api prefix " + provider.$apiPrefix);
 
             var $dataRouter = {
@@ -618,34 +698,6 @@
                 },
 
                 /**
-                 * Listen to $routeUpdate event. It is fired whenever data are updated by the router, without
-                 * reloading the view. This occurs as result of calling $dataRouter.reload() method without true parameter.
-                 * <p>
-                 * If you don't provide scope context for the listener, you must unregister it manually using remover function.
-                 *
-                 * @param listener {Function} Listener function.
-                 * @param scope {Object?} Context, in which the listener exists. When given scope is destroyed, listener
-                 *                        is removed automatically as well.
-                 * @returns {Function} Listener remover function.
-                 */
-                onRouteDataUpdated: function onRouteDataUpdated(listener, scope) {
-                    var remover = $rootScope.$on('$routeUpdate', listener);
-
-                    // Automatically detach listener
-                    if (scope) {
-                        var off = scope.$on('$destroy', remover);
-
-                        // Stop listening to $destroy event as well
-                        return function combinedRemover() {
-                            off();
-                            remover();
-                        };
-                    } else {
-                        return remover;
-                    }
-                },
-
-                /**
                  * Gets or sets current view resource url.
                  *
                  * @param url {String?} New resource url. Performs location change.
@@ -668,14 +720,13 @@
 
                 /**
                  * Reloads data at current location. If content type remains same, only data are refreshed,
-                 * and $routeUpdate event is invoked on routeData object. If content type differs,
+                 * and $routeUpdate event is invoked on $dataResponse object. If content type differs,
                  * full view refresh is performed (that is, controller is destroyed and recreated).
                  * <p>
-                 * If you refresh data, you must listen to the $routeUpdate event on $rootScope, to be notified of the change.<br>
-                 * There is a shortcut for listening to this event, see #onRouteDataUpdated() method.
+                 * If you refresh data, you must listen to the $routeUpdate event on $dataResponse object to be notified of the change.
                  *
-                 * @param forceReload {boolean} If true, page is always refreshed (controller recreated). Otherwise only
-                 *                              when needed.
+                 * @param forceReload {boolean?} If true, page is always refreshed (controller recreated). Otherwise only
+                 *                               when needed.
                  */
                 reload: function reload(forceReload) {
                     var path = $location.path() || '/';
@@ -701,19 +752,23 @@
                     // Promise resolutions
                     function showView(response) {
                         if ($dataRouter.next === next) {
-                            // Update current
+                            // Remove marker
                             $dataRouter.next = undefined;
-                            $dataRouter.current = response;
 
                             // Update view data
-                            if (response.$routeDataUpdate) {
+                            if (response.$routeDataUpdate && $dataRouter.current) {
                                 $log.debug("Replacing current data");
 
-                                // Emit specific event
-                                $rootScope.$emit('$routeUpdate', response);
+                                // Update current
+                                angular.extend($dataRouter.current, response);
+
+                                // Fire event on the response (only safe way for both main view and fragments)
+                                $dataRouter.current.$$broadcast('$routeUpdate', [response], $exceptionHandler);
                             } else {
-                                // Show view
                                 $log.debug("Setting view to " + response.mediaType);
+
+                                // Set current
+                                $dataRouter.current = response;
 
                                 // Emit event
                                 $rootScope.$emit('$routeChangeSuccess', response);
@@ -729,7 +784,7 @@
 
                             // Show error view
                             $log.error("Failed to load view or data and no error view defined", response);
-                            $rootScope.$emit('$routeChangeFailed', response);
+                            $rootScope.$emit('$routeChangeError', response);
                         }
                     }
                 }
@@ -828,7 +883,6 @@
     RouteError.prototype.name = 'RouteError';
     RouteError.prototype.constructor = RouteError;
 
-
     /**
      * @ngdoc directive
      * @name mdvorakDataRouter:apiHref
@@ -924,6 +978,10 @@
                     previousLeaveAnimation,
                     onloadExp = attr.onload || '';
 
+                // Store context
+                var context = scope.$$dataRouterCtx = {};
+
+                // Watch for href changes
                 scope.$watch(hrefExp, updateHref);
 
                 function cleanupLastView() {
@@ -952,7 +1010,7 @@
 
                     if (href) {
                         // Load data
-                        $dataRouterLoader.prepareView(href, scope.$dataCurrent, forceReload).then(update, update);
+                        $dataRouterLoader.prepareView(href, context.current, forceReload).then(update, update);
                     } else {
                         // Reset
                         update();
@@ -961,10 +1019,8 @@
                     function update(response) {
                         if (next === attr.next) {
                             // Update current
-                            scope.$dataCurrent = response;
+                            context.current = response;
                             attr.next = undefined;
-
-                            // TODO support soft data reload
 
                             // Show view
                             var locals = response && response.locals,
@@ -1009,7 +1065,8 @@
             restrict: 'ECA',
             priority: -400,
             link: function datafragmentFillContentLink(scope, $element) {
-                var current = scope.$dataCurrent;
+                var context = scope.$$dataRouterCtx; // Get context
+                var current = context.current;
                 var view = current.view;
                 var locals = current.locals;
 
@@ -1033,16 +1090,9 @@
                     locals.$scope = scope;
                     scope[view.dataAs] = current.data;
 
-                    // Listen for changes
-                    // TODO We need to create better abstraction for $routeData, which will be specific
-                    // TODO for given view, no matter whether main route or fragment, and usable by views controller.
-                    // TODO Methods like reload and url should be available there.
-                    // TODO Also consider, whether we want to support this, since it would create something like
-                    // TODO iframe. All links etc would be content relative.. It gets quite complex from there.
-                    // TODO But data update NEEDS to be supported.
-                    //$dataRouter.onRouteDataUpdated(function routeDataUpdated(data) {
-                    //    scope[view.dataAs] = data;
-                    //}, scope);
+                    current.on('$routeUpdate', function routeDataUpdated(data) {
+                        scope[view.dataAs] = data;
+                    }, scope);
                 }
 
                 link(scope);
@@ -1154,7 +1204,7 @@
                     scope[view.dataAs] = current.data;
 
                     // Listen for changes
-                    $dataRouter.onRouteDataUpdated(function routeDataUpdated(data) {
+                    current.on('$routeUpdate', function routeDataUpdated(data) {
                         scope[view.dataAs] = data;
                     }, scope);
                 }

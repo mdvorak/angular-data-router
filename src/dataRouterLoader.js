@@ -47,6 +47,11 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
         var $dataRouterLoader = {
             /**
+             * RouteData class.
+             */
+            RouteData: RouteData,
+
+            /**
              * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
              * just subtype.
              *
@@ -89,7 +94,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
              * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
              * @param current {Object?} Current response data. If provided and forceReload is false, $routeDataUpdate flag
              *                          of the response may be set, indicating that view doesn't have to be reloaded.
-             * @param forceReload {boolean?} Set to false to allow just data update. Without current parameter does nothing.
+             * @param forceReload {boolean?} When false, it allows just data update. Without current parameter does nothing.
              * @returns {Object} Promise of completely initialized response, including template and locals.
              */
             prepareView: function prepareView(url, current, forceReload) {
@@ -109,11 +114,11 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                         // Update data
                         response.$routeDataUpdate = true;
-                        return response;
+                        return asRouteData(response);
                     }
 
                     // Load view
-                    return $dataRouterLoader.$$loadView(response);
+                    return $dataRouterLoader.$$loadView(response).then(asRouteData);
                 }
 
                 function loadError(response) {
@@ -123,14 +128,18 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     response.$routeError = true;
 
                     if (response.view) {
-                        return $dataRouterLoader.$$loadView(response);
+                        return $dataRouterLoader.$$loadView(response).then(asRouteData);
                     } else {
-                        return $q.reject(response);
+                        return $q.reject(asRouteData(response));
                     }
                 }
 
                 function isSameView(current, next) {
                     return current && next && current.url === next.url && current.mediaType === next.mediaType;
+                }
+
+                function asRouteData(response) {
+                    return new RouteData(response);
                 }
             },
 
@@ -167,12 +176,12 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         headers: response.headers,
                         config: response.config,
                         mediaType: mediaType,
-                        originalData: response.data,
                         data: response.data,
                         view: view
                     };
 
                     if (view.transformResponse) {
+                        result.originalData = response.data;
                         return view.transformResponse(result);
                     } else {
                         return result;
@@ -275,4 +284,76 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
         return $dataRouterLoader;
     };
+
+    // RouteData class
+    // TODO this should be in standalone file probably
+    function RouteData(data) {
+        angular.extend(this, data);
+
+        this.$$nextUid = 1;
+        this.$$routeUpdateListeners = {};
+    }
+
+    RouteData.prototype = {
+        constructor: RouteData,
+
+        on: function on(name, listener, scope) {
+            if (listener) {
+                if (name === "$routeUpdate") {
+                    // Register listener
+                    return addListener(this.$$routeUpdateListeners, this.$$nextUid++, listener, scope);
+                }
+
+                // Ignore everything else
+            }
+
+            return angular.noop;
+        },
+
+        $$broadcast: function $$broadcast(name, args, $exceptionHandler) {
+            if (name === "$routeUpdate") {
+                var event = {
+                    name: name,
+                    preventDefault: function preventDefault() {
+                        event.defaultPrevented = true;
+                    },
+                    defaultPrevented: false
+                };
+
+                // Prepend event
+                args = [event].concat(args);
+
+                // Fire
+                angular.forEach(this.$$routeUpdateListeners, function routeUpdateBroadcast(listener) {
+                    try {
+                        listener.apply(null, args);
+                    } catch (e) {
+                        $exceptionHandler(e);
+                    }
+                });
+            }
+        }
+    };
+
+    function addListener(map, uid, listener, scope) {
+        map[uid] = listener;
+
+        // Remove function
+        function listenerRemover() {
+            delete map[uid];
+        }
+
+        // If there is scope, register for destroy
+        if (scope) {
+            var destroyRemove = scope.$on('$destroy', listenerRemover);
+
+            return function combinedRemover() {
+                listenerRemover();
+                destroyRemove();
+            };
+        } else {
+            // Return remover
+            return listenerRemover;
+        }
+    }
 });

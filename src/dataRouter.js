@@ -158,7 +158,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
         return provider;
     };
 
-    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader) {
+    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $exceptionHandler, $dataRouterRegistry, $dataRouterLoader) {
         $log.debug("Using api prefix " + provider.$apiPrefix);
 
         var $dataRouter = {
@@ -227,34 +227,6 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
             },
 
             /**
-             * Listen to $routeUpdate event. It is fired whenever data are updated by the router, without
-             * reloading the view. This occurs as result of calling $dataRouter.reload() method without true parameter.
-             * <p>
-             * If you don't provide scope context for the listener, you must unregister it manually using remover function.
-             *
-             * @param listener {Function} Listener function.
-             * @param scope {Object?} Context, in which the listener exists. When given scope is destroyed, listener
-             *                        is removed automatically as well.
-             * @returns {Function} Listener remover function.
-             */
-            onRouteUpdate: function onRouteUpdate(listener, scope) {
-                var remover = $rootScope.$on('$routeUpdate', listener);
-
-                // Automatically detach listener
-                if (scope) {
-                    var off = scope.$on('$destroy', remover);
-
-                    // Stop listening to $destroy event as well
-                    return function combinedRemover() {
-                        off();
-                        remover();
-                    };
-                } else {
-                    return remover;
-                }
-            },
-
-            /**
              * Gets or sets current view resource url.
              *
              * @param url {String?} New resource url. Performs location change.
@@ -277,14 +249,13 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
             /**
              * Reloads data at current location. If content type remains same, only data are refreshed,
-             * and $routeUpdate event is invoked on routeData object. If content type differs,
+             * and $routeUpdate event is invoked on $dataResponse object. If content type differs,
              * full view refresh is performed (that is, controller is destroyed and recreated).
              * <p>
-             * If you refresh data, you must listen to the $routeUpdate event on $rootScope, to be notified of the change.<br>
-             * There is a shortcut for listening to this event, see #onRouteUpdate() method.
+             * If you refresh data, you must listen to the $routeUpdate event on $dataResponse object to be notified of the change.
              *
-             * @param forceReload {boolean} If true, page is always refreshed (controller recreated). Otherwise only
-             *                              when needed.
+             * @param forceReload {boolean?} If true, page is always refreshed (controller recreated). Otherwise only
+             *                               when needed.
              */
             reload: function reload(forceReload) {
                 var path = $location.path() || '/';
@@ -320,8 +291,8 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                             // Update current
                             angular.extend($dataRouter.current, response);
 
-                            // Broadcast specific event
-                            $rootScope.$broadcast('$routeUpdate', response);
+                            // Fire event on the response (only safe way for both main view and fragments)
+                            $dataRouter.current.$$broadcast('$routeUpdate', [response], $exceptionHandler);
                         } else {
                             $log.debug("Setting view to " + response.mediaType);
 

@@ -104,7 +104,7 @@ module.directive('dataview', function dataviewFillContentFactory($compile, $cont
                 scope[view.dataAs] = current.data;
 
                 // Listen for changes
-                $dataRouter.onRouteUpdate(function routeDataUpdated(data) {
+                current.on('$routeUpdate', function routeDataUpdated(data) {
                     scope[view.dataAs] = data;
                 }, scope);
             }
