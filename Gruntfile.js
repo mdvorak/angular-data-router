@@ -6,7 +6,6 @@ module.exports = function (grunt) {
     grunt.initConfig({
         cfg: {
             src: 'src',
-            test: 'test',
             demo: 'demo',
             build: 'build',
             dist: 'dist',
@@ -49,7 +48,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/module.js']
+                    src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/module.js', '!<%=cfg.src%>/**/*.specs.js']
                 }
             },
             bundle: {
@@ -93,7 +92,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    src: ['<%=cfg.test%>/**/*.js']
+                    src: ['<%=cfg.src%>/**/*.specs.js']
                 }
             }
         },
@@ -121,7 +120,8 @@ module.exports = function (grunt) {
                             '<%=cfg.src%>/dataRouter.js',
                             '<%=cfg.src%>/matchMap.js',
                             '<%=cfg.src%>/routeError.js',
-                            '<%=cfg.src%>/directives/**/*.js'
+                            '<%=cfg.src%>/directives/**/*.js',
+                            '!<%=cfg.src%>/**/*.specs.js'
                         ]
                     }
                 ]
@@ -174,7 +174,7 @@ module.exports = function (grunt) {
                     '<%=cfg.build%>/dist/angular-data-router.js',
 
                     // Tests
-                    '<%=cfg.test%>/**/*.specs.js'
+                    '<%=cfg.src%>/**/*.specs.js'
                 ],
                 plugins: [
                     'karma-jasmine',
@@ -254,10 +254,11 @@ module.exports = function (grunt) {
             }
         },
         connect: {
-            docs: {
+            server: {
                 options: {
                     hostname: 'localhost',
-                    port: 9000
+                    port: 9000,
+                    base: ['build', 'docs']
                 }
             }
         }
