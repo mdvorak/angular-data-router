@@ -1,6 +1,6 @@
 "use strict";
 
-describe("angular-data-route", function () {
+describe("mdvorakDataRouter", function () {
     describe('hashbang mode', function () {
         // Module
         beforeEach(module('ng', function ($locationProvider) {
