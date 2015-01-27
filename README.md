@@ -5,14 +5,14 @@ angular-data-router
 it displays configured view. From there, its very similar to original angular router.
 
 Installation
-============
+------------
 
 Either download and include `dist/` file in your project, or use bower:
 
     bower install angular-data-router --save
 
 Configuration
-=============
+-------------
 
 Both HTML 5 mode and hashbang are supported, use `$locationProvider` for configuration.
 
@@ -45,7 +45,7 @@ angular.module('example', ['mdvorakDataRouter'])
 ```
 
 Controller
-==========
+----------
 
 There are several special locals provided to your controllers, that represent current data.
 
