@@ -297,7 +297,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                             $log.debug("Replacing current data");
 
                             // Emit specific event
-                            $rootScope.$emit('$routeUpdate', response);
+                            $rootScope.$broadcast('$routeUpdate', response);
                         } else {
                             // Show view
                             $log.debug("Setting view to " + response.mediaType);
