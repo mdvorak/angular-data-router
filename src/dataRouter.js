@@ -316,7 +316,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
                         // Show error view
                         $log.error("Failed to load view or data and no error view defined", response);
-                        $rootScope.$emit('$routeChangeFailed', response);
+                        $rootScope.$emit('$routeChangeError', response);
                     }
                 }
             }

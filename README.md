@@ -15,7 +15,7 @@ It supports wildcards like `text/*` and function matchers as well, which are eva
 are evaluated until one is found.
 
 If the media type is not supported, error view is shown. It is strongly recommended to configure error view, otherwise
-only `$routeChangeFailed` event is fired and nothing else happens.
+only `$routeChangeError` event is fired and nothing else happens.
 
 ```javascript
 angular.module('example', ['mdvorakDataRouter'])
