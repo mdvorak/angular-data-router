@@ -179,11 +179,11 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
             /**
              * Returns true  if the type matches a registered view, false if we don't know how to view it.
              *
-             * @param type {String} Matched content type.
+             * @param mediaType {String} Matched content type.
              * @returns {boolean} true if type is ahs registered view, false otherwise.
              */
-            isKnownType: function isKnownType(type) {
-                return $dataRouterRegistry.isKnownType(type);
+            isKnownType: function isKnownType(mediaType) {
+                return $dataRouterRegistry.isKnownType(mediaType);
             },
 
             /**

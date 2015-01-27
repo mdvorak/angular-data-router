@@ -89,6 +89,14 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                 }
             },
 
+            /**
+             * Loads view data from given URL.
+             * Tries to automatically match the view by the data Content-Type header.
+             * If the view is found, and transformResponse key is set, response is automatically resolved.
+             *
+             * @param url {String} URL to load data from. They are always loaded using GET method.
+             * @returns {Object} Promise of the response.
+             */
             $$loadData: function $$loadData(url) {
                 // Fetch data and return promise
                 return $http.get(url).then(function dataLoaded(response) {
@@ -114,6 +122,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         headers: response.headers,
                         config: response.config,
                         mediaType: mediaType,
+                        originalData: response.data,
                         data: response.data,
                         view: view
                     };
@@ -126,6 +135,22 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                 });
             },
 
+            /**
+             * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
+             *
+             * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
+             * @returns {String} Normalized URL, including full hostname.
+             */
+            normalizeUrl: function normalizeUrl(href) {
+                return provider.$$normalizeUrl(href);
+            },
+
+            /**
+             * Loads view template and initializes resolves.
+             *
+             * @param response {Object} Loaded data response. Can be promise.
+             * @returns {Object} Promise of loaded view. Promise is rejected if any of locals or template fails to resolve.
+             */
             $$loadView: function $$loadView(response) {
                 return $q.when(response).then(function responseReady(response) {
                     // Resolve view
@@ -181,10 +206,6 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     // Return original object
                     return response;
                 });
-            },
-
-            $$normalizeUrl: function $$normalizeUrl(href) {
-                return provider.$$normalizeUrl(href);
             },
 
             $$loadTemplate: function $$loadTemplate(view, mediaType) {
