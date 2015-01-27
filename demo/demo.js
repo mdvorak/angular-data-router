@@ -16,7 +16,9 @@
             });
 
             // Routes
-            $dataRouterProvider.when('application/json', {
+            $dataRouterProvider.when(function (type) {
+                return type.lastIndexOf('json') === type.length - 4;
+            }, {
                 template: '<pre>{{json|json}}</pre><a api-href="api/sample.txt">Text</a> <a api-href="api/sample.error">Error</a>',
                 dataAs: 'json'
             });
