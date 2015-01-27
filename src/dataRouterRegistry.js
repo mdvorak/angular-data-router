@@ -107,4 +107,3 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
         };
     };
 });
-

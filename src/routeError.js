@@ -10,4 +10,3 @@ function RouteError(msg, status) {
 RouteError.prototype = Object.create(Error.prototype);
 RouteError.prototype.name = 'RouteError';
 RouteError.prototype.constructor = RouteError;
-
