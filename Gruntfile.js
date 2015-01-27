@@ -243,34 +243,33 @@ module.exports = function (grunt) {
         },
 
         // Demo
-        less: {
-            options: {
-                cleancss: true
-            },
-            demo: {
-                files: {
-                    '<%=cfg.build%>/demo/demo.css': '<%=cfg.demo%>/demo.less'
-                }
-            }
-        },
         connect: {
             server: {
                 options: {
                     hostname: 'localhost',
-                    port: 9000,
-                    base: ['build', 'docs']
+                    port: 9000
                 }
+            }
+        },
+        watch: {
+            src: {
+                files: ['<%=cfg.src%>/**/*.js'],
+                tasks: ['javascript', 'jshint:test']
+            },
+            demojs: {
+                files: ['<%=cfg.demo%>/**/*.js'],
+                tasks: ['jshint:demo']
             }
         }
     });
 
     // Private tasks
-    grunt.registerTask('javascript', ['jshint:src', 'concat:build', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build']);
+    grunt.registerTask('javascript', ['jshint:src', 'concat:build', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build', 'clean:tmp']);
 
     // Public tasks
-    grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'clean:tmp', 'jshint:test', 'karma:default']);
+    grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'jshint:test', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
-    grunt.registerTask('demo', ['jshint:demo', 'less:demo', 'connect:server']);
+    grunt.registerTask('demo', ['jshint:demo', 'default', 'connect:server', 'watch']);
 
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
     grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);
