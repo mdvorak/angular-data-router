@@ -7,7 +7,7 @@ it displays configured view. From there, its very similar to original angular ro
 Installation
 ------------
 
-Either download and include `dist/` file in your project, or use bower:
+Either download and include `dist/` files in your project, or use [bower](http://bower.io/):
 
     bower install angular-data-router --save
 
