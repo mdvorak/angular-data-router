@@ -238,7 +238,7 @@ module.exports = function (grunt) {
             },
             api: {
                 src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/**/*.spec.js'],
-                title: 'DataRouter Documentation'
+                title: 'Angular DataRouter Documentation'
             }
         },
 
