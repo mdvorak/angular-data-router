@@ -111,12 +111,25 @@
                  */
                 normalizeMediaType: provider.$$normalizeMediaType,
 
+                /**
+                 * Matches the media type against registered media types. If found, view configuration is return.
+                 *
+                 * @param mediaType {String} Media type to be matched. It *MUST* be normalized, it is compared as is.
+                 * @returns {Object} Matched view or undefined. Note that original configuration object will be returned,
+                 *                   so don't modify it!
+                 */
                 match: function match(mediaType) {
-                    return views.match(provider.$$normalizeMediaType(mediaType));
+                    return views.match(mediaType);
                 },
 
+                /**
+                 * Returns true  if the type matches a registered view, false if we don't know how to view it.
+                 *
+                 * @param mediaType {String} Matched content type. Doesn't have to be normalized.
+                 * @returns {boolean} true if type is ahs registered view, false otherwise.
+                 */
                 isKnownType: function isKnownType(mediaType) {
-                    return mediaType && !!this.match(mediaType);
+                    return mediaType && !!this.match(provider.$$normalizeMediaType(mediaType));
                 }
             };
         };
@@ -128,6 +141,12 @@
         // Intentionally using document object instead of $document
         var urlParsingNode = document.createElement("a");
 
+        /**
+         * Sets global configuration for all routes.
+         *
+         * @param config {Object} Configuration object. Currently only "resolve" key is supported.
+         * @returns {dataRouterLoaderProvider} Reference to self.
+         */
         provider.global = function global(config) {
             if (!config) return;
 
@@ -138,13 +157,19 @@
             return provider;
         };
 
+        /**
+         * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
+         *
+         * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
+         * @returns {String} Normalized URL, including full hostname.
+         */
         provider.$$normalizeUrl = function $$normalizeUrl(href) {
             if (href === '') {
                 // Special case - browser interprets empty string as current URL, while we need
                 // what it considers a base if no base href is given.
                 // Add /X to the path and then remove it.
                 urlParsingNode.setAttribute("href", 'X');
-                return urlParsingNode.href.replace(/\/X$/, '');
+                return urlParsingNode.href.replace(/X$/, '');
             } else if (href) {
                 // Normalize thru href property
                 urlParsingNode.setAttribute("href", href);
@@ -157,19 +182,52 @@
 
         this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
             var $dataRouterLoader = {
+                /**
+                 * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+                 * just subtype.
+                 *
+                 * @param mimeType {String} Media type to match.
+                 * @returns {String} Normalized media type.
+                 */
                 normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
+                /**
+                 * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
+                 *
+                 * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
+                 * @returns {String} Normalized URL, including full hostname.
+                 */
+                normalizeUrl: function normalizeUrl(href) {
+                    return provider.$$normalizeUrl(href);
+                },
+
+                /**
+                 * Eagerly fetches the template for the given media type. If media type is unknown, nothing happens.
+                 * This method returns immediately, no promise is returned.
+                 *
+                 * @param mediaType {String} Media type for which we want to prefetch the template.
+                 */
                 prefetchTemplate: function prefetchTemplate(mediaType) {
                     var view = $dataRouterRegistry.match(mediaType);
 
                     if (view) {
-                        $log.debug("Prefetching template for " + mediaType);
+                        $log.debug("Pre-fetching template for " + mediaType);
                         $dataRouterLoader.$$loadTemplate(view, mediaType);
                     } else {
                         $log.debug("Cannot prefetch template for " + mediaType + ", type is not registered");
                     }
                 },
 
+                /**
+                 * Prepares the view to be displayed. Loads data from given URL, resolves view by its content type,
+                 * and then finally resolves template and all other resolvables.
+                 *
+                 * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
+                 * @param current {Object?} Current response data. If provided and forceReload is false, $routeDataUpdate flag
+                 *                          of the response may be set, indicating that view doesn't have to be reloaded.
+                 * @param forceReload {boolean?} Set to false to allow just data update. Without current parameter does nothing.
+                 * @returns {Object} Promise of completely initialized response, including template and locals.
+                 */
                 prepareView: function prepareView(url, current, forceReload) {
                     // Load data and view
                     return $dataRouterLoader.$$loadData(url)
@@ -212,6 +270,14 @@
                     }
                 },
 
+                /**
+                 * Loads view data from given URL.
+                 * Tries to automatically match the view by the data Content-Type header.
+                 * If the view is found, and transformResponse key is set, response is automatically resolved.
+                 *
+                 * @param url {String} URL to load data from. They are always loaded using GET method.
+                 * @returns {Object} Promise of the response.
+                 */
                 $$loadData: function $$loadData(url) {
                     // Fetch data and return promise
                     return $http.get(url).then(function dataLoaded(response) {
@@ -237,6 +303,7 @@
                             headers: response.headers,
                             config: response.config,
                             mediaType: mediaType,
+                            originalData: response.data,
                             data: response.data,
                             view: view
                         };
@@ -249,6 +316,12 @@
                     });
                 },
 
+                /**
+                 * Loads view template and initializes resolves.
+                 *
+                 * @param response {Object} Loaded data response. Can be promise.
+                 * @returns {Object} Promise of loaded view. Promise is rejected if any of locals or template fails to resolve.
+                 */
                 $$loadView: function $$loadView(response) {
                     return $q.when(response).then(function responseReady(response) {
                         // Resolve view
@@ -306,10 +379,6 @@
                     });
                 },
 
-                $$normalizeUrl: function $$normalizeUrl(href) {
-                    return provider.$$normalizeUrl(href);
-                },
-
                 $$loadTemplate: function $$loadTemplate(view, mediaType) {
                     // Ripped from ngRoute
                     var template, templateUrl;
@@ -365,7 +434,7 @@
          * Configures prefix for default view to resource mapping.
          *
          * @param prefix {String} Relative URL prefix, relative to base href.
-         * @return {string} API URL prefix. It's absolute URL, includes base href.
+         * @return {String} API URL prefix. It's absolute URL, includes base href.
          */
         provider.apiPrefix = function apiPrefix(prefix) {
             if (arguments.length > 0) {
@@ -481,7 +550,16 @@
         };
 
         this.$get = ["$log", "$location", "$rootScope", "$q", "$dataRouterRegistry", "$dataRouterLoader", function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader) {
+            $log.debug("Using api prefix " + provider.$apiPrefix);
+
             var $dataRouter = {
+                /**
+                 * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+                 * just subtype.
+                 *
+                 * @param mimeType {String} Media type to match.
+                 * @returns {String} Normalized media type.
+                 */
                 normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
                 /**
@@ -492,6 +570,15 @@
                  * @constructor
                  */
                 RouteError: RouteError,
+
+                /**
+                 * Returns configured API prefix.
+                 *
+                 * @return {String} API URL prefix. It's absolute URL, includes base href.
+                 */
+                apiPrefix: function() {
+                    return provider.apiPrefix();
+                },
 
                 /**
                  * Maps view path to resource URL. Can be overridden during configuration.
@@ -523,11 +610,11 @@
                 /**
                  * Returns true  if the type matches a registered view, false if we don't know how to view it.
                  *
-                 * @param type {String} Matched content type.
+                 * @param mediaType {String} Matched content type.
                  * @returns {boolean} true if type is ahs registered view, false otherwise.
                  */
-                isKnownType: function isKnownType(type) {
-                    return $dataRouterRegistry.isKnownType(type);
+                isKnownType: function isKnownType(mediaType) {
+                    return $dataRouterRegistry.isKnownType(mediaType);
                 },
 
                 /**
@@ -648,6 +735,7 @@
                 }
             };
 
+            // Broadcast $routeChangeStart and cancel location change if it is prevented
             $rootScope.$on('$locationChangeStart', function locationChangeStart($locationEvent) {
                 if ($rootScope.$broadcast('$routeChangeStart').defaultPrevented) {
                     if ($locationEvent) {
@@ -656,6 +744,7 @@
                 }
             });
 
+            // Reload view on location change
             $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
                 $dataRouter.reload(true);
             });
@@ -663,6 +752,13 @@
             return $dataRouter;
         }];
     }]);
+
+    // Note: It is constant so it can be used during config phase
+    module.constant('$$dataRouterMatchMap', {
+        create: function create() {
+            return new DataRouterMatchMap();
+        }
+    });
 
     /**
      * Collection of matchers, both exact and matcher functions.
@@ -703,28 +799,22 @@
                 }
             }
         };
-    }
 
-    module.constant('$$dataRouterMatchMap', {
-        create: function create() {
-            return new DataRouterMatchMap();
+        // Helper functions
+        function wildcardMatcherFactory(wildcard) {
+            var pattern = new RegExp('^' + wildcardToRegex(wildcard) + '$');
+
+            // Register matcher
+            return function wildcardMatcher(s) {
+                return pattern.test(s);
+            };
         }
-    });
 
-    // Helper functions
-    function wildcardMatcherFactory(wildcard) {
-        var pattern = new RegExp('^' + wildcardToRegex(wildcard) + '$');
-
-        // Register matcher
-        return function wildcardMatcher(s) {
-            return pattern.test(s);
-        };
-    }
-
-    function wildcardToRegex(s) {
-        return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1')
-            .replace(/\x08/g, '\\x08')
-            .replace(/[*]+/, '.*');
+        function wildcardToRegex(s) {
+            return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1')
+                .replace(/\x08/g, '\\x08')
+                .replace(/[*]+/, '.*');
+        }
     }
 
     // RouteError exception
@@ -739,7 +829,23 @@
     RouteError.prototype.constructor = RouteError;
 
 
-    module.directive('apiHref', ["$dataRouter", "$dataRouterLoader", "$location", function apiHrefFactory($dataRouter, $dataRouterLoader, $location) {
+    /**
+     * @ngdoc directive
+     * @name mdvorakDataRouter:apiHref
+     * @element a
+     * @function
+     *
+     * @description
+     * Translates api URL into view URL.
+     *
+     * @example
+     <example module="mdvorakDataRouter">
+     <file name="index.html">
+     <a api-href="api/users/12347">User Detail</a>
+     </file>
+     </example>
+     */
+    module.directive('apiHref', ["$dataRouter", "$dataRouterLoader", "$location", "$browser", function apiHrefFactory($dataRouter, $dataRouterLoader, $location, $browser) {
         return {
             restrict: 'AC',
             link: function apiHrefLink(scope, element, attrs) {
@@ -764,10 +870,15 @@
                     // Map URL
                     var href = $dataRouter.mapApiToView(attrs.apiHref);
 
-                    if (href) {
+                    if (angular.isString(href)) {
                         // Hashbang mode
                         if (!$location.$$html5) {
-                            href = '#' + href;
+                            href = '#/' + href;
+                        } else if (href === '') {
+                            // HTML 5 mode and we are going to the base, so force it
+                            // (it is special case, since href="" obviously does not work)
+                            // In normal cases, browser handles relative URLs on its own
+                            href = $browser.baseHref();
                         }
 
                         setHref(href, null);
