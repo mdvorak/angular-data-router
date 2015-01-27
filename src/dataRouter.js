@@ -288,19 +288,23 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                 // Promise resolutions
                 function showView(response) {
                     if ($dataRouter.next === next) {
-                        // Update current
+                        // Remove marker
                         $dataRouter.next = undefined;
-                        $dataRouter.current = response;
 
                         // Update view data
-                        if (response.$routeDataUpdate) {
+                        if (response.$routeDataUpdate && $dataRouter.current) {
                             $log.debug("Replacing current data");
 
-                            // Emit specific event
+                            // Update current
+                            angular.extend($dataRouter.current, response);
+
+                            // Broadcast specific event
                             $rootScope.$broadcast('$routeUpdate', response);
                         } else {
-                            // Show view
                             $log.debug("Setting view to " + response.mediaType);
+
+                            // Set current
+                            $dataRouter.current = response;
 
                             // Emit event
                             $rootScope.$emit('$routeChangeSuccess', response);
