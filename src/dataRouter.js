@@ -21,7 +21,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
      * Configures prefix for default view to resource mapping.
      *
      * @param prefix {String} Relative URL prefix, relative to base href.
-     * @return {string} API URL prefix. It's absolute URL, includes base href.
+     * @return {String} API URL prefix. It's absolute URL, includes base href.
      */
     provider.apiPrefix = function apiPrefix(prefix) {
         if (arguments.length > 0) {
@@ -137,6 +137,8 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     };
 
     this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader) {
+        $log.debug("Using api prefix " + provider.$apiPrefix);
+
         var $dataRouter = {
             /**
              * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
@@ -155,6 +157,15 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              * @constructor
              */
             RouteError: RouteError,
+
+            /**
+             * Returns configured API prefix.
+             *
+             * @return {String} API URL prefix. It's absolute URL, includes base href.
+             */
+            apiPrefix: function () {
+                return provider.apiPrefix();
+            },
 
             /**
              * Maps view path to resource URL. Can be overridden during configuration.

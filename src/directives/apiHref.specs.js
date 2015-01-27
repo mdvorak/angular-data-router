@@ -3,11 +3,9 @@
 describe("mdvorakDataRouter", function () {
     describe('hashbang mode', function () {
         // Module
-        beforeEach(module('ng', function ($locationProvider) {
+        beforeEach(module('mdvorakDataRouter', function ($locationProvider) {
             $locationProvider.html5Mode(false);
         }));
-
-        beforeEach(module('mdvorakDataRouter'));
 
         var $httpBackend;
 
@@ -26,8 +24,7 @@ describe("mdvorakDataRouter", function () {
                 $rootScope = _$rootScope_;
             }));
 
-
-            it("should set href attribute", function () {
+            it("should set server-relative href attribute", function () {
                 var element = $compile('<a api-href="/test/data"></a>')($rootScope);
                 $rootScope.$digest();
 
@@ -35,15 +32,31 @@ describe("mdvorakDataRouter", function () {
                 expect(element.attr('href')).toEqual('#/test/data');
                 expect(element.attr('target')).toBeUndefined();
             });
+
+            it("should set context-relative href attribute", function () {
+                var element = $compile('<a api-href="test/data"></a>')($rootScope);
+                $rootScope.$digest();
+
+                // Verify
+                expect(element.attr('href')).toEqual('#/test/data');
+                expect(element.attr('target')).toBeUndefined();
+            });
+
+            it("should set #/ when api-href is equal to api prefix", function () {
+                var element = $compile('<a api-href=""></a>')($rootScope);
+                $rootScope.$digest();
+
+                // Verify
+                expect(element.attr('href')).toEqual('#/');
+                expect(element.attr('target')).toBeUndefined();
+            });
         });
     });
 
     describe('html5 mode', function () {
-        beforeEach(module('ng', function ($locationProvider) {
+        beforeEach(module('mdvorakDataRouter', function ($locationProvider) {
             $locationProvider.html5Mode(true);
         }));
-
-        beforeEach(module('mdvorakDataRouter'));
 
         var $httpBackend;
 
@@ -63,12 +76,30 @@ describe("mdvorakDataRouter", function () {
             }));
 
 
-            it("should set href attribute", function () {
+            it("should set server-relative href attribute", function () {
                 var element = $compile('<a api-href="/test/data"></a>')($rootScope);
                 $rootScope.$digest();
 
                 // Verify
-                expect(element.attr('href')).toEqual('/test/data');
+                expect(element.attr('href')).toEqual('test/data');
+                expect(element.attr('target')).toBeUndefined();
+            });
+
+            it("should set context-relative href attribute", function () {
+                var element = $compile('<a api-href="test/data"></a>')($rootScope);
+                $rootScope.$digest();
+
+                // Verify
+                expect(element.attr('href')).toEqual('test/data');
+                expect(element.attr('target')).toBeUndefined();
+            });
+
+            it("should set base href when apiHref equals to apiPrefix", function () {
+                var element = $compile('<a api-href=""></a>')($rootScope);
+                $rootScope.$digest();
+
+                // Verify
+                expect(element.attr('href')).toEqual('/');
                 expect(element.attr('target')).toBeUndefined();
             });
         });

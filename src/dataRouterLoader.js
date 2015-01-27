@@ -33,7 +33,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
             // what it considers a base if no base href is given.
             // Add /X to the path and then remove it.
             urlParsingNode.setAttribute("href", 'X');
-            return urlParsingNode.href.replace(/\/X$/, '');
+            return urlParsingNode.href.replace(/X$/, '');
         } else if (href) {
             // Normalize thru href property
             urlParsingNode.setAttribute("href", href);
