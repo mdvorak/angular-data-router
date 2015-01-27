@@ -14,7 +14,8 @@ module.exports = function (grunt) {
         },
         clean: {
             build: ['<%=cfg.build%>'],
-            dist: ['<%=cfg.dist%>']
+            dist: ['<%=cfg.dist%>'],
+            tmp: ['<%=cfg.build%>/bundle.js']
         },
 
         // Validate
@@ -101,7 +102,9 @@ module.exports = function (grunt) {
             build: {
                 options: {
                     get banner() {
-                        return '/*\n' + grunt.file.read('LICENCE') + '*/\n\n(function (angular) {\n' + grunt.file.read('src/module.js') + '\n';
+                        var licence = grunt.file.read('LICENCE').replace(/^/mg, ' ').replace(/[ ]+$/mg, '');
+                        var module = grunt.file.read('src/module.js');
+                        return '/*\n' + licence + ' */\n\n(function dataRouterModule(angular) {\n' + module + '\n';
                     },
                     footer: '\n})(angular);',
                     process: function (src) {
@@ -133,6 +136,16 @@ module.exports = function (grunt) {
                 ]
             }
         },
+
+        jsbeautifier: {
+            options: {
+                jslintHappy: true
+            },
+            build: {
+                src: ['<%=cfg.build%>/dist/angular-data-router.js']
+            }
+        },
+
         uglify: {
             build: {
                 options: {
@@ -229,10 +242,10 @@ module.exports = function (grunt) {
     });
 
     // Private tasks
-    grunt.registerTask('javascript', ['jshint:src', 'concat:build', 'ngAnnotate:build', 'jshint:bundle', 'uglify:build']);
+    grunt.registerTask('javascript', ['jshint:src', 'concat:build', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build']);
 
     // Public tasks
-    grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'jshint:test', 'karma:default']);
+    grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'clean:tmp', 'jshint:test', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
     grunt.registerTask('demo', ['jshint:demo', 'less:demo']); // TODO
 

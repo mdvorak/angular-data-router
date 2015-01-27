@@ -6,7 +6,7 @@ module.directive('dataview', function dataviewFactory($dataRouter, $anchorScroll
         terminal: true,
         priority: 400,
         transclude: 'element',
-        link: function (scope, $element, attr, ctrl, $transclude) {
+        link: function dataviewLink(scope, $element, attr, ctrl, $transclude) {
             var currentScope,
                 currentElement,
                 previousLeaveAnimation,
@@ -28,7 +28,7 @@ module.directive('dataview', function dataviewFactory($dataRouter, $anchorScroll
                 }
                 if (currentElement) {
                     previousLeaveAnimation = $animate.leave(currentElement);
-                    previousLeaveAnimation.then(function () {
+                    previousLeaveAnimation.then(function animLeave() {
                         previousLeaveAnimation = null;
                     });
                     currentElement = null;
@@ -49,7 +49,7 @@ module.directive('dataview', function dataviewFactory($dataRouter, $anchorScroll
                     // Note: We can't remove them in the cloneAttchFn of $transclude as that
                     // function is called before linking the content, which would apply child
                     // directives to non existing elements.
-                    currentElement = $transclude(newScope, function (clone) {
+                    currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
                         $animate.enter(clone, null, currentElement || $element).then(function onNgViewEnter() {
                             if (angular.isDefined(autoScrollExp) && (!autoScrollExp || scope.$eval(autoScrollExp))) {
                                 $anchorScroll();
@@ -78,7 +78,7 @@ module.directive('dataview', function dataviewFillContentFactory($compile, $cont
     return {
         restrict: 'ECA',
         priority: -400,
-        link: function (scope, $element) {
+        link: function dataviewFillContentLink(scope, $element) {
             var current = $dataRouter.current;
             var view = current ? current.view : undefined;
             var locals = current.locals;

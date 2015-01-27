@@ -6,7 +6,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
         terminal: true,
         priority: 400,
         transclude: 'element',
-        link: function (scope, $element, attr, ctrl, $transclude) {
+        link: function datafragmentLink(scope, $element, attr, ctrl, $transclude) {
             var hrefExp = attr.datafragment || attr.src,
                 currentScope,
                 currentElement,
@@ -27,7 +27,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
                 }
                 if (currentElement) {
                     previousLeaveAnimation = $animate.leave(currentElement);
-                    previousLeaveAnimation.then(function () {
+                    previousLeaveAnimation.then(function animLeave() {
                         previousLeaveAnimation = null;
                     });
                     currentElement = null;
@@ -70,7 +70,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
                             // Note: We can't remove them in the cloneAttchFn of $transclude as that
                             // function is called before linking the content, which would apply child
                             // directives to non existing elements.
-                            currentElement = $transclude(newScope, function (clone) {
+                            currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
                                 $animate.enter(clone, null, currentElement || $element);
                                 cleanupLastView();
                             });
@@ -97,7 +97,7 @@ module.directive('datafragment', function datafragmentFillContentFactory($compil
     return {
         restrict: 'ECA',
         priority: -400,
-        link: function (scope, $element) {
+        link: function datafragmentFillContentLink(scope, $element) {
             var current = scope.$dataCurrent;
             var view = current.view;
             var locals = current.locals;

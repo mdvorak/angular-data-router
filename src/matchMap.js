@@ -8,7 +8,7 @@ function DataRouterMatchMap() {
     this.$exact = {};
     this.$matchers = [];
 
-    this.addMatcher = function (pattern, data) {
+    this.addMatcher = function addMatcher(pattern, data) {
         if (angular.isFunction(pattern)) {
             this.$matchers.push({
                 m: pattern,
@@ -26,7 +26,7 @@ function DataRouterMatchMap() {
         }
     };
 
-    this.match = function (s) {
+    this.match = function match(s) {
         // Exact match
         var data = this.$exact[s], i, matchers;
         if (data) return data;
@@ -57,7 +57,7 @@ function wildcardMatcherFactory(wildcard) {
 }
 
 function wildcardToRegex(s) {
-    return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1').
-        replace(/\x08/g, '\\x08').
-        replace(/[*]+/, '.*');
+    return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1')
+        .replace(/\x08/g, '\\x08')
+        .replace(/[*]+/, '.*');
 }

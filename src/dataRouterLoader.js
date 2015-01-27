@@ -91,7 +91,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
             $$loadData: function $$loadData(url) {
                 // Fetch data and return promise
-                return $http.get(url).then(function (response) {
+                return $http.get(url).then(function dataLoaded(response) {
                     // Match existing resource
                     var mediaType = $dataRouterRegistry.normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
                     var view = $dataRouterRegistry.match(mediaType);
@@ -144,7 +144,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                         // Resolve locals
                         if (locals) {
-                            angular.forEach(locals, function (value, key) {
+                            angular.forEach(locals, function resolveLocal(value, key) {
                                 locals[key] = angular.isString(value) ?
                                     $injector.get(value) : $injector.invoke(value, '$dataRouterLoader', builtInLocals);
                             });
@@ -205,10 +205,11 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     if (angular.isDefined(templateUrl)) {
                         view.loadedTemplateUrl = templateUrl;
 
-                        template = $http.get(templateUrl, {cache: $templateCache}).
-                            then(function (response) {
-                                return response.data;
-                            });
+                        template = $http.get(templateUrl, {
+                            cache: $templateCache
+                        }).then(function templateLoaded(response) {
+                            return response.data;
+                        });
                     }
                 }
 

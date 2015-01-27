@@ -1,83 +1,31 @@
 /*
- @license (The MIT License)
+ The MIT License
 
- Copyright (c) 2014 Michal Dvorak <michal@mdvorak.org>
+ Copyright (c) 2015 Michal Dvorak <michal@mdvorak.org>
 
- Permission is hereby granted, free of charge, to any person obtaining
- a copy of this software and associated documentation files (the
- 'Software'), to deal in the Software without restriction, including
- without limitation the rights to use, copy, modify, merge, publish,
- distribute, sublicense, and/or sell copies of the Software, and to
- permit persons to whom the Software is furnished to do so, subject to
- the following conditions:
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
 
- THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT.
- IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
  */
 
-(function (angular) {
+(function dataRouterModule(angular) {
     "use strict";
 
-    var module = angular.module('mdvorakDataRouter', []);
-
-    module.factory('$routeData', ["$rootScope", "$injector", function $routeDataFactory($rootScope, $injector) {
-        var routeData = $rootScope.$new(true);
-        var dataRouter;
-
-        /**
-         * Listen to $routeUpdate event. It is fired whenever data are updated by the router, without
-         * reloading the view. This occurs as result of calling $dataRouter.reload() method without true parameter.
-         * <p>
-         * If you don't provide scope context for the listener, you must unregister it manually using remover function.
-         *
-         * @param listener {Function} Listener function.
-         * @param scope {Object?} Context, in which the listener exists. When given scope is destroyed, listener
-         *                        is removed as well automatically.
-         * @returns {Function} Listener remover function.
-         */
-        routeData.onRouteDataUpdated = function onRouteDataUpdated(listener, scope) {
-            var remover = routeData.$on('$routeUpdate', listener);
-
-            // Automatically detach listener
-            if (scope) {
-                var off = scope.$on('$destroy', remover);
-
-                // Stop listening to $destroy event as well
-                return function combinedRemover() {
-                    remover();
-                    off();
-                };
-            } else {
-                return remover;
-            }
-        };
-
-        /**
-         * Reloads the data, without refreshing the view. If the data are successfully loaded,
-         * $routeUpdate event is fired. If it fails, error view is shown.
-         * <p>
-         * Does not allow page refresh via parameter, unlike $dataRouter.reload(boolean).
-         */
-        routeData.reload = function reload() {
-            // Avoid cyclic dependency
-            if (!dataRouter) {
-                dataRouter = $injector.get('$dataRouter', '$routeData');
-            }
-
-            // Reload
-            dataRouter.reload(false);
-        };
-
-        return routeData;
-    }]);
+    var module = angular.module("mdvorakDataRouter", []);
 
     module.provider('$dataRouterRegistry', ["$$dataRouterMatchMap", function $dataRouterRegistryProvider($$dataRouterMatchMap) {
         var provider = this;
@@ -112,7 +60,7 @@
                 views.addMatcher(mediaType, config);
             } else {
                 // Normalize mimeType
-                mediaType = normalizeMediaType(mediaType);
+                mediaType = provider.$$normalizeMediaType(mediaType);
                 // Register
                 views.addMatcher(mediaType, config);
             }
@@ -130,22 +78,50 @@
             return provider;
         };
 
+        /**
+         * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+         * just subtype.
+         *
+         * @param mimeType {String} Media type to match.
+         * @returns {String} Normalized media type.
+         */
+        provider.$$normalizeMediaType = function normalizeMediaType(mimeType) {
+            if (!mimeType) return undefined;
+
+            // Get rid of + end everything after
+            mimeType = mimeType.replace(/\s*[\+;].*$/, '');
+
+            // Prepend application/ if here is only subtype
+            if (mimeType.indexOf('/') < 0) {
+                mimeType = 'application/' + mimeType;
+            }
+
+            return mimeType;
+        };
+
         // Factory
         this.$get = function $dataRouterRegistryFactory() {
             return {
-                RouteError: RouteError,
-                normalizeMediaType: normalizeMediaType,
+                /**
+                 * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+                 * just subtype.
+                 *
+                 * @param mimeType {String} Media type to match.
+                 * @returns {String} Normalized media type.
+                 */
+                normalizeMediaType: provider.$$normalizeMediaType,
 
                 match: function match(mediaType) {
-                    return views.match(mediaType);
+                    return views.match(provider.$$normalizeMediaType(mediaType));
                 },
 
-                isKnownType: function isKnownType(type) {
-                    return type && !!this.match(normalizeMediaType(type));
+                isKnownType: function isKnownType(mediaType) {
+                    return mediaType && !!this.match(mediaType);
                 }
             };
         };
     }]);
+
 
     module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         var provider = this;
@@ -181,8 +157,7 @@
 
         this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
             var $dataRouterLoader = {
-                RouteError: RouteError,
-                normalizeMediaType: normalizeMediaType,
+                normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
                 prefetchTemplate: function prefetchTemplate(mediaType) {
                     var view = $dataRouterRegistry.match(mediaType);
@@ -239,9 +214,9 @@
 
                 $$loadData: function $$loadData(url) {
                     // Fetch data and return promise
-                    return $http.get(url).then(function (response) {
+                    return $http.get(url).then(function dataLoaded(response) {
                         // Match existing resource
-                        var mediaType = normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
+                        var mediaType = $dataRouterRegistry.normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
                         var view = $dataRouterRegistry.match(mediaType);
 
                         // Unknown media type
@@ -292,7 +267,7 @@
 
                             // Resolve locals
                             if (locals) {
-                                angular.forEach(locals, function (value, key) {
+                                angular.forEach(locals, function resolveLocal(value, key) {
                                     locals[key] = angular.isString(value) ?
                                         $injector.get(value) : $injector.invoke(value, '$dataRouterLoader', builtInLocals);
                                 });
@@ -353,10 +328,11 @@
                         if (angular.isDefined(templateUrl)) {
                             view.loadedTemplateUrl = templateUrl;
 
-                            template = $http.get(templateUrl, {cache: $templateCache}).
-                                then(function (response) {
-                                    return response.data;
-                                });
+                            template = $http.get(templateUrl, {
+                                cache: $templateCache
+                            }).then(function templateLoaded(response) {
+                                return response.data;
+                            });
                         }
                     }
 
@@ -504,9 +480,9 @@
             return provider;
         };
 
-        this.$get = ["$log", "$location", "$rootScope", "$q", "$routeData", "$dataRouterRegistry", "$dataRouterLoader", function $dataRouterFactory($log, $location, $rootScope, $q, $routeData, $dataRouterRegistry, $dataRouterLoader) {
+        this.$get = ["$log", "$location", "$rootScope", "$q", "$dataRouterRegistry", "$dataRouterLoader", function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader) {
             var $dataRouter = {
-                normalizeMediaType: normalizeMediaType,
+                normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
                 /**
                  * Routing error.
@@ -562,11 +538,24 @@
                  *
                  * @param listener {Function} Listener function.
                  * @param scope {Object?} Context, in which the listener exists. When given scope is destroyed, listener
-                 *                        is removed as well automatically.
+                 *                        is removed automatically as well.
                  * @returns {Function} Listener remover function.
                  */
                 onRouteDataUpdated: function onRouteDataUpdated(listener, scope) {
-                    $routeData.onRouteDataUpdated(listener, scope);
+                    var remover = $rootScope.$on('$routeUpdate', listener);
+
+                    // Automatically detach listener
+                    if (scope) {
+                        var off = scope.$on('$destroy', remover);
+
+                        // Stop listening to $destroy event as well
+                        return function combinedRemover() {
+                            off();
+                            remover();
+                        };
+                    } else {
+                        return remover;
+                    }
                 },
 
                 /**
@@ -595,8 +584,7 @@
                  * and $routeUpdate event is invoked on routeData object. If content type differs,
                  * full view refresh is performed (that is, controller is destroyed and recreated).
                  * <p>
-                 * If you refresh data, it is recommended to use $routeData object instead of $data injector.
-                 * You should then listen to $routeUpdate event on $routeData or $rootScope, to catch the change.<br>
+                 * If you refresh data, you must listen to the $routeUpdate event on $rootScope, to be notified of the change.<br>
                  * There is a shortcut for listening to this event, see #onRouteDataUpdated() method.
                  *
                  * @param forceReload {boolean} If true, page is always refreshed (controller recreated). Otherwise only
@@ -623,7 +611,7 @@
                     $dataRouterLoader.prepareView(url, $dataRouter.current, forceReload)
                         .then(showView, routeChangeFailed);
 
-                    // Promise resultions
+                    // Promise resolutions
                     function showView(response) {
                         if ($dataRouter.next === next) {
                             // Update current
@@ -631,13 +619,11 @@
                             $dataRouter.current = response;
 
                             // Update view data
-                            $dataRouter.$$updateView(response);
-
                             if (response.$routeDataUpdate) {
                                 $log.debug("Replacing current data");
 
                                 // Emit specific event
-                                $routeData.$emit('$routeUpdate', response);
+                                $rootScope.$emit('$routeUpdate', response);
                             } else {
                                 // Show view
                                 $log.debug("Setting view to " + response.mediaType);
@@ -659,13 +645,6 @@
                             $rootScope.$emit('$routeChangeFailed', response);
                         }
                     }
-                },
-
-                $$updateView: function $$updateView(response) {
-                    $routeData.data = response.data;
-                    $routeData.type = response.mediaType;
-                    $routeData.url = response.config.url;
-                    $routeData.headers = response.headers;
                 }
             };
 
@@ -685,116 +664,138 @@
         }];
     }]);
 
-    module.directive('dataview', ["$dataRouter", "$anchorScroll", "$animate", function dataviewFactory($dataRouter, $anchorScroll, $animate) {
-        return {
-            restrict: 'ECA',
-            terminal: true,
-            priority: 400,
-            transclude: 'element',
-            link: function (scope, $element, attr, ctrl, $transclude) {
-                var currentScope,
-                    currentElement,
-                    previousLeaveAnimation,
-                    autoScrollExp = attr.autoscroll,
-                    onloadExp = attr.onload || '';
+    /**
+     * Collection of matchers, both exact and matcher functions.
+     * @constructor
+     */
+    function DataRouterMatchMap() {
+        this.$exact = {};
+        this.$matchers = [];
 
-                scope.$on('$routeChangeSuccess', update);
-                update();
+        this.addMatcher = function addMatcher(pattern, data) {
+            if (angular.isFunction(pattern)) {
+                this.$matchers.push({
+                    m: pattern,
+                    d: data
+                });
+            } else if (pattern.indexOf('*') > -1) {
+                // Register matcher
+                this.$matchers.push({
+                    m: wildcardMatcherFactory(pattern),
+                    d: data
+                });
+            } else {
+                // Exact match
+                this.$exact[pattern] = data;
+            }
+        };
 
-                function cleanupLastView() {
-                    if (previousLeaveAnimation) {
-                        $animate.cancel(previousLeaveAnimation);
-                        previousLeaveAnimation = null;
-                    }
+        this.match = function match(s) {
+            // Exact match
+            var data = this.$exact[s],
+                i, matchers;
+            if (data) return data;
 
-                    if (currentScope) {
-                        currentScope.$destroy();
-                        currentScope = null;
-                    }
-                    if (currentElement) {
-                        previousLeaveAnimation = $animate.leave(currentElement);
-                        previousLeaveAnimation.then(function () {
-                            previousLeaveAnimation = null;
-                        });
-                        currentElement = null;
-                    }
-                }
-
-                function update() {
-                    var locals = $dataRouter.current && $dataRouter.current.locals,
-                        template = locals && locals.$template;
-
-                    if (angular.isDefined(template)) {
-                        var newScope = scope.$new();
-                        var current = $dataRouter.current;
-
-                        // Note: This will also link all children of ng-view that were contained in the original
-                        // html. If that content contains controllers, ... they could pollute/change the scope.
-                        // However, using ng-view on an element with additional content does not make sense...
-                        // Note: We can't remove them in the cloneAttchFn of $transclude as that
-                        // function is called before linking the content, which would apply child
-                        // directives to non existing elements.
-                        currentElement = $transclude(newScope, function (clone) {
-                            $animate.enter(clone, null, currentElement || $element).then(function onNgViewEnter() {
-                                if (angular.isDefined(autoScrollExp) && (!autoScrollExp || scope.$eval(autoScrollExp))) {
-                                    $anchorScroll();
-                                }
-                            });
-                            cleanupLastView();
-                        });
-
-                        currentScope = current.scope = newScope;
-                        currentScope.$emit('$viewContentLoaded');
-                        currentScope.$eval(onloadExp);
-                    } else {
-                        cleanupLastView();
-                    }
+            // Iterate matcher functions
+            for (matchers = this.$matchers, i = 0; i < matchers.length; i++) {
+                if (matchers[i].m(s)) {
+                    return matchers[i].d;
                 }
             }
         };
-    }]);
+    }
 
-    module.directive('dataview', ["$compile", "$controller", "$dataRouter", function dataviewFillContentFactory($compile, $controller, $dataRouter) {
-        // This directive is called during the $transclude call of the first `ngView` directive.
-        // It will replace and compile the content of the element with the loaded template.
-        // We need this directive so that the element content is already filled when
-        // the link function of another directive on the same element as ngView
-        // is called.
+    module.constant('$$dataRouterMatchMap', {
+        create: function create() {
+            return new DataRouterMatchMap();
+        }
+    });
+
+    // Helper functions
+    function wildcardMatcherFactory(wildcard) {
+        var pattern = new RegExp('^' + wildcardToRegex(wildcard) + '$');
+
+        // Register matcher
+        return function wildcardMatcher(s) {
+            return pattern.test(s);
+        };
+    }
+
+    function wildcardToRegex(s) {
+        return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1')
+            .replace(/\x08/g, '\\x08')
+            .replace(/[*]+/, '.*');
+    }
+
+    // RouteError exception
+    function RouteError(msg, status) {
+        this.message = msg;
+        this.status = status;
+        this.stack = new Error().stack; // Includes ctor as well, byt better then nothing
+    }
+
+    RouteError.prototype = Object.create(Error.prototype);
+    RouteError.prototype.name = 'RouteError';
+    RouteError.prototype.constructor = RouteError;
+
+
+    module.directive('apiHref', ["$dataRouter", "$dataRouterLoader", "$location", function apiHrefFactory($dataRouter, $dataRouterLoader, $location) {
         return {
-            restrict: 'ECA',
-            priority: -400,
-            link: function (scope, $element) {
-                var current = $dataRouter.current;
-                var view = current ? current.view : undefined;
-                var locals = current.locals;
+            restrict: 'AC',
+            link: function apiHrefLink(scope, element, attrs) {
+                var hasTarget = 'target' in attrs;
 
-                $element.html(locals.$template);
+                function setHref(href, target) {
+                    attrs.$set('href', href);
 
-                var link = $compile($element.contents());
+                    if (!hasTarget) {
+                        attrs.$set('target', href ? target : null);
+                    }
+                }
 
-                if (view && view.controller) {
-                    locals.$scope = scope;
-                    var controller = $controller(view.controller, locals);
-
-                    if (view.controllerAs) {
-                        scope[view.controllerAs] = controller;
+                function updateHref() {
+                    // Do we have a type? And it is supported?
+                    if (attrs.type && !$dataRouter.isKnownType(attrs.type)) {
+                        // If not, do not modify the URL
+                        setHref(attrs.apiHref, '_self');
+                        return;
                     }
 
-                    $element.data('$ngControllerController', controller);
-                    $element.children().data('$ngControllerController', controller);
+                    // Map URL
+                    var href = $dataRouter.mapApiToView(attrs.apiHref);
+
+                    if (href) {
+                        // Hashbang mode
+                        if (!$location.$$html5) {
+                            href = '#' + href;
+                        }
+
+                        setHref(href, null);
+                    } else {
+                        // Use URL on its own
+                        setHref(attrs.apiHref, '_self');
+                    }
                 }
 
-                if (view && view.dataAs) {
-                    locals.$scope = scope;
-                    scope[view.dataAs] = current.data;
+                // Update href accordingly
+                attrs.$observe('apiHref', updateHref);
 
-                    // Listen for changes
-                    $dataRouter.onRouteDataUpdated(function routeDataUpdated(data) {
-                        scope[view.dataAs] = data;
-                    }, scope);
+                // Don't watch for type if it is not defined at all
+                if ('type' in attrs) {
+                    attrs.$observe('type', updateHref);
+
+                    element.on('click', function clickHandler() {
+                        // Invoke apply only if needed
+                        if (attrs.type) {
+                            scope.$applyAsync(function applyCallback() {
+                                // Race condition
+                                if (attrs.type) {
+                                    $dataRouterLoader.prefetchTemplate(attrs.type);
+                                }
+                            });
+                        }
+                    });
                 }
-
-                link(scope);
             }
         };
     }]);
@@ -805,7 +806,7 @@
             terminal: true,
             priority: 400,
             transclude: 'element',
-            link: function (scope, $element, attr, ctrl, $transclude) {
+            link: function datafragmentLink(scope, $element, attr, ctrl, $transclude) {
                 var hrefExp = attr.datafragment || attr.src,
                     currentScope,
                     currentElement,
@@ -826,7 +827,7 @@
                     }
                     if (currentElement) {
                         previousLeaveAnimation = $animate.leave(currentElement);
-                        previousLeaveAnimation.then(function () {
+                        previousLeaveAnimation.then(function animLeave() {
                             previousLeaveAnimation = null;
                         });
                         currentElement = null;
@@ -869,7 +870,7 @@
                                 // Note: We can't remove them in the cloneAttchFn of $transclude as that
                                 // function is called before linking the content, which would apply child
                                 // directives to non existing elements.
-                                currentElement = $transclude(newScope, function (clone) {
+                                currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
                                     $animate.enter(clone, null, currentElement || $element);
                                     cleanupLastView();
                                 });
@@ -896,7 +897,7 @@
         return {
             restrict: 'ECA',
             priority: -400,
-            link: function (scope, $element, attr) {
+            link: function datafragmentFillContentLink(scope, $element) {
                 var current = scope.$dataCurrent;
                 var view = current.view;
                 var locals = current.locals;
@@ -938,151 +939,118 @@
         };
     }]);
 
-    module.directive('apiHref', ["$dataRouter", "$dataRouterLoader", "$location", function ($dataRouter, $dataRouterLoader, $location) {
+    module.directive('dataview', ["$dataRouter", "$anchorScroll", "$animate", function dataviewFactory($dataRouter, $anchorScroll, $animate) {
         return {
-            restrict: 'AC',
-            link: function (scope, element, attrs) {
-                var hasTarget = 'target' in attrs;
+            restrict: 'ECA',
+            terminal: true,
+            priority: 400,
+            transclude: 'element',
+            link: function dataviewLink(scope, $element, attr, ctrl, $transclude) {
+                var currentScope,
+                    currentElement,
+                    previousLeaveAnimation,
+                    autoScrollExp = attr.autoscroll,
+                    onloadExp = attr.onload || '';
 
-                function setHref(href, target) {
-                    attrs.$set('href', href);
+                scope.$on('$routeChangeSuccess', update);
+                update();
 
-                    if (!hasTarget) {
-                        attrs.$set('target', href ? target : null);
+                function cleanupLastView() {
+                    if (previousLeaveAnimation) {
+                        $animate.cancel(previousLeaveAnimation);
+                        previousLeaveAnimation = null;
+                    }
+
+                    if (currentScope) {
+                        currentScope.$destroy();
+                        currentScope = null;
+                    }
+                    if (currentElement) {
+                        previousLeaveAnimation = $animate.leave(currentElement);
+                        previousLeaveAnimation.then(function animLeave() {
+                            previousLeaveAnimation = null;
+                        });
+                        currentElement = null;
                     }
                 }
 
-                function updateHref() {
-                    // Do we have a type? And it is supported?
-                    if (attrs.type && !$dataRouter.isKnownType(attrs.type)) {
-                        // If not, do not modify the URL
-                        setHref(attrs.apiHref, '_self');
-                        return;
-                    }
+                function update() {
+                    var locals = $dataRouter.current && $dataRouter.current.locals,
+                        template = locals && locals.$template;
 
-                    // Map URL
-                    var href = $dataRouter.mapApiToView(attrs.apiHref);
+                    if (angular.isDefined(template)) {
+                        var newScope = scope.$new();
+                        var current = $dataRouter.current;
 
-                    if (href) {
-                        // Hashbang mode
-                        if (!$location.$$html5) {
-                            href = '#' + href;
-                        }
-
-                        setHref(href, null);
-                    } else {
-                        // Use URL on its own
-                        setHref(attrs.apiHref, '_self');
-                    }
-                }
-
-                // Update href accordingly
-                attrs.$observe('apiHref', updateHref);
-
-                // Don't watch for type if it is not defined at all
-                if ('type' in attrs) {
-                    attrs.$observe('type', updateHref);
-
-                    element.on('click', function () {
-                        // Invoke apply only if needed
-                        if (attrs.type) {
-                            scope.$applyAsync(function () {
-                                // Race condition
-                                if (attrs.type) {
-                                    $dataRouterLoader.prefetchTemplate(attrs.type);
+                        // Note: This will also link all children of ng-view that were contained in the original
+                        // html. If that content contains controllers, ... they could pollute/change the scope.
+                        // However, using ng-view on an element with additional content does not make sense...
+                        // Note: We can't remove them in the cloneAttchFn of $transclude as that
+                        // function is called before linking the content, which would apply child
+                        // directives to non existing elements.
+                        currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
+                            $animate.enter(clone, null, currentElement || $element).then(function onNgViewEnter() {
+                                if (angular.isDefined(autoScrollExp) && (!autoScrollExp || scope.$eval(autoScrollExp))) {
+                                    $anchorScroll();
                                 }
                             });
-                        }
-                    });
+                            cleanupLastView();
+                        });
+
+                        currentScope = current.scope = newScope;
+                        currentScope.$emit('$viewContentLoaded');
+                        currentScope.$eval(onloadExp);
+                    } else {
+                        cleanupLastView();
+                    }
                 }
             }
         };
     }]);
 
-    /**
-     * Collection of matchers, both exact and matcher functions.
-     * @constructor
-     */
-    function DataRouterMatchMap() {
-        this.$exact = {};
-        this.$matchers = [];
+    module.directive('dataview', ["$compile", "$controller", "$dataRouter", function dataviewFillContentFactory($compile, $controller, $dataRouter) {
+        // This directive is called during the $transclude call of the first `ngView` directive.
+        // It will replace and compile the content of the element with the loaded template.
+        // We need this directive so that the element content is already filled when
+        // the link function of another directive on the same element as ngView
+        // is called.
+        return {
+            restrict: 'ECA',
+            priority: -400,
+            link: function dataviewFillContentLink(scope, $element) {
+                var current = $dataRouter.current;
+                var view = current ? current.view : undefined;
+                var locals = current.locals;
 
-        this.addMatcher = function (pattern, data) {
-            if (angular.isFunction(pattern)) {
-                this.$matchers.push({
-                    m: pattern,
-                    d: data
-                });
-            } else if (pattern.indexOf('*') > -1) {
-                // Register matcher
-                this.$matchers.push({
-                    m: wildcardMatcherFactory(pattern),
-                    d: data
-                });
-            } else {
-                // Exact match
-                this.$exact[pattern] = data;
-            }
-        };
+                $element.html(locals.$template);
 
-        this.match = function (s) {
-            // Exact match
-            var data = this.$exact[s], i, matchers;
-            if (data) return data;
+                var link = $compile($element.contents());
 
-            // Iterate matcher functions
-            for (matchers = this.$matchers, i = 0; i < matchers.length; i++) {
-                if (matchers[i].m(s)) {
-                    return matchers[i].d;
+                if (view && view.controller) {
+                    locals.$scope = scope;
+                    var controller = $controller(view.controller, locals);
+
+                    if (view.controllerAs) {
+                        scope[view.controllerAs] = controller;
+                    }
+
+                    $element.data('$ngControllerController', controller);
+                    $element.children().data('$ngControllerController', controller);
                 }
+
+                if (view && view.dataAs) {
+                    locals.$scope = scope;
+                    scope[view.dataAs] = current.data;
+
+                    // Listen for changes
+                    $dataRouter.onRouteDataUpdated(function routeDataUpdated(data) {
+                        scope[view.dataAs] = data;
+                    }, scope);
+                }
+
+                link(scope);
             }
         };
-    }
+    }]);
 
-    module.constant('$$dataRouterMatchMap', {
-        create: function create() {
-            return new DataRouterMatchMap();
-        }
-    });
-
-    // RouteError exception
-    function RouteError(msg, status) {
-        this.message = msg;
-        this.status = status;
-        this.stack = new Error().stack; // Includes ctor as well, byt better then nothing
-    }
-
-    RouteError.prototype = Object.create(Error.prototype);
-    RouteError.prototype.name = 'RouteError';
-    RouteError.prototype.constructor = RouteError;
-
-    // Helper functions
-    function wildcardMatcherFactory(wildcard) {
-        var pattern = new RegExp('^' + wildcardToRegex(wildcard) + '$');
-
-        // Register matcher
-        return function wildcardMatcher(s) {
-            return pattern.test(s);
-        };
-    }
-
-    function wildcardToRegex(s) {
-        return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1').
-            replace(/\x08/g, '\\x08').
-            replace(/[*]+/, '.*');
-    }
-
-    function normalizeMediaType(mimeType) {
-        if (!mimeType) return undefined;
-
-        // Get rid of + end everything after
-        mimeType = mimeType.replace(/\s*[\+;].*$/, '');
-
-        // Prepend application/ if here is only subtype
-        if (mimeType.indexOf('/') < 0) {
-            mimeType = 'application/' + mimeType;
-        }
-
-        return mimeType;
-    }
-})(window.angular);
+})(angular);

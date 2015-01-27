@@ -1,9 +1,9 @@
 "use strict";
 
-module.directive('apiHref', function ($dataRouter, $dataRouterLoader, $location) {
+module.directive('apiHref', function apiHrefFactory($dataRouter, $dataRouterLoader, $location) {
     return {
         restrict: 'AC',
-        link: function (scope, element, attrs) {
+        link: function apiHrefLink(scope, element, attrs) {
             var hasTarget = 'target' in attrs;
 
             function setHref(href, target) {
@@ -45,10 +45,10 @@ module.directive('apiHref', function ($dataRouter, $dataRouterLoader, $location)
             if ('type' in attrs) {
                 attrs.$observe('type', updateHref);
 
-                element.on('click', function () {
+                element.on('click', function clickHandler() {
                     // Invoke apply only if needed
                     if (attrs.type) {
-                        scope.$applyAsync(function () {
+                        scope.$applyAsync(function applyCallback() {
                             // Race condition
                             if (attrs.type) {
                                 $dataRouterLoader.prefetchTemplate(attrs.type);
