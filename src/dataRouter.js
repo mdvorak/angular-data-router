@@ -163,7 +163,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              *
              * @return {String} API URL prefix. It's absolute URL, includes base href.
              */
-            apiPrefix: function () {
+            apiPrefix: function apiPrefix() {
                 return provider.apiPrefix();
             },
 
