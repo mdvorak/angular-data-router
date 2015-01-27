@@ -87,22 +87,22 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
             /**
              * Matches the media type against registered media types. If found, view configuration is return.
              *
-             * @param mediaType {String} Media type to be matched. It will be normalized. Wildcards are not supported.
+             * @param mediaType {String} Media type to be matched. It *MUST* be normalized, it is compared as is.
              * @returns {Object} Matched view or undefined. Note that original configuration object will be returned,
              *                   so don't modify it!
              */
             match: function match(mediaType) {
-                return views.match(provider.$$normalizeMediaType(mediaType));
+                return views.match(mediaType);
             },
 
             /**
              * Returns true  if the type matches a registered view, false if we don't know how to view it.
              *
-             * @param mediaType {String} Matched content type.
+             * @param mediaType {String} Matched content type. Doesn't have to be normalized.
              * @returns {boolean} true if type is ahs registered view, false otherwise.
              */
             isKnownType: function isKnownType(mediaType) {
-                return mediaType && !!this.match(mediaType);
+                return mediaType && !!this.match(provider.$$normalizeMediaType(mediaType));
             }
         };
     };
