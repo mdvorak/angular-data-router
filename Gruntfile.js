@@ -5,13 +5,12 @@ module.exports = function (grunt) {
     // Project configuration.
     grunt.initConfig({
         cfg: {
-            basedir: process.cwd(),
-            src: '<%=cfg.basedir%>/src',
-            test: '<%=cfg.basedir%>/test',
-            demo: '<%=cfg.basedir%>/demo',
-            build: '<%=cfg.basedir%>/build',
-            dist: '<%=cfg.basedir%>/dist',
-            bower: '<%=cfg.basedir%>/bower_components'
+            src: 'src',
+            test: 'test',
+            demo: 'demo',
+            build: 'build',
+            dist: 'dist',
+            bower: 'bower_components'
         },
         clean: {
             build: ['<%=cfg.build%>'],
@@ -27,15 +26,6 @@ module.exports = function (grunt) {
                 nonbsp: true,
                 bitwise: true
             },
-            browser_options: {
-                browser: true,
-                sub: true,
-
-                globals: {
-                    angular: true
-                }
-            },
-
             grunt: {
                 options: {
                     node: true
@@ -45,13 +35,43 @@ module.exports = function (grunt) {
                 }
             },
             src: {
-                options: '<%=jshint.browser_options%>',
+                options: {
+                    browser: true,
+                    sub: true,
+                    globalstrict: true,
+
+                    globals: {
+                        angular: true,
+                        module: true,
+                        RouteError: true
+                    }
+                },
                 files: {
-                    src: ['<%=cfg.src%>/**/*.js']
+                    src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/module.js']
+                }
+            },
+            bundle: {
+                options: {
+                    browser: true,
+                    sub: true,
+
+                    globals: {
+                        angular: true
+                    }
+                },
+                files: {
+                    src: ['<%=cfg.build%>/dist/angular-data-router.js']
                 }
             },
             demo: {
-                options: '<%=jshint.browser_options%>',
+                options: {
+                    browser: true,
+                    sub: true,
+
+                    globals: {
+                        angular: true
+                    }
+                },
                 files: {
                     src: ['<%=cfg.demo%>/**/*.js']
                 }
@@ -77,11 +97,38 @@ module.exports = function (grunt) {
         },
 
         // Compile
+        concat: {
+            build: {
+                options: {
+                    get banner() {
+                        return '/*\n' + grunt.file.read('LICENCE') + '*/\n\n(function (angular) {\n' + grunt.file.read('src/module.js') + '\n';
+                    },
+                    footer: '\n})(angular);',
+                    process: function (src) {
+                        return src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
+                    }
+                },
+                files: [
+                    {
+                        dest: '<%=cfg.build%>/bundle.js',
+                        src: [
+                            '<%=cfg.src%>/dataRouterRegistry.js',
+                            '<%=cfg.src%>/dataRouterLoader.js',
+                            '<%=cfg.src%>/dataRouter.js',
+                            '<%=cfg.src%>/matchMap.js',
+                            '<%=cfg.src%>/routeError.js',
+                            '<%=cfg.src%>/directives/**/*.js'
+                        ]
+                    }
+                ]
+            }
+        },
+
         ngAnnotate: {
             build: {
                 files: [
                     {
-                        '<%=cfg.build%>/dist/angular-data-router.js': '<%=cfg.src%>/angular-data-router.js'
+                        '<%=cfg.build%>/dist/angular-data-router.js': '<%=cfg.build%>/bundle.js'
                     }
                 ]
             }
@@ -113,7 +160,7 @@ module.exports = function (grunt) {
                     '<%=cfg.build%>/dist/angular-data-router.js',
 
                     // Tests
-                    '<%=cfg.test%>/**/*.js'
+                    '<%=cfg.test%>/**/*.specs.js'
                 ],
                 plugins: [
                     'karma-jasmine',
@@ -182,7 +229,7 @@ module.exports = function (grunt) {
     });
 
     // Private tasks
-    grunt.registerTask('javascript', ['jshint:src', 'ngAnnotate:build', 'uglify:build']);
+    grunt.registerTask('javascript', ['jshint:src', 'concat:build', 'ngAnnotate:build', 'jshint:bundle', 'uglify:build']);
 
     // Public tasks
     grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'jshint:test', 'karma:default']);

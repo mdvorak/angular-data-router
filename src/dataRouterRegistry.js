@@ -33,7 +33,7 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
             views.addMatcher(mediaType, config);
         } else {
             // Normalize mimeType
-            mediaType = normalizeMediaType(mediaType);
+            mediaType = provider.$$normalizeMediaType(mediaType);
             // Register
             views.addMatcher(mediaType, config);
         }
@@ -51,19 +51,47 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
         return provider;
     };
 
+    /**
+     * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+     * just subtype.
+     *
+     * @param mimeType {String} Media type to match.
+     * @returns {String} Normalized media type.
+     */
+    provider.$$normalizeMediaType = function normalizeMediaType(mimeType) {
+        if (!mimeType) return undefined;
+
+        // Get rid of + end everything after
+        mimeType = mimeType.replace(/\s*[\+;].*$/, '');
+
+        // Prepend application/ if here is only subtype
+        if (mimeType.indexOf('/') < 0) {
+            mimeType = 'application/' + mimeType;
+        }
+
+        return mimeType;
+    };
+
     // Factory
     this.$get = function $dataRouterRegistryFactory() {
         return {
-            RouteError: RouteError,
-            normalizeMediaType: normalizeMediaType,
+            /**
+             * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+             * just subtype.
+             *
+             * @param mimeType {String} Media type to match.
+             * @returns {String} Normalized media type.
+             */
+            normalizeMediaType: provider.$$normalizeMediaType,
 
             match: function match(mediaType) {
-                return views.match(mediaType);
+                return views.match(provider.$$normalizeMediaType(mediaType));
             },
 
-            isKnownType: function isKnownType(type) {
-                return type && !!this.match(normalizeMediaType(type));
+            isKnownType: function isKnownType(mediaType) {
+                return mediaType && !!this.match(mediaType);
             }
         };
     };
 });
+

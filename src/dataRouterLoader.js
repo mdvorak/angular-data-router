@@ -34,8 +34,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
     this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
         var $dataRouterLoader = {
-            RouteError: RouteError,
-            normalizeMediaType: normalizeMediaType,
+            normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
             prefetchTemplate: function prefetchTemplate(mediaType) {
                 var view = $dataRouterRegistry.match(mediaType);
@@ -94,7 +93,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                 // Fetch data and return promise
                 return $http.get(url).then(function (response) {
                     // Match existing resource
-                    var mediaType = normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
+                    var mediaType = $dataRouterRegistry.normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
                     var view = $dataRouterRegistry.match(mediaType);
 
                     // Unknown media type

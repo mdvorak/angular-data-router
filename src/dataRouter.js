@@ -138,7 +138,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
     this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader) {
         var $dataRouter = {
-            normalizeMediaType: normalizeMediaType,
+            normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
             /**
              * Routing error.
@@ -267,7 +267,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                 $dataRouterLoader.prepareView(url, $dataRouter.current, forceReload)
                     .then(showView, routeChangeFailed);
 
-                // Promise resultions
+                // Promise resolutions
                 function showView(response) {
                     if ($dataRouter.next === next) {
                         // Update current

@@ -97,7 +97,7 @@ module.directive('datafragment', function datafragmentFillContentFactory($compil
     return {
         restrict: 'ECA',
         priority: -400,
-        link: function (scope, $element, attr) {
+        link: function (scope, $element) {
             var current = scope.$dataCurrent;
             var view = current.view;
             var locals = current.locals;
