@@ -13,6 +13,10 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
                 previousLeaveAnimation,
                 onloadExp = attr.onload || '';
 
+            // Store context
+            var context = scope.$$dataRouterCtx = {};
+
+            // Watch for href changes
             scope.$watch(hrefExp, updateHref);
 
             function cleanupLastView() {
@@ -41,7 +45,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
 
                 if (href) {
                     // Load data
-                    $dataRouterLoader.prepareView(href, scope.$dataCurrent, forceReload).then(update, update);
+                    $dataRouterLoader.prepareView(href, context.current, forceReload).then(update, update);
                 } else {
                     // Reset
                     update();
@@ -50,10 +54,8 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
                 function update(response) {
                     if (next === attr.next) {
                         // Update current
-                        scope.$dataCurrent = response;
+                        context.current = response;
                         attr.next = undefined;
-
-                        // TODO support soft data reload
 
                         // Show view
                         var locals = response && response.locals,
@@ -98,7 +100,8 @@ module.directive('datafragment', function datafragmentFillContentFactory($compil
         restrict: 'ECA',
         priority: -400,
         link: function datafragmentFillContentLink(scope, $element) {
-            var current = scope.$dataCurrent;
+            var context = scope.$$dataRouterCtx; // Get context
+            var current = context.current;
             var view = current.view;
             var locals = current.locals;
 
@@ -121,17 +124,6 @@ module.directive('datafragment', function datafragmentFillContentFactory($compil
             if (view && view.dataAs) {
                 locals.$scope = scope;
                 scope[view.dataAs] = current.data;
-
-                // Listen for changes
-                // TODO We need to create better abstraction for $routeData, which will be specific
-                // TODO for given view, no matter whether main route or fragment, and usable by views controller.
-                // TODO Methods like reload and url should be available there.
-                // TODO Also consider, whether we want to support this, since it would create something like
-                // TODO iframe. All links etc would be content relative.. It gets quite complex from there.
-                // TODO But data update NEEDS to be supported.
-                //$dataRouter.onRouteDataUpdated(function routeDataUpdated(data) {
-                //    scope[view.dataAs] = data;
-                //}, scope);
             }
 
             link(scope);
