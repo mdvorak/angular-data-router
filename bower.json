@@ -7,10 +7,10 @@
   "license": "MIT",
   "main": "dist/angular-data-router.js",
   "ignore": [
-    "/package.json",
-    "/.gitignore",
+    "package.json",
+    ".gitignore",
+    "Gruntfile.*",
     "/src/",
-    "/test/",
     "/demo/"
   ],
   "dependencies": {
