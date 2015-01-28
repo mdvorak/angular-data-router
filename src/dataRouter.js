@@ -329,7 +329,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                             $dataRouter.current = response;
 
                             // Emit event
-                            $rootScope.$emit('$routeChangeSuccess', response);
+                            $rootScope.$broadcast('$routeChangeSuccess', response);
                         }
                     }
                 }
@@ -342,7 +342,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
                         // Show error view
                         $log.error("Failed to load view or data and no error view defined", response);
-                        $rootScope.$emit('$routeChangeError', response);
+                        $rootScope.$broadcast('$routeChangeError', response);
                     }
                 }
             }
