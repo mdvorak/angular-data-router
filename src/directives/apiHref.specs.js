@@ -3,15 +3,9 @@
 describe("mdvorakDataRouter", function () {
     describe('hashbang mode', function () {
         // Module
-        beforeEach(module('mdvorakDataRouter', function ($locationProvider) {
+        beforeEach(module('mdvorakDataRouter', function ($locationProvider, $dataRouterProvider) {
             $locationProvider.html5Mode(false);
-        }));
-
-        var $httpBackend;
-
-        beforeEach(inject(function (_$httpBackend_) {
-            $httpBackend = _$httpBackend_;
-            $httpBackend.whenGET('').respond({});
+            $dataRouterProvider.enabled(false);
         }));
 
         // apiHref
@@ -54,15 +48,9 @@ describe("mdvorakDataRouter", function () {
     });
 
     describe('html5 mode', function () {
-        beforeEach(module('mdvorakDataRouter', function ($locationProvider) {
+        beforeEach(module('mdvorakDataRouter', function ($locationProvider, $dataRouterProvider) {
             $locationProvider.html5Mode(true);
-        }));
-
-        var $httpBackend;
-
-        beforeEach(inject(function (_$httpBackend_) {
-            $httpBackend = _$httpBackend_;
-            $httpBackend.whenGET('').respond({});
+            $dataRouterProvider.enabled(false);
         }));
 
         // apiHref

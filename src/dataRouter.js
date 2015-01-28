@@ -4,6 +4,12 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     var provider = this;
 
     /**
+     * Enables the router. May be used to disable the router event handling. Cannot be changed after config phase.
+     * @type {boolean}
+     */
+    provider.$enabled = true;
+
+    /**
      * Map of redirects. Do not modify directly, use redirect function.
      * @type {Object}
      */
@@ -133,6 +139,22 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
      */
     provider.global = function global(config) {
         $dataRouterLoaderProvider.global(config);
+        return provider;
+    };
+
+    /**
+     * Enables  or disables the router. May be used to disable the router event handling.
+     * Cannot be changed after config phase.
+     *
+     * This method is intended mostly for unit tests.
+     *
+     * Enabled by default.
+     *
+     * @param enabled {boolean} false to disable the router.
+     * @returns {Object} Returns provider.
+     */
+    provider.enabled = function enabledFn(enabled) {
+        provider.$enabled = !!enabled;
         return provider;
     };
 
@@ -326,19 +348,21 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
             }
         };
 
-        // Broadcast $routeChangeStart and cancel location change if it is prevented
-        $rootScope.$on('$locationChangeStart', function locationChangeStart($locationEvent) {
-            if ($rootScope.$broadcast('$routeChangeStart').defaultPrevented) {
-                if ($locationEvent) {
-                    $locationEvent.preventDefault();
+        if (provider.$enabled) {
+            // Broadcast $routeChangeStart and cancel location change if it is prevented
+            $rootScope.$on('$locationChangeStart', function locationChangeStart($locationEvent) {
+                if ($rootScope.$broadcast('$routeChangeStart').defaultPrevented) {
+                    if ($locationEvent) {
+                        $locationEvent.preventDefault();
+                    }
                 }
-            }
-        });
+            });
 
-        // Reload view on location change
-        $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
-            $dataRouter.reload(true);
-        });
+            // Reload view on location change
+            $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
+                $dataRouter.reload(true);
+            });
+        }
 
         return $dataRouter;
     };
