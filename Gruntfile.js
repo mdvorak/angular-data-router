@@ -119,7 +119,6 @@ module.exports = function (grunt) {
                             '<%=cfg.src%>/dataRouterLoader.js',
                             '<%=cfg.src%>/dataRouter.js',
                             '<%=cfg.src%>/matchMap.js',
-                            '<%=cfg.src%>/routeError.js',
                             '<%=cfg.src%>/directives/**/*.js',
                             '!<%=cfg.src%>/**/*.specs.js'
                         ]

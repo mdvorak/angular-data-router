@@ -643,20 +643,11 @@
                 normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
                 /**
-                 * Routing error.
-                 *
-                 * @param msg {String} Error message.
-                 * @param status {Number} Response status code.
-                 * @constructor
-                 */
-                RouteError: RouteError,
-
-                /**
                  * Returns configured API prefix.
                  *
                  * @return {String} API URL prefix. It's absolute URL, includes base href.
                  */
-                apiPrefix: function() {
+                apiPrefix: function apiPrefix() {
                     return provider.apiPrefix();
                 },
 
@@ -871,17 +862,6 @@
                 .replace(/[*]+/, '.*');
         }
     }
-
-    // RouteError exception
-    function RouteError(msg, status) {
-        this.message = msg;
-        this.status = status;
-        this.stack = new Error().stack; // Includes ctor as well, byt better then nothing
-    }
-
-    RouteError.prototype = Object.create(Error.prototype);
-    RouteError.prototype.name = 'RouteError';
-    RouteError.prototype.constructor = RouteError;
 
     /**
      * @ngdoc directive

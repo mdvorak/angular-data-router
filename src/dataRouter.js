@@ -172,15 +172,6 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
             normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
             /**
-             * Routing error.
-             *
-             * @param msg {String} Error message.
-             * @param status {Number} Response status code.
-             * @constructor
-             */
-            RouteError: RouteError,
-
-            /**
              * Returns configured API prefix.
              *
              * @return {String} API URL prefix. It's absolute URL, includes base href.
