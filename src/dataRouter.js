@@ -158,9 +158,10 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                         if (response.routeDataUpdate && $dataRouter.current) {
                             $log.debug("Replacing current data");
 
-                            // Update current
-                            // TODO dont' use scopes after all
-                            extendPublic($dataRouter.current, response);
+                            // Update current (preserve listeners)
+                            var $$listeners = $dataRouter.current.$$listeners;
+                            angular.extend($dataRouter.current, response);
+                            $dataRouter.current.$$listeners = $$listeners;
 
                             // Fire event on the response (only safe way for both main view and fragments)
                             $dataRouter.current.$broadcast('$routeUpdate', $dataRouter.current);
@@ -189,21 +190,6 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                         $log.error("Failed to load view or data and no error view defined", response);
                         $rootScope.$broadcast('$routeChangeError', response);
                     }
-                }
-
-                function extendPublic(dst, obj) {
-                    if (obj) {
-                        var keys = Object.keys(obj);
-                        for (var j = 0, jj = keys.length; j < jj; j++) {
-                            // Skip everything that starts with $
-                            var key = keys[j];
-                            if (key[0] !== '$') {
-                                dst[key] = obj[key];
-                            }
-                        }
-                    }
-
-                    return dst;
                 }
             }
         };

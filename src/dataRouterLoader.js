@@ -19,7 +19,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         return provider;
     };
 
-    this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry) {
+    this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry, $$dataRouterEventSupport) {
         var $dataRouterLoader = {
             /**
              * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
@@ -70,8 +70,6 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     // It is worth continuing?
                     // Check whether whole view needs to be refreshed
                     if (!forceReload && isSameView(current, response)) {
-                        $log.debug("Replacing current data");
-
                         // Update data
                         response.routeDataUpdate = true;
                         return response;
@@ -118,7 +116,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                     // Unknown media type
                     if (!view) {
-                        return $q.reject(asScope({
+                        return $q.reject(asResponse({
                             status: 999,
                             statusText: "Application Error",
                             data: "Unknown content type " + mediaType,
@@ -140,9 +138,9 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                     if (view.transformResponse) {
                         result.originalData = response.data;
-                        return asScope(view.transformResponse(result));
+                        return asResponse(view.transformResponse(result));
                     } else {
-                        return asScope(result);
+                        return asResponse(result);
                     }
                 });
             },
@@ -195,7 +193,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                             return response;
                         }, function localsError() {
                             // Failure
-                            return $q.reject(asScope({
+                            return $q.reject(asResponse({
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Failed to resolve view " + response.mediaType,
@@ -242,11 +240,9 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
         return $dataRouterLoader;
 
-        // Helper functions
-        function asScope(response) {
-            // Create isolated scope
-            var scope = $rootScope.$new(true);
-            return angular.extend(scope, response);
+        // Converter function
+        function asResponse(response) {
+            return angular.extend($$dataRouterEventSupport.$new(), response);
         }
     };
 });

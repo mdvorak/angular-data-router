@@ -58,40 +58,51 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
 
                 function update(response) {
                     if (next === attr.next) {
-                        // TODO support soft data reload
+                        // Update view data
+                        if (response.routeDataUpdate && context.current) {
+                            $log.debug("Replacing fragments data");
 
-                        // Update current
-                        context.current = response;
-                        attr.next = undefined;
+                            // Update current (preserve listeners)
+                            var $$listeners = context.current.$$listeners;
+                            angular.extend(context.current, response);
+                            context.current.$$listeners = $$listeners;
 
-                        // Show view
-                        var locals = response && response.locals,
-                            template = locals && locals.$template;
-
-                        if (angular.isDefined(template)) {
-                            $log.debug("Setting fragment view to " + response.mediaType);
-
-                            // Add reload implementation
-                            response.reload = reload;
-
-                            var newScope = scope.$new();
-
-                            // Note: This will also link all children of ng-view that were contained in the original
-                            // html. If that content contains controllers, ... they could pollute/change the scope.
-                            // However, using ng-view on an element with additional content does not make sense...
-                            // Note: We can't remove them in the cloneAttchFn of $transclude as that
-                            // function is called before linking the content, which would apply child
-                            // directives to non existing elements.
-                            currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
-                                $animate.enter(clone, null, currentElement || $element);
-                                cleanupLastView();
-                            });
-
-                            currentScope = response.scope = newScope;
-                            currentScope.$eval(onloadExp);
+                            // Fire event on the response (only safe way for both main view and fragments)
+                            context.current.$broadcast('$routeUpdate', context.current);
                         } else {
-                            $log.debug("Resetting fragment view, got no response");
-                            cleanupLastView();
+                            // Update current
+                            context.current = response;
+                            attr.next = undefined;
+
+                            // Show view
+                            var locals = response && response.locals,
+                                template = locals && locals.$template;
+
+                            if (angular.isDefined(template)) {
+                                $log.debug("Setting fragment view to " + response.mediaType);
+
+                                // Add reload implementation
+                                response.reload = reload;
+
+                                var newScope = scope.$new();
+
+                                // Note: This will also link all children of ng-view that were contained in the original
+                                // html. If that content contains controllers, ... they could pollute/change the scope.
+                                // However, using ng-view on an element with additional content does not make sense...
+                                // Note: We can't remove them in the cloneAttchFn of $transclude as that
+                                // function is called before linking the content, which would apply child
+                                // directives to non existing elements.
+                                currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
+                                    $animate.enter(clone, null, currentElement || $element);
+                                    cleanupLastView();
+                                });
+
+                                currentScope = response.scope = newScope;
+                                currentScope.$eval(onloadExp);
+                            } else {
+                                $log.debug("Resetting fragment view, got no response");
+                                cleanupLastView();
+                            }
                         }
                     }
                 }
