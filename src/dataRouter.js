@@ -1,6 +1,6 @@
 "use strict";
 
-module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
+module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $apiMapProvider) {
     var provider = this;
 
     /**
@@ -16,66 +16,13 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     provider.$redirects = $$dataRouterMatchMap.create();
 
     /**
-     * Api prefix variable. Do not modify directly, use accessor function.
-     *
-     * @type {string}
-     * @protected
-     */
-    provider.$apiPrefix = $dataRouterLoaderProvider.$$normalizeUrl('');
-
-    /**
      * Configures prefix for default view to resource mapping.
      *
      * @param prefix {String} Relative URL prefix, relative to base href.
      * @return {String} API URL prefix. It's absolute URL, includes base href.
      */
     provider.apiPrefix = function apiPrefix(prefix) {
-        if (arguments.length > 0) {
-            provider.$apiPrefix = $dataRouterLoaderProvider.$$normalizeUrl(prefix);
-        }
-
-        return provider.$apiPrefix;
-    };
-
-    /**
-     * Maps view path to resource URL. Can be overridden during configuration.
-     * By default it maps path to API one to one.
-     * <p>
-     * Counterpart to #mapApiToView(). If you override one, override the other as well.
-     *
-     * @param path {String} View path, as in $location.path().
-     * @returns {String} Resource url, for e.g. HTTP requests.
-     */
-    provider.mapViewToApi = function mapViewToApi(path) {
-        // Path should always begin with slash, remove it
-        if (path && path[0] === '/') {
-            path = path.substring(1);
-        }
-
-        // Join
-        // Note: API prefix MUST end with a slash, otherwise it will work as configured, which is most likely wrong.
-        return provider.$apiPrefix + path;
-    };
-
-    /**
-     * Maps resource URL to view path. Can be overridden during configuration.
-     * By default it maps APU url to view paths one to one.
-     * <p>
-     * Counterpart to #mapViewToApi(). If you override one, override the other as well.
-     *
-     * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
-     * @returns {String} View path.
-     */
-    provider.mapApiToView = function mapApiToView(url) {
-        // Normalize
-        url = $dataRouterLoaderProvider.$$normalizeUrl(url);
-
-        if (url && url.indexOf(provider.$apiPrefix) === 0) {
-            return url.substring(provider.$apiPrefix.length);
-        }
-
-        // Unable to map
-        return null;
+        return $apiMapProvider.prefix(prefix);
     };
 
     /**
@@ -158,139 +105,33 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
         return provider;
     };
 
-    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader) {
-        $log.debug("Using api prefix " + provider.$apiPrefix);
-
+    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $apiMap) {
         var $dataRouter = {
             /**
-             * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
-             * just subtype.
-             *
-             * @param mimeType {String} Media type to match.
-             * @returns {String} Normalized media type.
+             * Reference to the $apiMap object.
              */
-            normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
+            api: $apiMap,
 
             /**
-             * Routing error.
-             *
-             * @param msg {String} Error message.
-             * @param status {Number} Response status code.
-             * @constructor
+             * Reference to the $dataRouterRegistry object.
              */
-            RouteError: RouteError,
-
-            /**
-             * Returns configured API prefix.
-             *
-             * @return {String} API URL prefix. It's absolute URL, includes base href.
-             */
-            apiPrefix: function apiPrefix() {
-                return provider.apiPrefix();
-            },
-
-            /**
-             * Maps view path to resource URL. Can be overridden during configuration.
-             * By default it maps path to API one to one.
-             * <p>
-             * Counterpart to #mapApiToView(). If you override one, override the other as well.
-             *
-             * @param path {String} View path, as in $location.path().
-             * @returns {String} Resource url, for e.g. HTTP requests.
-             */
-            mapViewToApi: function mapViewToApi(path) {
-                return provider.mapViewToApi(path);
-            },
-
-
-            /**
-             * Maps resource URL to view path. Can be overridden during configuration.
-             * By default it maps APU url to view paths one to one.
-             * <p>
-             * Counterpart to #mapViewToApi(). If you override one, override the other as well.
-             *
-             * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
-             * @returns {String} View path.
-             */
-            mapApiToView: function mapApiToView(url) {
-                return provider.mapApiToView(url);
-            },
-
-            /**
-             * Returns true  if the type matches a registered view, false if we don't know how to view it.
-             *
-             * @param mediaType {String} Matched content type.
-             * @returns {boolean} true if type is ahs registered view, false otherwise.
-             */
-            isKnownType: function isKnownType(mediaType) {
-                return $dataRouterRegistry.isKnownType(mediaType);
-            },
-
-            /**
-             * Listen to $routeUpdate event. It is fired whenever data are updated by the router, without
-             * reloading the view. This occurs as result of calling $dataRouter.reload() method without true parameter.
-             * <p>
-             * If you don't provide scope context for the listener, you must unregister it manually using remover function.
-             *
-             * @param listener {Function} Listener function.
-             * @param scope {Object?} Context, in which the listener exists. When given scope is destroyed, listener
-             *                        is removed automatically as well.
-             * @returns {Function} Listener remover function.
-             */
-            onRouteUpdate: function onRouteUpdate(listener, scope) {
-                var remover = $rootScope.$on('$routeUpdate', listener);
-
-                // Automatically detach listener
-                if (scope) {
-                    var off = scope.$on('$destroy', remover);
-
-                    // Stop listening to $destroy event as well
-                    return function combinedRemover() {
-                        off();
-                        remover();
-                    };
-                } else {
-                    return remover;
-                }
-            },
-
-            /**
-             * Gets or sets current view resource url.
-             *
-             * @param url {String?} New resource url. Performs location change.
-             * @returns {String} Resource url that is being currently viewed.
-             */
-            url: function urlFn(url) {
-                // Getter
-                if (arguments.length < 1) {
-                    return $dataRouter.mapViewToApi($location.path());
-                }
-
-                // Setter
-                var path = $dataRouter.mapApiToView(url);
-
-                if (path) {
-                    $location.path(path);
-                    return url;
-                }
-            },
+            registry: $dataRouterRegistry,
 
             /**
              * Reloads data at current location. If content type remains same, only data are refreshed,
-             * and $routeUpdate event is invoked on routeData object. If content type differs,
+             * and $routeUpdate event is invoked on $dataResponse object. If content type differs,
              * full view refresh is performed (that is, controller is destroyed and recreated).
              * <p>
-             * If you refresh data, you must listen to the $routeUpdate event on $rootScope, to be notified of the change.<br>
-             * There is a shortcut for listening to this event, see #onRouteUpdate() method.
+             * If you refresh data, you must listen to the $routeUpdate event on $dataResponse object to be notified of the change.
              *
-             * @param forceReload {boolean} If true, page is always refreshed (controller recreated). Otherwise only
-             *                              when needed.
+             * @param forceReload {boolean?} If true, page is always refreshed (controller recreated). Otherwise only
+             *                               when needed.
              */
             reload: function reload(forceReload) {
                 var path = $location.path() || '/';
                 var redirectTo;
                 var url;
-                var next = $dataRouter.next = {};
+                var next = $dataRouter.$$next = {};
 
                 // Home redirect
                 if ((redirectTo = provider.$redirects.match(path))) {
@@ -300,30 +141,35 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                 }
 
                 // Load resource
-                url = $dataRouter.mapViewToApi($location.path());
-                $log.debug("Loading resource " + url);
+                url = $apiMap.mapViewToApi($location.path());
 
                 // Load data and view
+                $log.debug("Loading main view");
                 $dataRouterLoader.prepareView(url, $dataRouter.current, forceReload)
                     .then(showView, routeChangeFailed);
 
                 // Promise resolutions
                 function showView(response) {
-                    if ($dataRouter.next === next) {
+                    if ($dataRouter.$$next === next) {
                         // Remove marker
-                        $dataRouter.next = undefined;
+                        $dataRouter.$$next = undefined;
 
                         // Update view data
-                        if (response.$routeDataUpdate && $dataRouter.current) {
+                        if (response.routeDataUpdate && $dataRouter.current) {
                             $log.debug("Replacing current data");
 
-                            // Update current
+                            // Update current (preserve listeners)
+                            var $$listeners = $dataRouter.current.$$listeners;
                             angular.extend($dataRouter.current, response);
+                            $dataRouter.current.$$listeners = $$listeners;
 
-                            // Broadcast specific event
-                            $rootScope.$broadcast('$routeUpdate', response);
+                            // Fire event on the response (only safe way for both main view and fragments)
+                            $dataRouter.current.$broadcast('$routeUpdate', $dataRouter.current);
                         } else {
                             $log.debug("Setting view to " + response.mediaType);
+
+                            // Add reload implementation
+                            response.reload = $dataRouter.reload;
 
                             // Set current
                             $dataRouter.current = response;
@@ -336,9 +182,9 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
                 function routeChangeFailed(response) {
                     // Error handler
-                    if ($dataRouter.next === next) {
+                    if ($dataRouter.$$next === next) {
                         // Remove next, but don't update current
-                        $dataRouter.next = undefined;
+                        $dataRouter.$$next = undefined;
 
                         // Show error view
                         $log.error("Failed to load view or data and no error view defined", response);

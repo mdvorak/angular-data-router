@@ -16,7 +16,7 @@
  </file>
  </example>
  */
-module.directive('apiHref', function apiHrefFactory($dataRouter, $dataRouterLoader, $location, $browser) {
+module.directive('apiHref', function apiHrefFactory($apiMap, $dataRouterRegistry, $dataRouterLoader, $location, $browser) {
     return {
         restrict: 'AC',
         link: function apiHrefLink(scope, element, attrs) {
@@ -32,14 +32,14 @@ module.directive('apiHref', function apiHrefFactory($dataRouter, $dataRouterLoad
 
             function updateHref() {
                 // Do we have a type? And it is supported?
-                if (attrs.type && !$dataRouter.isKnownType(attrs.type)) {
+                if (attrs.type && !$dataRouterRegistry.isKnownType(attrs.type)) {
                     // If not, do not modify the URL
                     setHref(attrs.apiHref, '_self');
                     return;
                 }
 
                 // Map URL
-                var href = $dataRouter.mapApiToView(attrs.apiHref);
+                var href = $apiMap.mapApiToView(attrs.apiHref);
 
                 if (angular.isString(href)) {
                     // Hashbang mode

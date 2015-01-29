@@ -2,17 +2,15 @@
 
 module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     var provider = this;
-    // Intentionally using document object instead of $document
-    var urlParsingNode = document.createElement("a");
 
     /**
      * Sets global configuration for all routes.
      *
      * @param config {Object} Configuration object. Currently only "resolve" key is supported.
-     * @returns {dataRouterLoaderProvider} Reference to self.
+     * @returns {Object} Reference to the provider.
      */
     provider.global = function global(config) {
-        if (!config) return;
+        if (!config) return provider;
 
         if (angular.isObject(config.resolve)) {
             provider.$globalResolve = angular.extend(provider.$globalResolve || {}, config.resolve);
@@ -21,30 +19,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         return provider;
     };
 
-    /**
-     * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
-     *
-     * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
-     * @returns {String} Normalized URL, including full hostname.
-     */
-    provider.$$normalizeUrl = function $$normalizeUrl(href) {
-        if (href === '') {
-            // Special case - browser interprets empty string as current URL, while we need
-            // what it considers a base if no base href is given.
-            // Add /X to the path and then remove it.
-            urlParsingNode.setAttribute("href", 'X');
-            return urlParsingNode.href.replace(/X$/, '');
-        } else if (href) {
-            // Normalize thru href property
-            urlParsingNode.setAttribute("href", href);
-            return urlParsingNode.href;
-        }
-
-        // Empty
-        return null;
-    };
-
-    this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
+    this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry, $$dataRouterEventSupport) {
         var $dataRouterLoader = {
             /**
              * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
@@ -54,16 +29,6 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
              * @returns {String} Normalized media type.
              */
             normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
-
-            /**
-             * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
-             *
-             * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
-             * @returns {String} Normalized URL, including full hostname.
-             */
-            normalizeUrl: function normalizeUrl(href) {
-                return provider.$$normalizeUrl(href);
-            },
 
             /**
              * Eagerly fetches the template for the given media type. If media type is unknown, nothing happens.
@@ -87,9 +52,9 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
              * and then finally resolves template and all other resolvables.
              *
              * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
-             * @param current {Object?} Current response data. If provided and forceReload is false, $routeDataUpdate flag
+             * @param current {Object?} Current response data. If provided and forceReload is false, routeDataUpdate flag
              *                          of the response may be set, indicating that view doesn't have to be reloaded.
-             * @param forceReload {boolean?} Set to false to allow just data update. Without current parameter does nothing.
+             * @param forceReload {boolean?} When false, it allows just data update. Without current parameter does nothing.
              * @returns {Object} Promise of completely initialized response, including template and locals.
              */
             prepareView: function prepareView(url, current, forceReload) {
@@ -105,10 +70,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     // It is worth continuing?
                     // Check whether whole view needs to be refreshed
                     if (!forceReload && isSameView(current, response)) {
-                        $log.debug("Replacing current data");
-
                         // Update data
-                        response.$routeDataUpdate = true;
+                        response.routeDataUpdate = true;
                         return response;
                     }
 
@@ -120,7 +83,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     // Load error view
                     response.mediaType = '$error';
                     response.view = $dataRouterRegistry.match('$error');
-                    response.$routeError = true;
+                    response.routeError = true;
 
                     if (response.view) {
                         return $dataRouterLoader.$$loadView(response);
@@ -143,6 +106,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
              * @returns {Object} Promise of the response.
              */
             $$loadData: function $$loadData(url) {
+                $log.debug("Loading resource " + url);
+
                 // Fetch data and return promise
                 return $http.get(url).then(function dataLoaded(response) {
                     // Match existing resource
@@ -151,13 +116,13 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                     // Unknown media type
                     if (!view) {
-                        return $q.reject({
+                        return $q.reject(asResponse({
                             status: 999,
                             statusText: "Application Error",
                             data: "Unknown content type " + mediaType,
                             config: response.config,
                             headers: angular.noop
-                        });
+                        }));
                     }
 
                     // Success
@@ -167,15 +132,15 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         headers: response.headers,
                         config: response.config,
                         mediaType: mediaType,
-                        originalData: response.data,
                         data: response.data,
                         view: view
                     };
 
                     if (view.transformResponse) {
-                        return view.transformResponse(result);
+                        result.originalData = response.data;
+                        return asResponse(view.transformResponse(result));
                     } else {
-                        return result;
+                        return asResponse(result);
                     }
                 });
             },
@@ -228,13 +193,13 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                             return response;
                         }, function localsError() {
                             // Failure
-                            return $q.reject({
+                            return $q.reject(asResponse({
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Failed to resolve view " + response.mediaType,
                                 config: response.config,
                                 headers: angular.noop
-                            });
+                            }));
                         });
                     }
 
@@ -274,5 +239,10 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         };
 
         return $dataRouterLoader;
+
+        // Converter function
+        function asResponse(response) {
+            return angular.extend($$dataRouterEventSupport.$new(), response);
+        }
     };
 });

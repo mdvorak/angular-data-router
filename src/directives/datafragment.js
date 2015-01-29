@@ -8,6 +8,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
         transclude: 'element',
         link: function datafragmentLink(scope, $element, attr, ctrl, $transclude) {
             var hrefExp = attr.datafragment || attr.src,
+                currentHref,
                 currentScope,
                 currentElement,
                 previousLeaveAnimation,
@@ -39,13 +40,17 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
             }
 
             function updateHref(href) {
-                var forceReload = attr.reload ? scope.$eval(attr.reload) : true;
+                currentHref = href;
+                reload(true);
+            }
 
+            function reload(forceReload) {
                 var next = attr.next = {};
 
-                if (href) {
+                if (currentHref) {
                     // Load data
-                    $dataRouterLoader.prepareView(href, context.current, forceReload).then(update, update);
+                    $log.debug("Loading fragment view for ", $element[0]);
+                    $dataRouterLoader.prepareView(currentHref, context.current, forceReload).then(update, update);
                 } else {
                     // Reset
                     update();
@@ -53,35 +58,51 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
 
                 function update(response) {
                     if (next === attr.next) {
-                        // Update current
-                        context.current = response;
-                        attr.next = undefined;
+                        // Update view data
+                        if (response.routeDataUpdate && context.current) {
+                            $log.debug("Replacing fragments data");
 
-                        // Show view
-                        var locals = response && response.locals,
-                            template = locals && locals.$template;
+                            // Update current (preserve listeners)
+                            var $$listeners = context.current.$$listeners;
+                            angular.extend(context.current, response);
+                            context.current.$$listeners = $$listeners;
 
-                        if (angular.isDefined(template)) {
-                            $log.debug("Setting fragment view to " + response.mediaType);
-
-                            var newScope = scope.$new();
-
-                            // Note: This will also link all children of ng-view that were contained in the original
-                            // html. If that content contains controllers, ... they could pollute/change the scope.
-                            // However, using ng-view on an element with additional content does not make sense...
-                            // Note: We can't remove them in the cloneAttchFn of $transclude as that
-                            // function is called before linking the content, which would apply child
-                            // directives to non existing elements.
-                            currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
-                                $animate.enter(clone, null, currentElement || $element);
-                                cleanupLastView();
-                            });
-
-                            currentScope = response.scope = newScope;
-                            currentScope.$eval(onloadExp);
+                            // Fire event on the response (only safe way for both main view and fragments)
+                            context.current.$broadcast('$routeUpdate', context.current);
                         } else {
-                            $log.debug("Resetting fragment view, got no response");
-                            cleanupLastView();
+                            // Update current
+                            context.current = response;
+                            attr.next = undefined;
+
+                            // Show view
+                            var locals = response && response.locals,
+                                template = locals && locals.$template;
+
+                            if (angular.isDefined(template)) {
+                                $log.debug("Setting fragment view to " + response.mediaType);
+
+                                // Add reload implementation
+                                response.reload = reload;
+
+                                var newScope = scope.$new();
+
+                                // Note: This will also link all children of ng-view that were contained in the original
+                                // html. If that content contains controllers, ... they could pollute/change the scope.
+                                // However, using ng-view on an element with additional content does not make sense...
+                                // Note: We can't remove them in the cloneAttchFn of $transclude as that
+                                // function is called before linking the content, which would apply child
+                                // directives to non existing elements.
+                                currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
+                                    $animate.enter(clone, null, currentElement || $element);
+                                    cleanupLastView();
+                                });
+
+                                currentScope = response.scope = newScope;
+                                currentScope.$eval(onloadExp);
+                            } else {
+                                $log.debug("Resetting fragment view, got no response");
+                                cleanupLastView();
+                            }
                         }
                     }
                 }
@@ -124,6 +145,10 @@ module.directive('datafragment', function datafragmentFillContentFactory($compil
             if (view && view.dataAs) {
                 locals.$scope = scope;
                 scope[view.dataAs] = current.data;
+
+                current.$on('$routeUpdate', function routeDataUpdated(e, response) {
+                    scope[view.dataAs] = response.data;
+                }, scope);
             }
 
             link(scope);
