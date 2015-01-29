@@ -321,7 +321,7 @@
             return provider;
         };
 
-        this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$rootScope", "$dataRouterRegistry", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry) {
+        this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$rootScope", "$dataRouterRegistry", "$$dataRouterEventSupport", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry, $$dataRouterEventSupport) {
             var $dataRouterLoader = {
                 /**
                  * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
@@ -372,15 +372,13 @@
                         // It is worth continuing?
                         // Check whether whole view needs to be refreshed
                         if (!forceReload && isSameView(current, response)) {
-                            $log.debug("Replacing current data");
-
                             // Update data
                             response.routeDataUpdate = true;
-                            return asScope(response);
+                            return response;
                         }
 
                         // Load view
-                        return $dataRouterLoader.$$loadView(response).then(asScope);
+                        return $dataRouterLoader.$$loadView(response);
                     }
 
                     function loadError(response) {
@@ -390,20 +388,14 @@
                         response.routeError = true;
 
                         if (response.view) {
-                            return $dataRouterLoader.$$loadView(response).then(asScope);
+                            return $dataRouterLoader.$$loadView(response);
                         } else {
-                            return $q.reject(asScope(response));
+                            return $q.reject(response);
                         }
                     }
 
                     function isSameView(current, next) {
                         return current && next && current.url === next.url && current.mediaType === next.mediaType;
-                    }
-
-                    function asScope(response) {
-                        // Create isolated scope
-                        var scope = $rootScope.$new(true);
-                        return angular.extend(scope, response);
                     }
                 },
 
@@ -416,6 +408,8 @@
                  * @returns {Object} Promise of the response.
                  */
                 $$loadData: function $$loadData(url) {
+                    $log.debug("Loading resource " + url);
+
                     // Fetch data and return promise
                     return $http.get(url).then(function dataLoaded(response) {
                         // Match existing resource
@@ -424,13 +418,13 @@
 
                         // Unknown media type
                         if (!view) {
-                            return $q.reject({
+                            return $q.reject(asResponse({
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Unknown content type " + mediaType,
                                 config: response.config,
                                 headers: angular.noop
-                            });
+                            }));
                         }
 
                         // Success
@@ -446,9 +440,9 @@
 
                         if (view.transformResponse) {
                             result.originalData = response.data;
-                            return view.transformResponse(result);
+                            return asResponse(view.transformResponse(result));
                         } else {
-                            return result;
+                            return asResponse(result);
                         }
                     });
                 },
@@ -501,13 +495,13 @@
                                 return response;
                             }, function localsError() {
                                 // Failure
-                                return $q.reject({
+                                return $q.reject(asResponse({
                                     status: 999,
                                     statusText: "Application Error",
                                     data: "Failed to resolve view " + response.mediaType,
                                     config: response.config,
                                     headers: angular.noop
-                                });
+                                }));
                             });
                         }
 
@@ -547,6 +541,11 @@
             };
 
             return $dataRouterLoader;
+
+            // Converter function
+            function asResponse(response) {
+                return angular.extend($$dataRouterEventSupport.$new(), response);
+            }
         }];
     });
 
@@ -656,8 +655,6 @@
         };
 
         this.$get = ["$log", "$location", "$rootScope", "$q", "$dataRouterRegistry", "$dataRouterLoader", "$apiMap", function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $apiMap) {
-            $log.debug("Using api prefix " + provider.$apiPrefix);
-
             var $dataRouter = {
                 /**
                  * Reference to the $apiMap object.
@@ -693,10 +690,10 @@
                     }
 
                     // Load resource
-                    url = $dataRouter.mapViewToApi($location.path());
-                    $log.debug("Loading resource " + url);
+                    url = $apiMap.mapViewToApi($location.path());
 
                     // Load data and view
+                    $log.debug("Loading main view");
                     $dataRouterLoader.prepareView(url, $dataRouter.current, forceReload)
                         .then(showView, routeChangeFailed);
 
@@ -710,13 +707,18 @@
                             if (response.routeDataUpdate && $dataRouter.current) {
                                 $log.debug("Replacing current data");
 
-                                // Update current
+                                // Update current (preserve listeners)
+                                var $$listeners = $dataRouter.current.$$listeners;
                                 angular.extend($dataRouter.current, response);
+                                $dataRouter.current.$$listeners = $$listeners;
 
                                 // Fire event on the response (only safe way for both main view and fragments)
-                                $dataRouter.current.$broadcast('$routeUpdate', response);
+                                $dataRouter.current.$broadcast('$routeUpdate', $dataRouter.current);
                             } else {
                                 $log.debug("Setting view to " + response.mediaType);
+
+                                // Add reload implementation
+                                response.reload = $dataRouter.reload;
 
                                 // Set current
                                 $dataRouter.current = response;
@@ -825,6 +827,86 @@
         }
     }
 
+    module.factory('$$dataRouterEventSupport', ["$exceptionHandler", function dataRouterEventSupportFactory($exceptionHandler) {
+        var slice = [].slice;
+
+        // This code is ripped of Scope class
+        function EventSupport() {}
+
+        EventSupport.$new = function() {
+            return new EventSupport();
+        };
+
+        EventSupport.prototype = {
+            constructor: EventSupport,
+
+            $on: function(name, listener, scope) {
+                if (!this.$$listeners) this.$$listeners = {};
+
+                var namedListeners = this.$$listeners[name];
+                if (!namedListeners) {
+                    namedListeners = this.$$listeners[name] = [listener];
+                } else {
+                    namedListeners.push(listener);
+                }
+
+                // Remove function
+                var remove = function removeFn() {
+                    var indexOfListener = namedListeners.indexOf(listener);
+                    if (indexOfListener !== -1) {
+                        namedListeners[indexOfListener] = null;
+                    }
+                };
+
+                if (scope) {
+                    var removeDestroy = scope.$on('$destroy', remove);
+
+                    return function combinedRemove() {
+                        remove();
+                        removeDestroy();
+                    };
+                } else {
+                    return remove;
+                }
+            },
+
+            $broadcast: function(name, args) {
+                var event = {
+                    name: name,
+                    preventDefault: function() {
+                        event.defaultPrevented = true;
+                    },
+                    defaultPrevented: false
+                };
+
+                var listeners = (this.$$listeners && this.$$listeners[name]) || [];
+                var i, length;
+
+                // Prepare arguments
+                args = [event].concat(slice.call(arguments, 1));
+
+                for (i = 0, length = listeners.length; i < length; i++) {
+                    // if listeners were deregistered, defragment the array
+                    if (!listeners[i]) {
+                        listeners.splice(i, 1);
+                        i--;
+                        length--;
+                        continue;
+                    }
+
+                    try {
+                        listeners[i].apply(null, args);
+                    } catch (e) {
+                        $exceptionHandler(e);
+                    }
+                }
+
+                return event;
+            }
+        };
+
+        return EventSupport;
+    }]);
     /**
      * @ngdoc directive
      * @name mdvorakDataRouter:apiHref
@@ -915,6 +997,7 @@
             transclude: 'element',
             link: function datafragmentLink(scope, $element, attr, ctrl, $transclude) {
                 var hrefExp = attr.datafragment || attr.src,
+                    currentHref,
                     currentScope,
                     currentElement,
                     previousLeaveAnimation,
@@ -946,13 +1029,17 @@
                 }
 
                 function updateHref(href) {
-                    var forceReload = attr.reload ? scope.$eval(attr.reload) : true;
+                    currentHref = href;
+                    reload(true);
+                }
 
+                function reload(forceReload) {
                     var next = attr.next = {};
 
-                    if (href) {
+                    if (currentHref) {
                         // Load data
-                        $dataRouterLoader.prepareView(href, context.current, forceReload).then(update, update);
+                        $log.debug("Loading fragment view for ", $element[0]);
+                        $dataRouterLoader.prepareView(currentHref, context.current, forceReload).then(update, update);
                     } else {
                         // Reset
                         update();
@@ -960,35 +1047,51 @@
 
                     function update(response) {
                         if (next === attr.next) {
-                            // Update current
-                            context.current = response;
-                            attr.next = undefined;
+                            // Update view data
+                            if (response.routeDataUpdate && context.current) {
+                                $log.debug("Replacing fragments data");
 
-                            // Show view
-                            var locals = response && response.locals,
-                                template = locals && locals.$template;
+                                // Update current (preserve listeners)
+                                var $$listeners = context.current.$$listeners;
+                                angular.extend(context.current, response);
+                                context.current.$$listeners = $$listeners;
 
-                            if (angular.isDefined(template)) {
-                                $log.debug("Setting fragment view to " + response.mediaType);
-
-                                var newScope = scope.$new();
-
-                                // Note: This will also link all children of ng-view that were contained in the original
-                                // html. If that content contains controllers, ... they could pollute/change the scope.
-                                // However, using ng-view on an element with additional content does not make sense...
-                                // Note: We can't remove them in the cloneAttchFn of $transclude as that
-                                // function is called before linking the content, which would apply child
-                                // directives to non existing elements.
-                                currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
-                                    $animate.enter(clone, null, currentElement || $element);
-                                    cleanupLastView();
-                                });
-
-                                currentScope = response.scope = newScope;
-                                currentScope.$eval(onloadExp);
+                                // Fire event on the response (only safe way for both main view and fragments)
+                                context.current.$broadcast('$routeUpdate', context.current);
                             } else {
-                                $log.debug("Resetting fragment view, got no response");
-                                cleanupLastView();
+                                // Update current
+                                context.current = response;
+                                attr.next = undefined;
+
+                                // Show view
+                                var locals = response && response.locals,
+                                    template = locals && locals.$template;
+
+                                if (angular.isDefined(template)) {
+                                    $log.debug("Setting fragment view to " + response.mediaType);
+
+                                    // Add reload implementation
+                                    response.reload = reload;
+
+                                    var newScope = scope.$new();
+
+                                    // Note: This will also link all children of ng-view that were contained in the original
+                                    // html. If that content contains controllers, ... they could pollute/change the scope.
+                                    // However, using ng-view on an element with additional content does not make sense...
+                                    // Note: We can't remove them in the cloneAttchFn of $transclude as that
+                                    // function is called before linking the content, which would apply child
+                                    // directives to non existing elements.
+                                    currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
+                                        $animate.enter(clone, null, currentElement || $element);
+                                        cleanupLastView();
+                                    });
+
+                                    currentScope = response.scope = newScope;
+                                    currentScope.$eval(onloadExp);
+                                } else {
+                                    $log.debug("Resetting fragment view, got no response");
+                                    cleanupLastView();
+                                }
                             }
                         }
                     }
