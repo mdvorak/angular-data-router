@@ -22,33 +22,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
      * @return {String} API URL prefix. It's absolute URL, includes base href.
      */
     provider.apiPrefix = function apiPrefix(prefix) {
-        return $apiRouteProvider.apiPrefix(prefix);
-    };
-
-    /**
-     * Maps view path to resource URL. Can be overridden during configuration.
-     * By default it maps path to API one to one.
-     * <p>
-     * Counterpart to #mapApiToView(). If you override one, override the other as well.
-     *
-     * @param path {String} View path, as in $location.path().
-     * @returns {String} Resource url, for e.g. HTTP requests.
-     */
-    provider.mapViewToApi = function mapViewToApi(path) {
-        return $apiRouteProvider.mapViewToApi(path);
-    };
-
-    /**
-     * Maps resource URL to view path. Can be overridden during configuration.
-     * By default it maps APU url to view paths one to one.
-     * <p>
-     * Counterpart to #mapViewToApi(). If you override one, override the other as well.
-     *
-     * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
-     * @returns {String} View path.
-     */
-    provider.mapApiToView = function mapApiToView(url) {
-        return $apiRouteProvider.mapApiToView(url);
+        return $apiRouteProvider.prefix(prefix);
     };
 
     /**
@@ -159,7 +133,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                 var path = $location.path() || '/';
                 var redirectTo;
                 var url;
-                var next = $dataRouter.next = {};
+                var next = $dataRouter.$$next = {};
 
                 // Home redirect
                 if ((redirectTo = provider.$redirects.match(path))) {
@@ -178,9 +152,9 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
                 // Promise resolutions
                 function showView(response) {
-                    if ($dataRouter.next === next) {
+                    if ($dataRouter.$$next === next) {
                         // Remove marker
-                        $dataRouter.next = undefined;
+                        $dataRouter.$$next = undefined;
 
                         // Update view data
                         if (response.$routeDataUpdate && $dataRouter.current) {
@@ -205,9 +179,9 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
                 function routeChangeFailed(response) {
                     // Error handler
-                    if ($dataRouter.next === next) {
+                    if ($dataRouter.$$next === next) {
                         // Remove next, but don't update current
-                        $dataRouter.next = undefined;
+                        $dataRouter.$$next = undefined;
 
                         // Show error view
                         $log.error("Failed to load view or data and no error view defined", response);

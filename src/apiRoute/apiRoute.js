@@ -19,7 +19,7 @@ angular.module('mdvorakApiRoute', []).provider('$apiRoute', function $apiRoutePr
      * @param prefix {String} Relative URL prefix, relative to base href.
      * @return {String} API URL prefix. It's absolute URL, includes base href.
      */
-    provider.prefix = function apiPrefix(prefix) {
+    provider.prefix = function prefixFn(prefix) {
         if (arguments.length > 0) {
             provider.$apiPrefix = provider.normalizeUrl(prefix);
         }
