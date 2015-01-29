@@ -33,7 +33,7 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
             views.addMatcher(mediaType, config);
         } else {
             // Normalize mimeType
-            mediaType = provider.$$normalizeMediaType(mediaType);
+            mediaType = provider.normalizeMediaType(mediaType);
             // Register
             views.addMatcher(mediaType, config);
         }
@@ -58,8 +58,8 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
      * @param mimeType {String} Media type to match.
      * @returns {String} Normalized media type.
      */
-    provider.$$normalizeMediaType = function normalizeMediaType(mimeType) {
-        if (!mimeType) return undefined;
+    provider.normalizeMediaType = function normalizeMediaType(mimeType) {
+        if (!mimeType) return null;
 
         // Get rid of + end everything after
         mimeType = mimeType.replace(/\s*[\+;].*$/, '');
@@ -82,7 +82,7 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
              * @param mimeType {String} Media type to match.
              * @returns {String} Normalized media type.
              */
-            normalizeMediaType: provider.$$normalizeMediaType,
+            normalizeMediaType: provider.normalizeMediaType,
 
             /**
              * Matches the media type against registered media types. If found, view configuration is return.
@@ -102,7 +102,7 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
              * @returns {boolean} true if type is ahs registered view, false otherwise.
              */
             isKnownType: function isKnownType(mediaType) {
-                return mediaType && !!this.match(provider.$$normalizeMediaType(mediaType));
+                return mediaType && !!this.match(provider.normalizeMediaType(mediaType));
             }
         };
     };

@@ -21,29 +21,6 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         return provider;
     };
 
-    /**
-     * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
-     *
-     * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
-     * @returns {String} Normalized URL, including full hostname.
-     */
-    provider.$$normalizeUrl = function $$normalizeUrl(href) {
-        if (href === '') {
-            // Special case - browser interprets empty string as current URL, while we need
-            // what it considers a base if no base href is given.
-            // Add /X to the path and then remove it.
-            urlParsingNode.setAttribute("href", 'X');
-            return urlParsingNode.href.replace(/X$/, '');
-        } else if (href) {
-            // Normalize thru href property
-            urlParsingNode.setAttribute("href", href);
-            return urlParsingNode.href;
-        }
-
-        // Empty
-        return null;
-    };
-
     this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
         var $dataRouterLoader = {
             /**
@@ -59,16 +36,6 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
              * @returns {String} Normalized media type.
              */
             normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
-
-            /**
-             * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
-             *
-             * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
-             * @returns {String} Normalized URL, including full hostname.
-             */
-            normalizeUrl: function normalizeUrl(href) {
-                return provider.$$normalizeUrl(href);
-            },
 
             /**
              * Eagerly fetches the template for the given media type. If media type is unknown, nothing happens.

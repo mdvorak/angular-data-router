@@ -1,6 +1,6 @@
 "use strict";
 
-module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
+module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $apiRouteProvider) {
     var provider = this;
 
     /**
@@ -16,25 +16,13 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     provider.$redirects = $$dataRouterMatchMap.create();
 
     /**
-     * Api prefix variable. Do not modify directly, use accessor function.
-     *
-     * @type {string}
-     * @protected
-     */
-    provider.$apiPrefix = $dataRouterLoaderProvider.$$normalizeUrl('');
-
-    /**
      * Configures prefix for default view to resource mapping.
      *
      * @param prefix {String} Relative URL prefix, relative to base href.
      * @return {String} API URL prefix. It's absolute URL, includes base href.
      */
     provider.apiPrefix = function apiPrefix(prefix) {
-        if (arguments.length > 0) {
-            provider.$apiPrefix = $dataRouterLoaderProvider.$$normalizeUrl(prefix);
-        }
-
-        return provider.$apiPrefix;
+        return $apiRouteProvider.apiPrefix(prefix);
     };
 
     /**
@@ -47,14 +35,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
      * @returns {String} Resource url, for e.g. HTTP requests.
      */
     provider.mapViewToApi = function mapViewToApi(path) {
-        // Path should always begin with slash, remove it
-        if (path && path[0] === '/') {
-            path = path.substring(1);
-        }
-
-        // Join
-        // Note: API prefix MUST end with a slash, otherwise it will work as configured, which is most likely wrong.
-        return provider.$apiPrefix + path;
+        return $apiRouteProvider.mapViewToApi(path);
     };
 
     /**
@@ -67,15 +48,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
      * @returns {String} View path.
      */
     provider.mapApiToView = function mapApiToView(url) {
-        // Normalize
-        url = $dataRouterLoaderProvider.$$normalizeUrl(url);
-
-        if (url && url.indexOf(provider.$apiPrefix) === 0) {
-            return url.substring(provider.$apiPrefix.length);
-        }
-
-        // Unable to map
-        return null;
+        return $apiRouteProvider.mapApiToView(url);
     };
 
     /**
@@ -158,85 +131,19 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
         return provider;
     };
 
-    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $exceptionHandler, $dataRouterRegistry, $dataRouterLoader) {
+    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $exceptionHandler, $dataRouterRegistry, $dataRouterLoader, $apiRoute) {
         $log.debug("Using api prefix " + provider.$apiPrefix);
 
         var $dataRouter = {
             /**
-             * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
-             * just subtype.
-             *
-             * @param mimeType {String} Media type to match.
-             * @returns {String} Normalized media type.
+             * Reference to the $apiRoute object.
              */
-            normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
+            api: $apiRoute,
 
             /**
-             * Returns configured API prefix.
-             *
-             * @return {String} API URL prefix. It's absolute URL, includes base href.
+             * Reference to the $dataRouterRegistry object.
              */
-            apiPrefix: function apiPrefix() {
-                return provider.apiPrefix();
-            },
-
-            /**
-             * Maps view path to resource URL. Can be overridden during configuration.
-             * By default it maps path to API one to one.
-             * <p>
-             * Counterpart to #mapApiToView(). If you override one, override the other as well.
-             *
-             * @param path {String} View path, as in $location.path().
-             * @returns {String} Resource url, for e.g. HTTP requests.
-             */
-            mapViewToApi: function mapViewToApi(path) {
-                return provider.mapViewToApi(path);
-            },
-
-
-            /**
-             * Maps resource URL to view path. Can be overridden during configuration.
-             * By default it maps APU url to view paths one to one.
-             * <p>
-             * Counterpart to #mapViewToApi(). If you override one, override the other as well.
-             *
-             * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
-             * @returns {String} View path.
-             */
-            mapApiToView: function mapApiToView(url) {
-                return provider.mapApiToView(url);
-            },
-
-            /**
-             * Returns true  if the type matches a registered view, false if we don't know how to view it.
-             *
-             * @param mediaType {String} Matched content type.
-             * @returns {boolean} true if type is ahs registered view, false otherwise.
-             */
-            isKnownType: function isKnownType(mediaType) {
-                return $dataRouterRegistry.isKnownType(mediaType);
-            },
-
-            /**
-             * Gets or sets current view resource url.
-             *
-             * @param url {String?} New resource url. Performs location change.
-             * @returns {String} Resource url that is being currently viewed.
-             */
-            url: function urlFn(url) {
-                // Getter
-                if (arguments.length < 1) {
-                    return $dataRouter.mapViewToApi($location.path());
-                }
-
-                // Setter
-                var path = $dataRouter.mapApiToView(url);
-
-                if (path) {
-                    $location.path(path);
-                    return url;
-                }
-            },
+            registry: $dataRouterRegistry,
 
             /**
              * Reloads data at current location. If content type remains same, only data are refreshed,
