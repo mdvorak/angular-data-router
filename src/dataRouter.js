@@ -1,6 +1,6 @@
 "use strict";
 
-module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $apiRouteProvider) {
+module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $apiMapProvider) {
     var provider = this;
 
     /**
@@ -22,7 +22,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
      * @return {String} API URL prefix. It's absolute URL, includes base href.
      */
     provider.apiPrefix = function apiPrefix(prefix) {
-        return $apiRouteProvider.prefix(prefix);
+        return $apiMapProvider.prefix(prefix);
     };
 
     /**
@@ -105,14 +105,14 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
         return provider;
     };
 
-    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $exceptionHandler, $dataRouterRegistry, $dataRouterLoader, $apiRoute) {
+    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $apiMap) {
         $log.debug("Using api prefix " + provider.$apiPrefix);
 
         var $dataRouter = {
             /**
-             * Reference to the $apiRoute object.
+             * Reference to the $apiMap object.
              */
-            api: $apiRoute,
+            api: $apiMap,
 
             /**
              * Reference to the $dataRouterRegistry object.
@@ -157,14 +157,14 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                         $dataRouter.$$next = undefined;
 
                         // Update view data
-                        if (response.$routeDataUpdate && $dataRouter.current) {
+                        if (response.routeDataUpdate && $dataRouter.current) {
                             $log.debug("Replacing current data");
 
                             // Update current
                             angular.extend($dataRouter.current, response);
 
                             // Fire event on the response (only safe way for both main view and fragments)
-                            $dataRouter.current.$$broadcast('$routeUpdate', [response], $exceptionHandler);
+                            $dataRouter.current.$broadcast('$routeUpdate', response);
                         } else {
                             $log.debug("Setting view to " + response.mediaType);
 

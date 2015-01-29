@@ -1,7 +1,7 @@
 /*
  The MIT License
 
- Copyright (c) 2015 Michal Dvorak <michal@mdvorak.org>
+ Copyright (c) 2015 Michal Dvorak <michal@mdvorak.org>, https://github.com/mdvorak/angular-data-router
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,174 @@
 (function dataRouterModule(angular) {
     "use strict";
 
-    var module = angular.module("mdvorakDataRouter", []);
+    var module = angular.module("mdvorakDataRouter", ['mdvorakApiMap']);
+
+    angular.module('mdvorakApiMap', []).provider('$apiMap', function $apiMapProvider() {
+        var provider = this;
+        // Intentionally using document object instead of $document
+        var urlParsingNode = document.createElement("A");
+
+        /**
+         * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
+         *
+         * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
+         * @returns {String} Normalized URL, including full hostname.
+         */
+        provider.normalizeUrl = function normalizeUrl(href) {
+            if (href === '') {
+                // Special case - browser interprets empty string as current URL, while we need
+                // what it considers a base if no base href is given.
+                // Add /X to the path and then remove it.
+                urlParsingNode.setAttribute("href", 'X');
+                return urlParsingNode.href.replace(/X$/, '');
+            } else if (href) {
+                // Normalize thru href property
+                urlParsingNode.setAttribute("href", href);
+                return urlParsingNode.href;
+            }
+
+            // Empty
+            return null;
+        };
+
+        /**
+         * Api prefix variable. Do not modify directly, use accessor function.
+         *
+         * @type {string}
+         * @protected
+         */
+        provider.$apiPrefix = provider.normalizeUrl('');
+
+        /**
+         * Configures prefix for default view to resource mapping.
+         *
+         * @param prefix {String} Relative URL prefix, relative to base href.
+         * @return {String} API URL prefix. It's absolute URL, includes base href.
+         */
+        provider.prefix = function prefixFn(prefix) {
+            if (arguments.length > 0) {
+                provider.$apiPrefix = provider.normalizeUrl(prefix);
+            }
+
+            return provider.$apiPrefix;
+        };
+
+        /**
+         * Maps view path to resource URL. Can be overridden during configuration.
+         * By default it maps path to API one to one.
+         * <p>
+         * Counterpart to #mapApiToView(). If you override one, override the other as well.
+         *
+         * @param path {String} View path, as in $location.path().
+         * @returns {String} Resource url, for e.g. HTTP requests.
+         */
+        provider.mapViewToApi = function mapViewToApi(path) {
+            // Path should always begin with slash, remove it
+            if (path && path[0] === '/') {
+                path = path.substring(1);
+            }
+
+            // Join
+            // Note: API prefix MUST end with a slash, otherwise it will work as configured, which is most likely wrong.
+            return provider.$apiPrefix + path;
+        };
+
+        /**
+         * Maps resource URL to view path. Can be overridden during configuration.
+         * By default it maps APU url to view paths one to one.
+         * <p>
+         * Counterpart to #mapViewToApi(). If you override one, override the other as well.
+         *
+         * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
+         * @returns {String} View path.
+         */
+        provider.mapApiToView = function mapApiToView(url) {
+            // Normalize
+            url = provider.normalizeUrl(url);
+
+            if (url && url.indexOf(provider.$apiPrefix) === 0) {
+                return url.substring(provider.$apiPrefix.length);
+            }
+
+            // Unable to map
+            return null;
+        };
+
+        this.$get = ["$log", "$location", function $apiMapFactory($log, $location) {
+            $log.debug("Using API prefix " + provider.$apiPrefix);
+
+            var $apiMap = {
+                /**
+                 * Returns configured API prefix.
+                 *
+                 * @return {String} API URL prefix. It's absolute URL, includes base href.
+                 */
+                apiPrefix: function apiPrefix() {
+                    return provider.apiPrefix();
+                },
+
+                /**
+                 * Maps view path to resource URL. Can be overridden during configuration.
+                 * By default it maps path to API one to one.
+                 * <p>
+                 * Counterpart to #mapApiToView(). If you override one, override the other as well.
+                 *
+                 * @param path {String} View path, as in $location.path().
+                 * @returns {String} Resource url, for e.g. HTTP requests.
+                 */
+                mapViewToApi: function mapViewToApi(path) {
+                    return provider.mapViewToApi(path);
+                },
+
+
+                /**
+                 * Maps resource URL to view path. Can be overridden during configuration.
+                 * By default it maps APU url to view paths one to one.
+                 * <p>
+                 * Counterpart to #mapViewToApi(). If you override one, override the other as well.
+                 *
+                 * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
+                 * @returns {String} View path.
+                 */
+                mapApiToView: function mapApiToView(url) {
+                    return provider.mapApiToView(url);
+                },
+
+                /**
+                 * Gets or sets current view resource url.
+                 *
+                 * @param url {String?} New resource url. Performs location change.
+                 * @returns {String} Resource url that is being currently viewed.
+                 */
+                url: function urlFn(url) {
+                    // Getter
+                    if (arguments.length < 1) {
+                        return $apiMap.mapViewToApi($location.path());
+                    }
+
+                    // Setter
+                    var path = $apiMap.mapApiToView(url);
+
+                    if (path) {
+                        $location.path(path);
+                        return url;
+                    }
+                },
+
+                /**
+                 * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
+                 *
+                 * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
+                 * @returns {String} Normalized URL, including full hostname.
+                 */
+                normalizeUrl: function normalizeUrl(href) {
+                    return provider.normalizeUrl(href);
+                }
+            };
+
+            return $apiMap;
+        }];
+    });
 
     module.provider('$dataRouterRegistry', ["$$dataRouterMatchMap", function $dataRouterRegistryProvider($$dataRouterMatchMap) {
         var provider = this;
@@ -60,7 +227,7 @@
                 views.addMatcher(mediaType, config);
             } else {
                 // Normalize mimeType
-                mediaType = provider.$$normalizeMediaType(mediaType);
+                mediaType = provider.normalizeMediaType(mediaType);
                 // Register
                 views.addMatcher(mediaType, config);
             }
@@ -85,8 +252,8 @@
          * @param mimeType {String} Media type to match.
          * @returns {String} Normalized media type.
          */
-        provider.$$normalizeMediaType = function normalizeMediaType(mimeType) {
-            if (!mimeType) return undefined;
+        provider.normalizeMediaType = function normalizeMediaType(mimeType) {
+            if (!mimeType) return null;
 
             // Get rid of + end everything after
             mimeType = mimeType.replace(/\s*[\+;].*$/, '');
@@ -109,7 +276,7 @@
                  * @param mimeType {String} Media type to match.
                  * @returns {String} Normalized media type.
                  */
-                normalizeMediaType: provider.$$normalizeMediaType,
+                normalizeMediaType: provider.normalizeMediaType,
 
                 /**
                  * Matches the media type against registered media types. If found, view configuration is return.
@@ -129,7 +296,7 @@
                  * @returns {boolean} true if type is ahs registered view, false otherwise.
                  */
                 isKnownType: function isKnownType(mediaType) {
-                    return mediaType && !!this.match(provider.$$normalizeMediaType(mediaType));
+                    return mediaType && !!this.match(provider.normalizeMediaType(mediaType));
                 }
             };
         };
@@ -137,17 +304,15 @@
 
     module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         var provider = this;
-        // Intentionally using document object instead of $document
-        var urlParsingNode = document.createElement("a");
 
         /**
          * Sets global configuration for all routes.
          *
          * @param config {Object} Configuration object. Currently only "resolve" key is supported.
-         * @returns {dataRouterLoaderProvider} Reference to self.
+         * @returns {Object} Reference to the provider.
          */
         provider.global = function global(config) {
-            if (!config) return;
+            if (!config) return provider;
 
             if (angular.isObject(config.resolve)) {
                 provider.$globalResolve = angular.extend(provider.$globalResolve || {}, config.resolve);
@@ -156,36 +321,8 @@
             return provider;
         };
 
-        /**
-         * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
-         *
-         * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
-         * @returns {String} Normalized URL, including full hostname.
-         */
-        provider.$$normalizeUrl = function $$normalizeUrl(href) {
-            if (href === '') {
-                // Special case - browser interprets empty string as current URL, while we need
-                // what it considers a base if no base href is given.
-                // Add /X to the path and then remove it.
-                urlParsingNode.setAttribute("href", 'X');
-                return urlParsingNode.href.replace(/X$/, '');
-            } else if (href) {
-                // Normalize thru href property
-                urlParsingNode.setAttribute("href", href);
-                return urlParsingNode.href;
-            }
-
-            // Empty
-            return null;
-        };
-
-        this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$dataRouterRegistry", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
+        this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$rootScope", "$dataRouterRegistry", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry) {
             var $dataRouterLoader = {
-                /**
-                 * RouteData class.
-                 */
-                RouteData: RouteData,
-
                 /**
                  * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
                  * just subtype.
@@ -194,16 +331,6 @@
                  * @returns {String} Normalized media type.
                  */
                 normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
-
-                /**
-                 * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
-                 *
-                 * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
-                 * @returns {String} Normalized URL, including full hostname.
-                 */
-                normalizeUrl: function normalizeUrl(href) {
-                    return provider.$$normalizeUrl(href);
-                },
 
                 /**
                  * Eagerly fetches the template for the given media type. If media type is unknown, nothing happens.
@@ -227,7 +354,7 @@
                  * and then finally resolves template and all other resolvables.
                  *
                  * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
-                 * @param current {Object?} Current response data. If provided and forceReload is false, $routeDataUpdate flag
+                 * @param current {Object?} Current response data. If provided and forceReload is false, routeDataUpdate flag
                  *                          of the response may be set, indicating that view doesn't have to be reloaded.
                  * @param forceReload {boolean?} When false, it allows just data update. Without current parameter does nothing.
                  * @returns {Object} Promise of completely initialized response, including template and locals.
@@ -248,24 +375,24 @@
                             $log.debug("Replacing current data");
 
                             // Update data
-                            response.$routeDataUpdate = true;
-                            return asRouteData(response);
+                            response.routeDataUpdate = true;
+                            return asScope(response);
                         }
 
                         // Load view
-                        return $dataRouterLoader.$$loadView(response).then(asRouteData);
+                        return $dataRouterLoader.$$loadView(response).then(asScope);
                     }
 
                     function loadError(response) {
                         // Load error view
                         response.mediaType = '$error';
                         response.view = $dataRouterRegistry.match('$error');
-                        response.$routeError = true;
+                        response.routeError = true;
 
                         if (response.view) {
-                            return $dataRouterLoader.$$loadView(response).then(asRouteData);
+                            return $dataRouterLoader.$$loadView(response).then(asScope);
                         } else {
-                            return $q.reject(asRouteData(response));
+                            return $q.reject(asScope(response));
                         }
                     }
 
@@ -273,8 +400,10 @@
                         return current && next && current.url === next.url && current.mediaType === next.mediaType;
                     }
 
-                    function asRouteData(response) {
-                        return new RouteData(response);
+                    function asScope(response) {
+                        // Create isolated scope
+                        var scope = $rootScope.$new(true);
+                        return angular.extend(scope, response);
                     }
                 },
 
@@ -419,82 +548,16 @@
 
             return $dataRouterLoader;
         }];
-
-        // RouteData class
-        // TODO this should be in standalone file probably
-        function RouteData(data) {
-            angular.extend(this, data);
-
-            this.$$nextUid = 1;
-            this.$$routeUpdateListeners = {};
-        }
-
-        RouteData.prototype = {
-            constructor: RouteData,
-
-            on: function on(name, listener, scope) {
-                if (listener) {
-                    if (name === "$routeUpdate") {
-                        // Register listener
-                        return addListener(this.$$routeUpdateListeners, this.$$nextUid++, listener, scope);
-                    }
-
-                    // Ignore everything else
-                }
-
-                return angular.noop;
-            },
-
-            $$broadcast: function $$broadcast(name, args, $exceptionHandler) {
-                if (name === "$routeUpdate") {
-                    var event = {
-                        name: name,
-                        preventDefault: function preventDefault() {
-                            event.defaultPrevented = true;
-                        },
-                        defaultPrevented: false
-                    };
-
-                    // Prepend event
-                    args = [event].concat(args);
-
-                    // Fire
-                    angular.forEach(this.$$routeUpdateListeners, function routeUpdateBroadcast(listener) {
-                        try {
-                            listener.apply(null, args);
-                        } catch (e) {
-                            $exceptionHandler(e);
-                        }
-                    });
-                }
-            }
-        };
-
-        function addListener(map, uid, listener, scope) {
-            map[uid] = listener;
-
-            // Remove function
-            function listenerRemover() {
-                delete map[uid];
-            }
-
-            // If there is scope, register for destroy
-            if (scope) {
-                var destroyRemove = scope.$on('$destroy', listenerRemover);
-
-                return function combinedRemover() {
-                    listenerRemover();
-                    destroyRemove();
-                };
-            } else {
-                // Return remover
-                return listenerRemover;
-            }
-        }
     });
 
-    module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider) {
+    module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", "$apiMapProvider", function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $apiMapProvider) {
         var provider = this;
+
+        /**
+         * Enables the router. May be used to disable the router event handling. Cannot be changed after config phase.
+         * @type {boolean}
+         */
+        provider.$enabled = true;
 
         /**
          * Map of redirects. Do not modify directly, use redirect function.
@@ -503,66 +566,13 @@
         provider.$redirects = $$dataRouterMatchMap.create();
 
         /**
-         * Api prefix variable. Do not modify directly, use accessor function.
-         *
-         * @type {string}
-         * @protected
-         */
-        provider.$apiPrefix = $dataRouterLoaderProvider.$$normalizeUrl('');
-
-        /**
          * Configures prefix for default view to resource mapping.
          *
          * @param prefix {String} Relative URL prefix, relative to base href.
          * @return {String} API URL prefix. It's absolute URL, includes base href.
          */
         provider.apiPrefix = function apiPrefix(prefix) {
-            if (arguments.length > 0) {
-                provider.$apiPrefix = $dataRouterLoaderProvider.$$normalizeUrl(prefix);
-            }
-
-            return provider.$apiPrefix;
-        };
-
-        /**
-         * Maps view path to resource URL. Can be overridden during configuration.
-         * By default it maps path to API one to one.
-         * <p>
-         * Counterpart to #mapApiToView(). If you override one, override the other as well.
-         *
-         * @param path {String} View path, as in $location.path().
-         * @returns {String} Resource url, for e.g. HTTP requests.
-         */
-        provider.mapViewToApi = function mapViewToApi(path) {
-            // Path should always begin with slash, remove it
-            if (path && path[0] === '/') {
-                path = path.substring(1);
-            }
-
-            // Join
-            // Note: API prefix MUST end with a slash, otherwise it will work as configured, which is most likely wrong.
-            return provider.$apiPrefix + path;
-        };
-
-        /**
-         * Maps resource URL to view path. Can be overridden during configuration.
-         * By default it maps APU url to view paths one to one.
-         * <p>
-         * Counterpart to #mapViewToApi(). If you override one, override the other as well.
-         *
-         * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
-         * @returns {String} View path.
-         */
-        provider.mapApiToView = function mapApiToView(url) {
-            // Normalize
-            url = $dataRouterLoaderProvider.$$normalizeUrl(url);
-
-            if (url && url.indexOf(provider.$apiPrefix) === 0) {
-                return url.substring(provider.$apiPrefix.length);
-            }
-
-            // Unable to map
-            return null;
+            return $apiMapProvider.prefix(prefix);
         };
 
         /**
@@ -629,85 +639,35 @@
             return provider;
         };
 
-        this.$get = ["$log", "$location", "$rootScope", "$q", "$exceptionHandler", "$dataRouterRegistry", "$dataRouterLoader", function $dataRouterFactory($log, $location, $rootScope, $q, $exceptionHandler, $dataRouterRegistry, $dataRouterLoader) {
+        /**
+         * Enables  or disables the router. May be used to disable the router event handling.
+         * Cannot be changed after config phase.
+         *
+         * This method is intended mostly for unit tests.
+         *
+         * Enabled by default.
+         *
+         * @param enabled {boolean} false to disable the router.
+         * @returns {Object} Returns provider.
+         */
+        provider.enabled = function enabledFn(enabled) {
+            provider.$enabled = !!enabled;
+            return provider;
+        };
+
+        this.$get = ["$log", "$location", "$rootScope", "$q", "$dataRouterRegistry", "$dataRouterLoader", "$apiMap", function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $apiMap) {
             $log.debug("Using api prefix " + provider.$apiPrefix);
 
             var $dataRouter = {
                 /**
-                 * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
-                 * just subtype.
-                 *
-                 * @param mimeType {String} Media type to match.
-                 * @returns {String} Normalized media type.
+                 * Reference to the $apiMap object.
                  */
-                normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
+                api: $apiMap,
 
                 /**
-                 * Returns configured API prefix.
-                 *
-                 * @return {String} API URL prefix. It's absolute URL, includes base href.
+                 * Reference to the $dataRouterRegistry object.
                  */
-                apiPrefix: function apiPrefix() {
-                    return provider.apiPrefix();
-                },
-
-                /**
-                 * Maps view path to resource URL. Can be overridden during configuration.
-                 * By default it maps path to API one to one.
-                 * <p>
-                 * Counterpart to #mapApiToView(). If you override one, override the other as well.
-                 *
-                 * @param path {String} View path, as in $location.path().
-                 * @returns {String} Resource url, for e.g. HTTP requests.
-                 */
-                mapViewToApi: function mapViewToApi(path) {
-                    return provider.mapViewToApi(path);
-                },
-
-
-                /**
-                 * Maps resource URL to view path. Can be overridden during configuration.
-                 * By default it maps APU url to view paths one to one.
-                 * <p>
-                 * Counterpart to #mapViewToApi(). If you override one, override the other as well.
-                 *
-                 * @param url {String} Resource url. Unless provider is configured otherwise, it must be inside API namespace.
-                 * @returns {String} View path.
-                 */
-                mapApiToView: function mapApiToView(url) {
-                    return provider.mapApiToView(url);
-                },
-
-                /**
-                 * Returns true  if the type matches a registered view, false if we don't know how to view it.
-                 *
-                 * @param mediaType {String} Matched content type.
-                 * @returns {boolean} true if type is ahs registered view, false otherwise.
-                 */
-                isKnownType: function isKnownType(mediaType) {
-                    return $dataRouterRegistry.isKnownType(mediaType);
-                },
-
-                /**
-                 * Gets or sets current view resource url.
-                 *
-                 * @param url {String?} New resource url. Performs location change.
-                 * @returns {String} Resource url that is being currently viewed.
-                 */
-                url: function urlFn(url) {
-                    // Getter
-                    if (arguments.length < 1) {
-                        return $dataRouter.mapViewToApi($location.path());
-                    }
-
-                    // Setter
-                    var path = $dataRouter.mapApiToView(url);
-
-                    if (path) {
-                        $location.path(path);
-                        return url;
-                    }
-                },
+                registry: $dataRouterRegistry,
 
                 /**
                  * Reloads data at current location. If content type remains same, only data are refreshed,
@@ -723,7 +683,7 @@
                     var path = $location.path() || '/';
                     var redirectTo;
                     var url;
-                    var next = $dataRouter.next = {};
+                    var next = $dataRouter.$$next = {};
 
                     // Home redirect
                     if ((redirectTo = provider.$redirects.match(path))) {
@@ -742,19 +702,19 @@
 
                     // Promise resolutions
                     function showView(response) {
-                        if ($dataRouter.next === next) {
+                        if ($dataRouter.$$next === next) {
                             // Remove marker
-                            $dataRouter.next = undefined;
+                            $dataRouter.$$next = undefined;
 
                             // Update view data
-                            if (response.$routeDataUpdate && $dataRouter.current) {
+                            if (response.routeDataUpdate && $dataRouter.current) {
                                 $log.debug("Replacing current data");
 
                                 // Update current
                                 angular.extend($dataRouter.current, response);
 
                                 // Fire event on the response (only safe way for both main view and fragments)
-                                $dataRouter.current.$$broadcast('$routeUpdate', [response], $exceptionHandler);
+                                $dataRouter.current.$broadcast('$routeUpdate', response);
                             } else {
                                 $log.debug("Setting view to " + response.mediaType);
 
@@ -762,38 +722,40 @@
                                 $dataRouter.current = response;
 
                                 // Emit event
-                                $rootScope.$emit('$routeChangeSuccess', response);
+                                $rootScope.$broadcast('$routeChangeSuccess', response);
                             }
                         }
                     }
 
                     function routeChangeFailed(response) {
                         // Error handler
-                        if ($dataRouter.next === next) {
+                        if ($dataRouter.$$next === next) {
                             // Remove next, but don't update current
-                            $dataRouter.next = undefined;
+                            $dataRouter.$$next = undefined;
 
                             // Show error view
                             $log.error("Failed to load view or data and no error view defined", response);
-                            $rootScope.$emit('$routeChangeError', response);
+                            $rootScope.$broadcast('$routeChangeError', response);
                         }
                     }
                 }
             };
 
-            // Broadcast $routeChangeStart and cancel location change if it is prevented
-            $rootScope.$on('$locationChangeStart', function locationChangeStart($locationEvent) {
-                if ($rootScope.$broadcast('$routeChangeStart').defaultPrevented) {
-                    if ($locationEvent) {
-                        $locationEvent.preventDefault();
+            if (provider.$enabled) {
+                // Broadcast $routeChangeStart and cancel location change if it is prevented
+                $rootScope.$on('$locationChangeStart', function locationChangeStart($locationEvent) {
+                    if ($rootScope.$broadcast('$routeChangeStart').defaultPrevented) {
+                        if ($locationEvent) {
+                            $locationEvent.preventDefault();
+                        }
                     }
-                }
-            });
+                });
 
-            // Reload view on location change
-            $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
-                $dataRouter.reload(true);
-            });
+                // Reload view on location change
+                $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
+                    $dataRouter.reload(true);
+                });
+            }
 
             return $dataRouter;
         }];
@@ -879,7 +841,7 @@
      </file>
      </example>
      */
-    module.directive('apiHref', ["$dataRouter", "$dataRouterLoader", "$location", "$browser", function apiHrefFactory($dataRouter, $dataRouterLoader, $location, $browser) {
+    module.directive('apiHref', ["$apiMap", "$dataRouterRegistry", "$dataRouterLoader", "$location", "$browser", function apiHrefFactory($apiMap, $dataRouterRegistry, $dataRouterLoader, $location, $browser) {
         return {
             restrict: 'AC',
             link: function apiHrefLink(scope, element, attrs) {
@@ -895,14 +857,14 @@
 
                 function updateHref() {
                     // Do we have a type? And it is supported?
-                    if (attrs.type && !$dataRouter.isKnownType(attrs.type)) {
+                    if (attrs.type && !$dataRouterRegistry.isKnownType(attrs.type)) {
                         // If not, do not modify the URL
                         setHref(attrs.apiHref, '_self');
                         return;
                     }
 
                     // Map URL
-                    var href = $dataRouter.mapApiToView(attrs.apiHref);
+                    var href = $apiMap.mapApiToView(attrs.apiHref);
 
                     if (angular.isString(href)) {
                         // Hashbang mode
@@ -1070,8 +1032,8 @@
                     locals.$scope = scope;
                     scope[view.dataAs] = current.data;
 
-                    current.on('$routeUpdate', function routeDataUpdated(data) {
-                        scope[view.dataAs] = data;
+                    current.$on('$routeUpdate', function routeDataUpdated(e, response) {
+                        scope[view.dataAs] = response.data;
                     }, scope);
                 }
 
@@ -1184,8 +1146,8 @@
                     scope[view.dataAs] = current.data;
 
                     // Listen for changes
-                    current.on('$routeUpdate', function routeDataUpdated(data) {
-                        scope[view.dataAs] = data;
+                    current.$on('$routeUpdate', function routeDataUpdated(e, response) {
+                        scope[view.dataAs] = response.data;
                     }, scope);
                 }
 

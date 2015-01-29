@@ -1,9 +1,32 @@
 "use strict";
 
-angular.module('mdvorakApiRoute', []).provider('$apiRoute', function $apiRouteProvider() {
+angular.module('mdvorakApiMap', []).provider('$apiMap', function $apiMapProvider() {
     var provider = this;
     // Intentionally using document object instead of $document
     var urlParsingNode = document.createElement("A");
+
+    /**
+     * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
+     *
+     * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
+     * @returns {String} Normalized URL, including full hostname.
+     */
+    provider.normalizeUrl = function normalizeUrl(href) {
+        if (href === '') {
+            // Special case - browser interprets empty string as current URL, while we need
+            // what it considers a base if no base href is given.
+            // Add /X to the path and then remove it.
+            urlParsingNode.setAttribute("href", 'X');
+            return urlParsingNode.href.replace(/X$/, '');
+        } else if (href) {
+            // Normalize thru href property
+            urlParsingNode.setAttribute("href", href);
+            return urlParsingNode.href;
+        }
+
+        // Empty
+        return null;
+    };
 
     /**
      * Api prefix variable. Do not modify directly, use accessor function.
@@ -68,34 +91,10 @@ angular.module('mdvorakApiRoute', []).provider('$apiRoute', function $apiRoutePr
         return null;
     };
 
-    /**
-     * Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.
-     *
-     * @param href {String} URL to be normalized. Can be absolute, server-relative or context relative.
-     * @returns {String} Normalized URL, including full hostname.
-     */
-    provider.normalizeUrl = function normalizeUrl(href) {
-        if (href === '') {
-            // Special case - browser interprets empty string as current URL, while we need
-            // what it considers a base if no base href is given.
-            // Add /X to the path and then remove it.
-            urlParsingNode.setAttribute("href", 'X');
-            return urlParsingNode.href.replace(/X$/, '');
-        } else if (href) {
-            // Normalize thru href property
-            urlParsingNode.setAttribute("href", href);
-            return urlParsingNode.href;
-        }
-
-        // Empty
-        return null;
-    };
-
-
-    this.$get = function $apiRouteFactory($log, $location) {
+    this.$get = function $apiMapFactory($log, $location) {
         $log.debug("Using API prefix " + provider.$apiPrefix);
 
-        var $apiRoute = {
+        var $apiMap = {
             /**
              * Returns configured API prefix.
              *
@@ -141,11 +140,11 @@ angular.module('mdvorakApiRoute', []).provider('$apiRoute', function $apiRoutePr
             url: function urlFn(url) {
                 // Getter
                 if (arguments.length < 1) {
-                    return $apiRoute.mapViewToApi($location.path());
+                    return $apiMap.mapViewToApi($location.path());
                 }
 
                 // Setter
-                var path = $apiRoute.mapApiToView(url);
+                var path = $apiMap.mapApiToView(url);
 
                 if (path) {
                     $location.path(path);
@@ -164,6 +163,6 @@ angular.module('mdvorakApiRoute', []).provider('$apiRoute', function $apiRoutePr
             }
         };
 
-        return $apiRoute;
+        return $apiMap;
     };
 });

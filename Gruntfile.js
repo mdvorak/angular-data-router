@@ -43,8 +43,7 @@ module.exports = function (grunt) {
 
                     globals: {
                         angular: true,
-                        module: true,
-                        RouteError: true
+                        module: true
                     }
                 },
                 files: {
@@ -115,6 +114,7 @@ module.exports = function (grunt) {
                     {
                         dest: '<%=cfg.build%>/bundle.js',
                         src: [
+                            '<%=cfg.src%>/apiMap.js',
                             '<%=cfg.src%>/dataRouterRegistry.js',
                             '<%=cfg.src%>/dataRouterLoader.js',
                             '<%=cfg.src%>/dataRouter.js',

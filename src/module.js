@@ -1,3 +1,3 @@
 "use strict";
 
-var module = angular.module("mdvorakDataRouter", ['mdvorakApiRoute']);
+var module = angular.module("mdvorakDataRouter", ['mdvorakApiMap']);

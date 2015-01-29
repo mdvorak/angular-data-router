@@ -2,17 +2,15 @@
 
 module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     var provider = this;
-    // Intentionally using document object instead of $document
-    var urlParsingNode = document.createElement("a");
 
     /**
      * Sets global configuration for all routes.
      *
      * @param config {Object} Configuration object. Currently only "resolve" key is supported.
-     * @returns {dataRouterLoaderProvider} Reference to self.
+     * @returns {Object} Reference to the provider.
      */
     provider.global = function global(config) {
-        if (!config) return;
+        if (!config) return provider;
 
         if (angular.isObject(config.resolve)) {
             provider.$globalResolve = angular.extend(provider.$globalResolve || {}, config.resolve);
@@ -21,13 +19,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         return provider;
     };
 
-    this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $dataRouterRegistry) {
+    this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry) {
         var $dataRouterLoader = {
-            /**
-             * RouteData class.
-             */
-            RouteData: RouteData,
-
             /**
              * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
              * just subtype.
@@ -59,7 +52,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
              * and then finally resolves template and all other resolvables.
              *
              * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
-             * @param current {Object?} Current response data. If provided and forceReload is false, $routeDataUpdate flag
+             * @param current {Object?} Current response data. If provided and forceReload is false, routeDataUpdate flag
              *                          of the response may be set, indicating that view doesn't have to be reloaded.
              * @param forceReload {boolean?} When false, it allows just data update. Without current parameter does nothing.
              * @returns {Object} Promise of completely initialized response, including template and locals.
@@ -80,24 +73,24 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         $log.debug("Replacing current data");
 
                         // Update data
-                        response.$routeDataUpdate = true;
-                        return asRouteData(response);
+                        response.routeDataUpdate = true;
+                        return asScope(response);
                     }
 
                     // Load view
-                    return $dataRouterLoader.$$loadView(response).then(asRouteData);
+                    return $dataRouterLoader.$$loadView(response).then(asScope);
                 }
 
                 function loadError(response) {
                     // Load error view
                     response.mediaType = '$error';
                     response.view = $dataRouterRegistry.match('$error');
-                    response.$routeError = true;
+                    response.routeError = true;
 
                     if (response.view) {
-                        return $dataRouterLoader.$$loadView(response).then(asRouteData);
+                        return $dataRouterLoader.$$loadView(response).then(asScope);
                     } else {
-                        return $q.reject(asRouteData(response));
+                        return $q.reject(asScope(response));
                     }
                 }
 
@@ -105,8 +98,10 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     return current && next && current.url === next.url && current.mediaType === next.mediaType;
                 }
 
-                function asRouteData(response) {
-                    return new RouteData(response);
+                function asScope(response) {
+                    // Create isolated scope
+                    var scope = $rootScope.$new(true);
+                    return angular.extend(scope, response);
                 }
             },
 
@@ -251,76 +246,4 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
         return $dataRouterLoader;
     };
-
-    // RouteData class
-    // TODO this should be in standalone file probably
-    function RouteData(data) {
-        angular.extend(this, data);
-
-        this.$$nextUid = 1;
-        this.$$routeUpdateListeners = {};
-    }
-
-    RouteData.prototype = {
-        constructor: RouteData,
-
-        on: function on(name, listener, scope) {
-            if (listener) {
-                if (name === "$routeUpdate") {
-                    // Register listener
-                    return addListener(this.$$routeUpdateListeners, this.$$nextUid++, listener, scope);
-                }
-
-                // Ignore everything else
-            }
-
-            return angular.noop;
-        },
-
-        $$broadcast: function $$broadcast(name, args, $exceptionHandler) {
-            if (name === "$routeUpdate") {
-                var event = {
-                    name: name,
-                    preventDefault: function preventDefault() {
-                        event.defaultPrevented = true;
-                    },
-                    defaultPrevented: false
-                };
-
-                // Prepend event
-                args = [event].concat(args);
-
-                // Fire
-                angular.forEach(this.$$routeUpdateListeners, function routeUpdateBroadcast(listener) {
-                    try {
-                        listener.apply(null, args);
-                    } catch (e) {
-                        $exceptionHandler(e);
-                    }
-                });
-            }
-        }
-    };
-
-    function addListener(map, uid, listener, scope) {
-        map[uid] = listener;
-
-        // Remove function
-        function listenerRemover() {
-            delete map[uid];
-        }
-
-        // If there is scope, register for destroy
-        if (scope) {
-            var destroyRemove = scope.$on('$destroy', listenerRemover);
-
-            return function combinedRemover() {
-                listenerRemover();
-                destroyRemove();
-            };
-        } else {
-            // Return remover
-            return listenerRemover;
-        }
-    }
 });
