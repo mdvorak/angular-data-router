@@ -8,6 +8,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
         transclude: 'element',
         link: function datafragmentLink(scope, $element, attr, ctrl, $transclude) {
             var hrefExp = attr.datafragment || attr.src,
+                currentHref,
                 currentScope,
                 currentElement,
                 previousLeaveAnimation,
@@ -39,13 +40,17 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
             }
 
             function updateHref(href) {
-                var forceReload = attr.reload ? scope.$eval(attr.reload) : true;
+                currentHref = href;
+                reload(true);
+            }
 
+            function reload(forceReload) {
                 var next = attr.next = {};
 
-                if (href) {
+                if (currentHref) {
                     // Load data
-                    $dataRouterLoader.prepareView(href, context.current, forceReload).then(update, update);
+                    $log.debug("Loading fragment view for ", $element[0]);
+                    $dataRouterLoader.prepareView(currentHref, context.current, forceReload).then(update, update);
                 } else {
                     // Reset
                     update();
@@ -63,6 +68,9 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
 
                         if (angular.isDefined(template)) {
                             $log.debug("Setting fragment view to " + response.mediaType);
+
+                            // Add reload implementation
+                            response.reload = reload;
 
                             var newScope = scope.$new();
 

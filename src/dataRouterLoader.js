@@ -74,11 +74,11 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                         // Update data
                         response.routeDataUpdate = true;
-                        return asScope(response);
+                        return response;
                     }
 
                     // Load view
-                    return $dataRouterLoader.$$loadView(response).then(asScope);
+                    return $dataRouterLoader.$$loadView(response);
                 }
 
                 function loadError(response) {
@@ -88,20 +88,14 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     response.routeError = true;
 
                     if (response.view) {
-                        return $dataRouterLoader.$$loadView(response).then(asScope);
+                        return $dataRouterLoader.$$loadView(response);
                     } else {
-                        return $q.reject(asScope(response));
+                        return $q.reject(response);
                     }
                 }
 
                 function isSameView(current, next) {
                     return current && next && current.url === next.url && current.mediaType === next.mediaType;
-                }
-
-                function asScope(response) {
-                    // Create isolated scope
-                    var scope = $rootScope.$new(true);
-                    return angular.extend(scope, response);
                 }
             },
 
@@ -114,6 +108,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
              * @returns {Object} Promise of the response.
              */
             $$loadData: function $$loadData(url) {
+                $log.debug("Loading resource " + url);
+
                 // Fetch data and return promise
                 return $http.get(url).then(function dataLoaded(response) {
                     // Match existing resource
@@ -122,13 +118,13 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                     // Unknown media type
                     if (!view) {
-                        return $q.reject({
+                        return $q.reject(asScope({
                             status: 999,
                             statusText: "Application Error",
                             data: "Unknown content type " + mediaType,
                             config: response.config,
                             headers: angular.noop
-                        });
+                        }));
                     }
 
                     // Success
@@ -144,9 +140,9 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                     if (view.transformResponse) {
                         result.originalData = response.data;
-                        return view.transformResponse(result);
+                        return asScope(view.transformResponse(result));
                     } else {
-                        return result;
+                        return asScope(result);
                     }
                 });
             },
@@ -199,13 +195,13 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                             return response;
                         }, function localsError() {
                             // Failure
-                            return $q.reject({
+                            return $q.reject(asScope({
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Failed to resolve view " + response.mediaType,
                                 config: response.config,
                                 headers: angular.noop
-                            });
+                            }));
                         });
                     }
 
@@ -245,5 +241,12 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         };
 
         return $dataRouterLoader;
+
+        // Helper functions
+        function asScope(response) {
+            // Create isolated scope
+            var scope = $rootScope.$new(true);
+            return angular.extend(scope, response);
+        }
     };
 });

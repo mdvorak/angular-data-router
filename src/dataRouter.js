@@ -106,8 +106,6 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     };
 
     this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $apiMap) {
-        $log.debug("Using api prefix " + provider.$apiPrefix);
-
         var $dataRouter = {
             /**
              * Reference to the $apiMap object.
@@ -143,10 +141,10 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                 }
 
                 // Load resource
-                url = $dataRouter.mapViewToApi($location.path());
-                $log.debug("Loading resource " + url);
+                url = $apiMap.mapViewToApi($location.path());
 
                 // Load data and view
+                $log.debug("Loading main view");
                 $dataRouterLoader.prepareView(url, $dataRouter.current, forceReload)
                     .then(showView, routeChangeFailed);
 
@@ -161,12 +159,16 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                             $log.debug("Replacing current data");
 
                             // Update current
+                            // TODO CANNOT DO THIS WITH SCOPES
                             angular.extend($dataRouter.current, response);
 
                             // Fire event on the response (only safe way for both main view and fragments)
                             $dataRouter.current.$broadcast('$routeUpdate', response);
                         } else {
                             $log.debug("Setting view to " + response.mediaType);
+
+                            // Add reload implementation
+                            response.reload = $dataRouter.reload;
 
                             // Set current
                             $dataRouter.current = response;
