@@ -58,6 +58,8 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
 
                 function update(response) {
                     if (next === attr.next) {
+                        // TODO support soft data reload
+
                         // Update current
                         context.current = response;
                         attr.next = undefined;
