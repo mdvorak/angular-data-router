@@ -117,16 +117,18 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     // Unknown media type
                     if (!view) {
                         return $q.reject(asResponse({
+                            url: response.config.url,
                             status: 999,
                             statusText: "Application Error",
                             data: "Unknown content type " + mediaType,
                             config: response.config,
-                            headers: angular.noop
+                            headers: response.headers
                         }));
                     }
 
                     // Success
                     var result = {
+                        url: response.config.url,
                         status: response.status,
                         statusText: response.statusText,
                         headers: response.headers,
@@ -194,10 +196,11 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         }, function localsError() {
                             // Failure
                             return $q.reject(asResponse({
+                                url: response.config.url,
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Failed to resolve view " + response.mediaType,
-                                config: response.config,
+                                config: {},
                                 headers: angular.noop
                             }));
                         });
