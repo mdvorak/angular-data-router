@@ -1,13 +1,13 @@
 "use strict";
 
-module.directive('datafragment', function datafragmentFactory($dataRouterLoader, $animate, $log) {
+module.directive('dataView', function dataViewFactory($dataRouterLoader, $animate, $log) {
     return {
-        restrict: 'ECA',
+        restrict: 'EC',
         terminal: true,
         priority: 400,
         transclude: 'element',
-        link: function datafragmentLink(scope, $element, attr, ctrl, $transclude) {
-            var hrefExp = attr.datafragment || attr.src,
+        link: function dataViewLink(scope, $element, attr, ctrl, $transclude) {
+            var hrefExp = attr.src,
                 currentHref,
                 currentScope,
                 currentElement,
@@ -18,7 +18,10 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
             var context = scope.$$dataRouterCtx = {};
 
             // Watch for href changes
-            scope.$watch(hrefExp, updateHref);
+            scope.$watch(hrefExp, function hrefWatch(href) {
+                currentHref = href;
+                reload(true);
+            });
 
             function cleanupLastView() {
                 if (previousLeaveAnimation) {
@@ -39,17 +42,12 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
                 }
             }
 
-            function updateHref(href) {
-                currentHref = href;
-                reload(true);
-            }
-
             function reload(forceReload) {
                 var next = attr.next = {};
 
                 if (currentHref) {
                     // Load data
-                    $log.debug("Loading fragment view for ", $element[0]);
+                    $log.debug("Loading view data of ", $element[0]);
                     $dataRouterLoader.prepareView(currentHref, context.current, forceReload).then(update, update);
                 } else {
                     // Reset
@@ -60,7 +58,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
                     if (next === attr.next) {
                         // Update view data
                         if (response.routeDataUpdate && context.current) {
-                            $log.debug("Replacing fragments data");
+                            $log.debug("Replacing view data of ", $element[0]);
 
                             // Update current (preserve listeners)
                             var $$listeners = context.current.$$listeners;
@@ -79,7 +77,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
                                 template = locals && locals.$template;
 
                             if (angular.isDefined(template)) {
-                                $log.debug("Setting fragment view to " + response.mediaType);
+                                $log.debug("Setting view ", $element[0], " to ", response.mediaType);
 
                                 // Add reload implementation
                                 response.reload = reload;
@@ -100,7 +98,7 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
                                 currentScope = response.scope = newScope;
                                 currentScope.$eval(onloadExp);
                             } else {
-                                $log.debug("Resetting fragment view, got no response");
+                                $log.debug("Resetting view ", $element[0], ", got no response");
                                 cleanupLastView();
                             }
                         }
@@ -111,16 +109,16 @@ module.directive('datafragment', function datafragmentFactory($dataRouterLoader,
     };
 });
 
-module.directive('datafragment', function datafragmentFillContentFactory($compile, $controller) {
+module.directive('dataView', function dataViewFillContentFactory($compile, $controller) {
     // This directive is called during the $transclude call of the first `ngView` directive.
     // It will replace and compile the content of the element with the loaded template.
     // We need this directive so that the element content is already filled when
     // the link function of another directive on the same element as ngView
     // is called.
     return {
-        restrict: 'ECA',
+        restrict: 'EC',
         priority: -400,
-        link: function datafragmentFillContentLink(scope, $element) {
+        link: function dataViewFillContentLink(scope, $element) {
             var context = scope.$$dataRouterCtx; // Get context
             var current = context.current;
             var view = current.view;
@@ -130,25 +128,28 @@ module.directive('datafragment', function datafragmentFillContentFactory($compil
 
             var link = $compile($element.contents());
 
-            if (view && view.controller) {
-                locals.$scope = scope;
-                var controller = $controller(view.controller, locals);
+            if (view) {
+                $element.data('$dataResponse', current);
 
-                if (view.controllerAs) {
-                    scope[view.controllerAs] = controller;
+                if (view.controller) {
+                    locals.$scope = scope;
+                    var controller = $controller(view.controller, locals);
+
+                    if (view.controllerAs) {
+                        scope[view.controllerAs] = controller;
+                    }
+
+                    $element.data('$ngControllerController', controller);
+                    $element.children().data('$ngControllerController', controller);
                 }
 
-                $element.data('$ngControllerController', controller);
-                $element.children().data('$ngControllerController', controller);
-            }
+                if (view.dataAs) {
+                    scope[view.dataAs] = current.data;
 
-            if (view && view.dataAs) {
-                locals.$scope = scope;
-                scope[view.dataAs] = current.data;
-
-                current.$on('$routeUpdate', function routeDataUpdated(e, response) {
-                    scope[view.dataAs] = response.data;
-                }, scope);
+                    current.$on('$routeUpdate', function routeDataUpdated(e, response) {
+                        scope[view.dataAs] = response.data;
+                    }, scope);
+                }
             }
 
             link(scope);
