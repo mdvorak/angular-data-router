@@ -1,0 +1,82 @@
+<h1><code ng:non-bindable="">apiHref</code>
+<div><span class="hint"></span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="apihref-page"><p>Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.
+It supports HTML 5 mode as well hasbang mode.</p>
+<p>Following code sets href to <code>#/users/12347</code> or <code>users/12347</code> for html5Mode respectively.</p>
+<pre><code class="lang-html">    &lt;a api-href=&quot;api/users/12347&quot;&gt;User Detail&lt;/a&gt;
+</code></pre>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as attribute<pre class="prettyprint linenums">&lt;A api-href="{template}"
+     type="{template}"
+     target="{template}"&gt;
+   ...
+&lt;/A&gt;</pre>
+as class<pre class="prettyprint linenums">&lt;A class="api-href: {template}; type: {template}; target: {template};"&gt;
+   ...
+&lt;/A&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive executes at priority level 90.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>apiHref</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="apihref-page"><p>Any URL. Behavior changes whether this URL is inside API base or not.</p>
+</div></td></tr><tr><td>type</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="apihref-page"><p>Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
+browser performs full redirect.</p>
+</div></td></tr><tr><td>target</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="apihref-page"><p>Optional. Target of the link according to HTML specification. If it is specified, full redirect
+is always performed. To force full reload instead of navigation, set this to <code>_self</code>.</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="apihref-page"><p>This example shows behavior of the directive in different scenarios.</p>
+<ul>
+<li>Back button navigates to parent, since its maps to configured API. The template for the given type is
+prefetched. This link would behave same even without type attribute, but template would not be prefetched.</li>
+<li>External performs full navigation, since URL cannot be mapped to API. Type attribute is ignored in this case.</li>
+<li>Image link shows image full screen or triggers download (depends on the server), since the type is not supported.
+If the type would not be set, data would be downloaded and error page would be shown afterwards.</li>
+<li>New Window opens the link in new window, regardless where it points, since it has target specified.
+<h4 id="example_source">Source</h4>
+<div source-edit="sample" source-edit-deps="angular.js controller.js" source-edit-html="index.html" source-edit-css="" source-edit-js="controller.js" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html" ng-html-wrap-loaded="sample angular.js controller.js"></pre>
+<script type="text/ng-template" id="index.html">
+<div ng-controller="sampleCtrl">
+    <!-- href: api/some/parent type: application/x.example -->
+    <a api-href="{{links.parent.href}}" type="{{links.parent.type}}">Back</a>
+    <!-- href: external/url type: application/x.example -->
+    <a api-href="{{links.external.href}}" type="{{links.external.type}}">Website</a>
+    <!-- href: api/my/photo type: image/png -->
+    <a api-href="{{links.image.href}}" type="{{links.image.type}}">Image</a>
+    <!-- href: external/url type: application/x.example -->
+    <a api-href="{{links.external.href}}" target="_blank">New Window</a>
+</div>
+</script>
+</div>
+<div class="tab-pane" title="controller.js">
+<pre class="prettyprint linenums" ng-set-text="controller.js"></pre>
+<script type="text/ng-template" id="controller.js">
+angular.module('sample', ['mdvorakDataRouter'])
+    .config(function ($dataRouterProvider) {
+        $dataRouterProvider.apiPrefix('api/');
+
+        // application/x.example
+        $dataRouterProvider.when('x.example', {
+            templateUrl: 'example.html'
+        });
+    })
+    .controller('sampleCtrl', function sampleCtrl($scope) {
+        $scope.links = {
+            parent: {href: "api/some/parent", type: "application/x.example"},
+            external: {href: "external/url", type: "application/x.example"},
+            image: {href: "api/my/photo", type: "image/png"}
+        };
+    });
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="sample" ng-set-html="index.html" ng-eval-javascript="controller.js"></div></li>
+</ul>
+</div></div>
+</div>
