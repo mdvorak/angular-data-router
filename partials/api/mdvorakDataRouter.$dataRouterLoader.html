@@ -1,0 +1,35 @@
+<h1><code ng:non-bindable="">$dataRouterLoader</code>
+<div><span class="hint">service in module <code ng:non-bindable="">mdvorakDataRouter</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="mdvorakdatarouter-datarouterloader-page"><p>TODO</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_normalizemediatype">normalizeMediaType(mimeType)</h3>
+<div class="normalizemediatype"><div class="normalizemediatype-page"><p>Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
+just subtype.</p>
+</div><h5 id="methods_normalizemediatype_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>mimeType</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="normalizemediatype-page"><p>Media type to match.</p>
+</div></td></tr></tbody></table><h5 id="methods_normalizemediatype_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="normalizemediatype-page"><p>Normalized media type.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_prefetchtemplate">prefetchTemplate(mediaType)</h3>
+<div class="prefetchtemplate"><div class="prefetchtemplate-page"><p>Eagerly fetches the template for the given media type. If media type is unknown, nothing happens.
+This method returns immediately, no promise is returned.</p>
+</div><h5 id="methods_prefetchtemplate_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>mediaType</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="prefetchtemplate-page"><p>Media type for which we want to prefetch the template.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_prepareview">prepareView(url, current, forceReload)</h3>
+<div class="prepareview"><div class="prepareview-page"><p>Prepares the view to be displayed. Loads data from given URL, resolves view by its content type,
+and then finally resolves template and all other resolvables.</p>
+</div><h5 id="methods_prepareview_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>url</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="prepareview-page"><p>URL of the data to be fetched. They are always loaded using GET method.</p>
+</div></td></tr><tr><td>current <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="prepareview-page"><p>Current response data. If provided and forceReload is false, routeDataUpdate flag
+of the response may be set, indicating that view doesn&#39;t have to be reloaded.</p>
+</div></td></tr><tr><td>forceReload <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="prepareview-page"><p>When false, it allows just data update. Without current parameter does nothing.</p>
+</div></td></tr></tbody></table><h5 id="methods_prepareview_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="prepareview-page"><p>Promise of completely initialized response, including template and locals.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>

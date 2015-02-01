@@ -14,6 +14,24 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "mdvorakDataRouter.$dataRouterLoader",
+      "shortName": "mdvorakDataRouter.$dataRouterLoader",
+      "type": "service",
+      "moduleName": "mdvorakDataRouter",
+      "shortDescription": "TODO",
+      "keywords": "$datarouterloader allows api application completely content current data displayed doesn eagerly false fetched fetches finally flag forcereload format including indicating initialized loaded loads locals match mdvorakdatarouter media mediatype method mimetype normalized normalizemediatype normalizes parameter prefetch prefetchtemplate prepares prepareview prepends promise provided reloaded removes resolvables resolves response returned returns routedataupdate service set subtype suffix template todo type unknown update url view"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.$dataRouterLoaderProvider",
+      "shortName": "mdvorakDataRouter.$dataRouterLoaderProvider",
+      "type": "service",
+      "moduleName": "mdvorakDataRouter",
+      "shortDescription": "TODO",
+      "keywords": "$datarouterloaderprovider api config configuration currently global key mdvorakdatarouter method object provider reference resolve routes service sets supported todo"
+    },
+    {
+      "section": "api",
       "id": "mdvorakDataRouter.apiHref",
       "shortName": "mdvorakDataRouter.apiHref",
       "type": "directive",

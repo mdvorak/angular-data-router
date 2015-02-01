@@ -141,13 +141,26 @@
         };
     }]);
 
+    /**
+     * @ngdoc service
+     * @name mdvorakDataRouter.$dataRouterLoaderProvider
+     * @kind provider
+     *
+     * @description
+     * TODO
+     */
     module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         var provider = this;
 
         /**
+         * @ngdoc method
+         * @methodOf mdvorakDataRouter.$dataRouterLoaderProvider
+         * @name global
+         *
+         * @description
          * Sets global configuration for all routes.
          *
-         * @param config {Object} Configuration object. Currently only "resolve" key is supported.
+         * @param {Object} config Configuration object. Currently only `"resolve"` key is supported.
          * @returns {Object} Reference to the provider.
          */
         provider.global = function global(config) {
@@ -160,22 +173,38 @@
             return provider;
         };
 
+        /**
+         * @ngdoc service
+         * @name mdvorakDataRouter.$dataRouterLoader
+         * @description
+         * TODO
+         */
         this.$get = ["$log", "$sce", "$http", "$templateCache", "$q", "$injector", "$rootScope", "$dataRouterRegistry", "$$dataRouterEventSupport", function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry, $$dataRouterEventSupport) {
             var $dataRouterLoader = {
                 /**
+                 * @ngdoc method
+                 * @methodOf mdvorakDataRouter.$dataRouterLoader
+                 * @name normalizeMediaType
+                 *
+                 * @description
                  * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
                  * just subtype.
                  *
-                 * @param mimeType {String} Media type to match.
+                 * @param {String} mimeType Media type to match.
                  * @returns {String} Normalized media type.
                  */
                 normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
                 /**
+                 * @ngdoc method
+                 * @methodOf mdvorakDataRouter.$dataRouterLoader
+                 * @name prefetchTemplate
+                 *
+                 * @description
                  * Eagerly fetches the template for the given media type. If media type is unknown, nothing happens.
                  * This method returns immediately, no promise is returned.
                  *
-                 * @param mediaType {String} Media type for which we want to prefetch the template.
+                 * @param {String} mediaType Media type for which we want to prefetch the template.
                  */
                 prefetchTemplate: function prefetchTemplate(mediaType) {
                     var view = $dataRouterRegistry.match(mediaType);
@@ -189,13 +218,18 @@
                 },
 
                 /**
+                 * @ngdoc method
+                 * @methodOf mdvorakDataRouter.$dataRouterLoader
+                 * @name prepareView
+                 *
+                 * @description
                  * Prepares the view to be displayed. Loads data from given URL, resolves view by its content type,
                  * and then finally resolves template and all other resolvables.
                  *
-                 * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
-                 * @param current {Object?} Current response data. If provided and forceReload is false, routeDataUpdate flag
+                 * @param {String} url URL of the data to be fetched. They are always loaded using GET method.
+                 * @param {Object=} current Current response data. If provided and forceReload is false, routeDataUpdate flag
                  *                          of the response may be set, indicating that view doesn't have to be reloaded.
-                 * @param forceReload {boolean?} When false, it allows just data update. Without current parameter does nothing.
+                 * @param {boolean=} forceReload When false, it allows just data update. Without current parameter does nothing.
                  * @returns {Object} Promise of completely initialized response, including template and locals.
                  */
                 prepareView: function prepareView(url, current, forceReload) {
@@ -239,12 +273,17 @@
                 },
 
                 /**
+                 * @methodOf mdvorakDataRouter.$dataRouterLoader
+                 * @name $$loadData
+                 * @private
+                 *
+                 * @description
                  * Loads view data from given URL.
                  * Tries to automatically match the view by the data Content-Type header.
                  * If the view is found, and transformResponse key is set, response is automatically resolved.
                  *
-                 * @param url {String} URL to load data from. They are always loaded using GET method.
-                 * @returns {Object} Promise of the response.
+                 * @param {String} url URL to load data from. They are always loaded using GET method.
+                 * @returns {Promise} Promise of the response.
                  */
                 $$loadData: function $$loadData(url) {
                     $log.debug("Loading resource " + url);
@@ -258,16 +297,18 @@
                         // Unknown media type
                         if (!view) {
                             return $q.reject(asResponse({
+                                url: response.config.url,
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Unknown content type " + mediaType,
                                 config: response.config,
-                                headers: angular.noop
+                                headers: response.headers
                             }));
                         }
 
                         // Success
                         var result = {
+                            url: response.config.url,
                             status: response.status,
                             statusText: response.statusText,
                             headers: response.headers,
@@ -287,10 +328,15 @@
                 },
 
                 /**
+                 * @methodOf mdvorakDataRouter.$dataRouterLoader
+                 * @name $$loadView
+                 * @private
+                 *
+                 * @description
                  * Loads view template and initializes resolves.
                  *
-                 * @param response {Object} Loaded data response. Can be promise.
-                 * @returns {Object} Promise of loaded view. Promise is rejected if any of locals or template fails to resolve.
+                 * @param {Object|Promise} response Loaded data response. Can be promise.
+                 * @returns {Promise} Promise of loaded view. Promise is rejected if any of locals or template fails to resolve.
                  */
                 $$loadView: function $$loadView(response) {
                     return $q.when(response).then(function responseReady(response) {
@@ -335,10 +381,11 @@
                             }, function localsError() {
                                 // Failure
                                 return $q.reject(asResponse({
+                                    url: response.config.url,
                                     status: 999,
                                     statusText: "Application Error",
                                     data: "Failed to resolve view " + response.mediaType,
-                                    config: response.config,
+                                    config: {},
                                     headers: angular.noop
                                 }));
                             });
@@ -755,9 +802,9 @@
      * @element A
      *
      * @param {template} apiHref Any URL. Behavior changes whether this URL is inside API base or not.
-     * @param {template} type Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
+     * @param {template=} type Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
      *                         browser performs full redirect.
-     * @param {template} target Optional. Target of the link according to HTML specification. If it is specified, full redirect
+     * @param {template=} target Optional. Target of the link according to HTML specification. If it is specified, full redirect
      *                           is always performed. To force full reload instead of navigation, set this to `_self`.
      *
      * @description
@@ -878,14 +925,14 @@
         };
     }]);
 
-    module.directive('datafragment', ["$dataRouterLoader", "$animate", "$log", function datafragmentFactory($dataRouterLoader, $animate, $log) {
+    module.directive('dataView', ["$dataRouterLoader", "$animate", "$log", function dataViewFactory($dataRouterLoader, $animate, $log) {
         return {
-            restrict: 'ECA',
+            restrict: 'EC',
             terminal: true,
             priority: 400,
             transclude: 'element',
-            link: function datafragmentLink(scope, $element, attr, ctrl, $transclude) {
-                var hrefExp = attr.datafragment || attr.src,
+            link: function dataViewLink(scope, $element, attr, ctrl, $transclude) {
+                var hrefExp = attr.src,
                     currentHref,
                     currentScope,
                     currentElement,
@@ -896,7 +943,10 @@
                 var context = scope.$$dataRouterCtx = {};
 
                 // Watch for href changes
-                scope.$watch(hrefExp, updateHref);
+                scope.$watch(hrefExp, function hrefWatch(href) {
+                    currentHref = href;
+                    reload(true);
+                });
 
                 function cleanupLastView() {
                     if (previousLeaveAnimation) {
@@ -917,17 +967,12 @@
                     }
                 }
 
-                function updateHref(href) {
-                    currentHref = href;
-                    reload(true);
-                }
-
                 function reload(forceReload) {
                     var next = attr.next = {};
 
                     if (currentHref) {
                         // Load data
-                        $log.debug("Loading fragment view for ", $element[0]);
+                        $log.debug("Loading view data of ", $element[0]);
                         $dataRouterLoader.prepareView(currentHref, context.current, forceReload).then(update, update);
                     } else {
                         // Reset
@@ -938,7 +983,7 @@
                         if (next === attr.next) {
                             // Update view data
                             if (response.routeDataUpdate && context.current) {
-                                $log.debug("Replacing fragments data");
+                                $log.debug("Replacing view data of ", $element[0]);
 
                                 // Update current (preserve listeners)
                                 var $$listeners = context.current.$$listeners;
@@ -957,7 +1002,7 @@
                                     template = locals && locals.$template;
 
                                 if (angular.isDefined(template)) {
-                                    $log.debug("Setting fragment view to " + response.mediaType);
+                                    $log.debug("Setting view ", $element[0], " to ", response.mediaType);
 
                                     // Add reload implementation
                                     response.reload = reload;
@@ -978,7 +1023,7 @@
                                     currentScope = response.scope = newScope;
                                     currentScope.$eval(onloadExp);
                                 } else {
-                                    $log.debug("Resetting fragment view, got no response");
+                                    $log.debug("Resetting view ", $element[0], ", got no response");
                                     cleanupLastView();
                                 }
                             }
@@ -989,16 +1034,16 @@
         };
     }]);
 
-    module.directive('datafragment', ["$compile", "$controller", function datafragmentFillContentFactory($compile, $controller) {
-        // This directive is called during the $transclude call of the first `ngView` directive.
+    module.directive('dataView', ["$compile", "$controller", function dataViewFillContentFactory($compile, $controller) {
+        // This directive is called during the $transclude call of the first `dataView` directive.
         // It will replace and compile the content of the element with the loaded template.
         // We need this directive so that the element content is already filled when
-        // the link function of another directive on the same element as ngView
+        // the link function of another directive on the same element as dataView
         // is called.
         return {
-            restrict: 'ECA',
+            restrict: 'EC',
             priority: -400,
-            link: function datafragmentFillContentLink(scope, $element) {
+            link: function dataViewFillContentLink(scope, $element) {
                 var context = scope.$$dataRouterCtx; // Get context
                 var current = context.current;
                 var view = current.view;
@@ -1008,139 +1053,28 @@
 
                 var link = $compile($element.contents());
 
-                if (view && view.controller) {
-                    locals.$scope = scope;
-                    var controller = $controller(view.controller, locals);
+                if (view) {
+                    $element.data('$dataResponse', current);
 
-                    if (view.controllerAs) {
-                        scope[view.controllerAs] = controller;
+                    if (view.controller) {
+                        locals.$scope = scope;
+                        var controller = $controller(view.controller, locals);
+
+                        if (view.controllerAs) {
+                            scope[view.controllerAs] = controller;
+                        }
+
+                        $element.data('$ngControllerController', controller);
+                        $element.children().data('$ngControllerController', controller);
                     }
 
-                    $element.data('$ngControllerController', controller);
-                    $element.children().data('$ngControllerController', controller);
-                }
+                    if (view.dataAs) {
+                        scope[view.dataAs] = current.data;
 
-                if (view && view.dataAs) {
-                    locals.$scope = scope;
-                    scope[view.dataAs] = current.data;
-
-                    current.$on('$routeUpdate', function routeDataUpdated(e, response) {
-                        scope[view.dataAs] = response.data;
-                    }, scope);
-                }
-
-                link(scope);
-            }
-        };
-    }]);
-
-    module.directive('dataview', ["$dataRouter", "$anchorScroll", "$animate", function dataviewFactory($dataRouter, $anchorScroll, $animate) {
-        return {
-            restrict: 'ECA',
-            terminal: true,
-            priority: 400,
-            transclude: 'element',
-            link: function dataviewLink(scope, $element, attr, ctrl, $transclude) {
-                var currentScope,
-                    currentElement,
-                    previousLeaveAnimation,
-                    autoScrollExp = attr.autoscroll,
-                    onloadExp = attr.onload || '';
-
-                scope.$on('$routeChangeSuccess', update);
-                update();
-
-                function cleanupLastView() {
-                    if (previousLeaveAnimation) {
-                        $animate.cancel(previousLeaveAnimation);
-                        previousLeaveAnimation = null;
+                        current.$on('$routeUpdate', function routeDataUpdated(e, response) {
+                            scope[view.dataAs] = response.data;
+                        }, scope);
                     }
-
-                    if (currentScope) {
-                        currentScope.$destroy();
-                        currentScope = null;
-                    }
-                    if (currentElement) {
-                        previousLeaveAnimation = $animate.leave(currentElement);
-                        previousLeaveAnimation.then(function animLeave() {
-                            previousLeaveAnimation = null;
-                        });
-                        currentElement = null;
-                    }
-                }
-
-                function update() {
-                    var locals = $dataRouter.current && $dataRouter.current.locals,
-                        template = locals && locals.$template;
-
-                    if (angular.isDefined(template)) {
-                        var newScope = scope.$new();
-                        var current = $dataRouter.current;
-
-                        // Note: This will also link all children of ng-view that were contained in the original
-                        // html. If that content contains controllers, ... they could pollute/change the scope.
-                        // However, using ng-view on an element with additional content does not make sense...
-                        // Note: We can't remove them in the cloneAttchFn of $transclude as that
-                        // function is called before linking the content, which would apply child
-                        // directives to non existing elements.
-                        currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
-                            $animate.enter(clone, null, currentElement || $element).then(function onNgViewEnter() {
-                                if (angular.isDefined(autoScrollExp) && (!autoScrollExp || scope.$eval(autoScrollExp))) {
-                                    $anchorScroll();
-                                }
-                            });
-                            cleanupLastView();
-                        });
-
-                        currentScope = current.scope = newScope;
-                        currentScope.$emit('$viewContentLoaded');
-                        currentScope.$eval(onloadExp);
-                    } else {
-                        cleanupLastView();
-                    }
-                }
-            }
-        };
-    }]);
-
-    module.directive('dataview', ["$compile", "$controller", "$dataRouter", function dataviewFillContentFactory($compile, $controller, $dataRouter) {
-        // This directive is called during the $transclude call of the first `ngView` directive.
-        // It will replace and compile the content of the element with the loaded template.
-        // We need this directive so that the element content is already filled when
-        // the link function of another directive on the same element as ngView
-        // is called.
-        return {
-            restrict: 'ECA',
-            priority: -400,
-            link: function dataviewFillContentLink(scope, $element) {
-                var current = $dataRouter.current;
-                var view = current ? current.view : undefined;
-                var locals = current.locals;
-
-                $element.html(locals.$template);
-
-                var link = $compile($element.contents());
-
-                if (view && view.controller) {
-                    locals.$scope = scope;
-                    var controller = $controller(view.controller, locals);
-
-                    if (view.controllerAs) {
-                        scope[view.controllerAs] = controller;
-                    }
-
-                    $element.data('$ngControllerController', controller);
-                    $element.children().data('$ngControllerController', controller);
-                }
-
-                if (view && view.dataAs) {
-                    locals.$scope = scope;
-                    scope[view.dataAs] = current.data;
-
-                    // Listen for changes
-                    current.$on('$routeUpdate', function routeDataUpdated(e, response) {
-                        scope[view.dataAs] = response.data;
-                    }, scope);
                 }
 
                 link(scope);
