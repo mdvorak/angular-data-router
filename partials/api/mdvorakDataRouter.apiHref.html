@@ -1,9 +1,10 @@
 <h1><code ng:non-bindable="">apiHref</code>
-<div><span class="hint"></span>
+<div><span class="hint">service in module <code ng:non-bindable="">mdvorakDataRouter</code>
+</span>
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="apihref-page"><p>Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.
+<div class="description"><div class="mdvorakdatarouter-apihref-page"><p>Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.
 It supports HTML 5 mode as well hasbang mode.</p>
 <p>Following code sets href to <code>#/users/12347</code> or <code>users/12347</code> for html5Mode respectively.</p>
 <pre><code class="lang-html">    &lt;a api-href=&quot;api/users/12347&quot;&gt;User Detail&lt;/a&gt;
@@ -22,14 +23,14 @@ as class<pre class="prettyprint linenums">&lt;A class="api-href: {template}; typ
 <div class="directive-info"><ul><li>This directive executes at priority level 90.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>apiHref</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="apihref-page"><p>Any URL. Behavior changes whether this URL is inside API base or not.</p>
-</div></td></tr><tr><td>type</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="apihref-page"><p>Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>apiHref</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Any URL. Behavior changes whether this URL is inside API base or not.</p>
+</div></td></tr><tr><td>type</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
 browser performs full redirect.</p>
-</div></td></tr><tr><td>target</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="apihref-page"><p>Optional. Target of the link according to HTML specification. If it is specified, full redirect
+</div></td></tr><tr><td>target</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Optional. Target of the link according to HTML specification. If it is specified, full redirect
 is always performed. To force full reload instead of navigation, set this to <code>_self</code>.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
-<div class="example"><div class="apihref-page"><p>This example shows behavior of the directive in different scenarios.</p>
+<div class="example"><div class="mdvorakdatarouter-apihref-page"><p>This example shows behavior of the directive in different scenarios.</p>
 <ul>
 <li>Back button navigates to parent, since its maps to configured API. The template for the given type is
 prefetched. This link would behave same even without type attribute, but template would not be prefetched.</li>

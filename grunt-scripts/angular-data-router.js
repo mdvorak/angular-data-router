@@ -25,6 +25,12 @@
 (function dataRouterModule(angular) {
     "use strict";
 
+    /**
+     * @ngdoc overview
+     * @name mdvorakDataRouter
+     * @description
+     * TODO
+     */
     var module = angular.module("mdvorakDataRouter", ['mdvorakApiMap']);
 
     module.provider('$dataRouterRegistry', ["$$dataRouterMatchMap", function $dataRouterRegistryProvider($$dataRouterMatchMap) {
@@ -742,8 +748,8 @@
     }]);
     /**
      * @ngdoc directive
-     * @module mdvorakDataRouter
-     * @name apiHref
+     * @name mdvorakDataRouter.apiHref
+     * @kind directive
      * @restrict AC
      * @priority 90
      * @element A

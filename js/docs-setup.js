@@ -1,12 +1,21 @@
 NG_DOCS={
   "sections": {
-    "api": "Angular DataRouter Documentation"
+    "api": "Angular Data Router Documentation"
   },
   "pages": [
     {
       "section": "api",
-      "id": "apiHref",
-      "shortName": "apiHref",
+      "id": "mdvorakDataRouter",
+      "shortName": "mdvorakDataRouter",
+      "type": "overview",
+      "moduleName": "mdvorakDataRouter",
+      "shortDescription": "TODO",
+      "keywords": "api mdvorakdatarouter overview todo"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.apiHref",
+      "shortName": "mdvorakDataRouter.apiHref",
       "type": "directive",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.",
