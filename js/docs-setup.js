@@ -22,6 +22,6 @@ NG_DOCS={
   "scripts": [
     "angular.min.js",
     "angular-animate.min.js",
-    "angular-data-router.min.js"
+    "angular-data-router.js"
   ]
 };
