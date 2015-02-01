@@ -199,14 +199,20 @@ module.exports = function (grunt) {
         // Release
         copy: {
             dist: {
-                files: [
-                    {
-                        expand: true,
-                        cwd: '<%=cfg.build%>/dist',
-                        dest: '<%=cfg.dist%>',
-                        src: ['**']
-                    }
-                ]
+                files: [{
+                    expand: true,
+                    cwd: '<%=cfg.build%>/dist',
+                    dest: '<%=cfg.dist%>',
+                    src: ['**']
+                }]
+            },
+            docs: {
+                files: [{
+                    expand: true,
+                    cwd: '<%=cfg.build%>/dist',
+                    dest: '<%=cfg.docs%>/dist',
+                    src: ['**']
+                }]
             }
         },
         gitadd: {
@@ -234,7 +240,12 @@ module.exports = function (grunt) {
         ngdocs: {
             options: {
                 dest: 'docs',
-                html5Mode: false
+                html5Mode: false,
+                scripts: [
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular-animate.min.js',
+                    '../dist/angular-data-router.min.js'
+                ]
             },
             api: {
                 src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/**/*.spec.js'],
@@ -277,7 +288,7 @@ module.exports = function (grunt) {
     grunt.registerTask('debug', ['karma:debug']);
     grunt.registerTask('demo', ['jshint:demo', 'default', 'connect:server', 'watch']);
 
-    grunt.registerTask('docs', ['ngdocs', 'gh-pages']);
+    grunt.registerTask('docs', ['jshint:grunt', 'clean:build', 'javascript', 'ngdocs', 'copy:docs', 'gh-pages']);
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
     grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);
 };

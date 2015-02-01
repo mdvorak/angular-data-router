@@ -31,6 +31,7 @@
     "test": "grunt default",
     "release": "grunt release",
     "dist": "grunt dist",
-    "demo": "grunt demo"
+    "demo": "grunt demo",
+    "docs": "grunt docs"
   }
 }
