@@ -2,23 +2,72 @@
 
 /**
  * @ngdoc directive
- * @name mdvorakDataRouter:apiHref
- * @element a
- * @function
+ * @name apiHref
+ * @restrict AC
+ * @priority 90
+ * @element A
+ *
+ * @param {template} apiHref Any URL. Behavior changes whether this URL is inside API base or not.
+ * @param {template} type Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
+ *                         browser performs full redirect.
+ * @param {template} target Optional. Target of the link according to HTML specification. If it is specified, full redirect
+ *                           is always performed. To force full reload instead of navigation, set this to `_self`.
  *
  * @description
- * Translates api URL into view URL.
+ * Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.
+ * It supports HTML 5 mode as well hasbang mode.
+ *
+ * Following code sets href to `#/users/12347` or `users/12347` for html5Mode respectively.
+ * ```html
+ *     <a api-href="api/users/12347">User Detail</a>
+ * ```
  *
  * @example
- <example module="mdvorakDataRouter">
- <file name="index.html">
- <a api-href="api/users/12347">User Detail</a>
- </file>
- </example>
+ * This example shows behavior of the directive in different scenarios.
+ *
+ * * Back button navigates to parent, since its maps to configured API. The template for the given type is
+ * prefetched. This link would behave same even without type attribute, but template would not be prefetched.
+ * * External performs full navigation, since URL cannot be mapped to API. Type attribute is ignored in this case.
+ * * Image link shows image full screen or triggers download (depends on the server), since the type is not supported.
+ * If the type would not be set, data would be downloaded and error page would be shown afterwards.
+ * * New Window opens the link in new window, regardless where it points, since it has target specified.
+ * <example module="sample">
+ * <file name="index.html">
+ * <div ng-controller="sampleCtrl">
+ *     <!-- href: api/some/parent type: application/x.example -->
+ *     <a api-href="{{links.parent.href}}" type="{{links.parent.type}}">Back</a>
+ *     <!-- href: external/url type: application/x.example -->
+ *     <a api-href="{{links.external.href}}" type="{{links.external.type}}">Website</a>
+ *     <!-- href: api/my/photo type: image/png -->
+ *     <a api-href="{{links.image.href}}" type="{{links.image.type}}">Image</a>
+ *     <!-- href: external/url type: application/x.example -->
+ *     <a api-href="{{links.external.href}}" target="_blank">New Window</a>
+ * </div>
+ * </file>
+ * <file name="controller.js">
+ * angular.module('sample', ['mdvorakDataRouter'])
+ *     .config(function ($dataRouterProvider) {
+ *         $dataRouterProvider.apiPrefix('api/');
+ *
+ *         // application/x.example
+ *         $dataRouterProvider.when('x.example', {
+ *             templateUrl: 'example.html'
+ *         });
+ *     })
+ *     .controller('sampleCtrl', function sampleCtrl($scope) {
+ *         $scope.links = {
+ *             parent: {href: "api/some/parent", type: "application/x.example"},
+ *             external: {href: "external/url", type: "application/x.example"},
+ *             image: {href: "api/my/photo", type: "image/png"}
+ *         };
+ *     });
+ * </file>
+ * </example>
  */
 module.directive('apiHref', function apiHrefFactory($apiMap, $dataRouterRegistry, $dataRouterLoader, $location, $browser) {
     return {
         restrict: 'AC',
+        priority: 90,
         link: function apiHrefLink(scope, element, attrs) {
             var hasTarget = 'target' in attrs;
 
