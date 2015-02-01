@@ -10,6 +10,7 @@ bower_components/
 *.log
 *.mo
 .grunt/
+docs/
 
 # IDE files
 .idea/

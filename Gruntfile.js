@@ -241,6 +241,12 @@ module.exports = function (grunt) {
                 title: 'Angular DataRouter Documentation'
             }
         },
+        'gh-pages': {
+            options: {
+                base: 'docs'
+            },
+            src: ['**']
+        },
 
         // Demo
         connect: {
@@ -271,6 +277,7 @@ module.exports = function (grunt) {
     grunt.registerTask('debug', ['karma:debug']);
     grunt.registerTask('demo', ['jshint:demo', 'default', 'connect:server', 'watch']);
 
+    grunt.registerTask('docs', ['ngdocs', 'gh-pages']);
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
     grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);
 };
