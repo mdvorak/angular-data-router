@@ -110,10 +110,10 @@ module.directive('dataView', function dataViewFactory($dataRouterLoader, $animat
 });
 
 module.directive('dataView', function dataViewFillContentFactory($compile, $controller) {
-    // This directive is called during the $transclude call of the first `ngView` directive.
+    // This directive is called during the $transclude call of the first `dataView` directive.
     // It will replace and compile the content of the element with the loaded template.
     // We need this directive so that the element content is already filled when
-    // the link function of another directive on the same element as ngView
+    // the link function of another directive on the same element as dataView
     // is called.
     return {
         restrict: 'EC',
