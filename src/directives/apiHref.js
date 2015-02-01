@@ -26,12 +26,12 @@
  * @example
  * This example shows behavior of the directive in different scenarios.
  *
- * * Back button navigates to parent, since its maps to configured API. The template for the given type is
+ * * **Back** navigates to parent, since its maps to configured API. The template for the given type is
  * prefetched. This link would behave same even without type attribute, but template would not be prefetched.
- * * External performs full navigation, since URL cannot be mapped to API. Type attribute is ignored in this case.
- * * Image link shows image full screen or triggers download (depends on the server), since the type is not supported.
+ * * **External** performs full navigation, since URL cannot be mapped to API. Type attribute is ignored in this case.
+ * * **Image** link shows image full screen or triggers download (depends on the server), since the type is not supported.
  * If the type would not be set, data would be downloaded and error page would be shown afterwards.
- * * New Window opens the link in new window, regardless where it points, since it has target specified.
+ * * **New Window** opens the link in new window, regardless where it points, since it has target specified.
  * <example module="sample">
  * <file name="index.html">
  * <div ng-controller="sampleCtrl">
