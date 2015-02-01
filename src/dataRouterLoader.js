@@ -1,12 +1,25 @@
 "use strict";
 
+/**
+ * @ngdoc service
+ * @name mdvorakDataRouter.$dataRouterLoaderProvider
+ * @kind provider
+ *
+ * @description
+ * TODO
+ */
 module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     var provider = this;
 
     /**
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterLoaderProvider
+     * @name global
+     *
+     * @description
      * Sets global configuration for all routes.
      *
-     * @param config {Object} Configuration object. Currently only "resolve" key is supported.
+     * @param {Object} config Configuration object. Currently only `"resolve"` key is supported.
      * @returns {Object} Reference to the provider.
      */
     provider.global = function global(config) {
@@ -19,22 +32,38 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         return provider;
     };
 
+    /**
+     * @ngdoc service
+     * @name mdvorakDataRouter.$dataRouterLoader
+     * @description
+     * TODO
+     */
     this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry, $$dataRouterEventSupport) {
         var $dataRouterLoader = {
             /**
+             * @ngdoc method
+             * @methodOf mdvorakDataRouter.$dataRouterLoader
+             * @name normalizeMediaType
+             *
+             * @description
              * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
              * just subtype.
              *
-             * @param mimeType {String} Media type to match.
+             * @param {String} mimeType Media type to match.
              * @returns {String} Normalized media type.
              */
             normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
             /**
+             * @ngdoc method
+             * @methodOf mdvorakDataRouter.$dataRouterLoader
+             * @name prefetchTemplate
+             *
+             * @description
              * Eagerly fetches the template for the given media type. If media type is unknown, nothing happens.
              * This method returns immediately, no promise is returned.
              *
-             * @param mediaType {String} Media type for which we want to prefetch the template.
+             * @param {String} mediaType Media type for which we want to prefetch the template.
              */
             prefetchTemplate: function prefetchTemplate(mediaType) {
                 var view = $dataRouterRegistry.match(mediaType);
@@ -48,13 +77,18 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
             },
 
             /**
+             * @ngdoc method
+             * @methodOf mdvorakDataRouter.$dataRouterLoader
+             * @name prepareView
+             *
+             * @description
              * Prepares the view to be displayed. Loads data from given URL, resolves view by its content type,
              * and then finally resolves template and all other resolvables.
              *
-             * @param url {String} URL of the data to be fetched. They are always loaded using GET method.
-             * @param current {Object?} Current response data. If provided and forceReload is false, routeDataUpdate flag
+             * @param {String} url URL of the data to be fetched. They are always loaded using GET method.
+             * @param {Object=} current Current response data. If provided and forceReload is false, routeDataUpdate flag
              *                          of the response may be set, indicating that view doesn't have to be reloaded.
-             * @param forceReload {boolean?} When false, it allows just data update. Without current parameter does nothing.
+             * @param {boolean=} forceReload When false, it allows just data update. Without current parameter does nothing.
              * @returns {Object} Promise of completely initialized response, including template and locals.
              */
             prepareView: function prepareView(url, current, forceReload) {
@@ -98,12 +132,17 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
             },
 
             /**
+             * @methodOf mdvorakDataRouter.$dataRouterLoader
+             * @name $$loadData
+             * @private
+             *
+             * @description
              * Loads view data from given URL.
              * Tries to automatically match the view by the data Content-Type header.
              * If the view is found, and transformResponse key is set, response is automatically resolved.
              *
-             * @param url {String} URL to load data from. They are always loaded using GET method.
-             * @returns {Object} Promise of the response.
+             * @param {String} url URL to load data from. They are always loaded using GET method.
+             * @returns {Promise} Promise of the response.
              */
             $$loadData: function $$loadData(url) {
                 $log.debug("Loading resource " + url);
@@ -148,10 +187,15 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
             },
 
             /**
+             * @methodOf mdvorakDataRouter.$dataRouterLoader
+             * @name $$loadView
+             * @private
+             *
+             * @description
              * Loads view template and initializes resolves.
              *
-             * @param response {Object} Loaded data response. Can be promise.
-             * @returns {Object} Promise of loaded view. Promise is rejected if any of locals or template fails to resolve.
+             * @param {Object|Promise} response Loaded data response. Can be promise.
+             * @returns {Promise} Promise of loaded view. Promise is rejected if any of locals or template fails to resolve.
              */
             $$loadView: function $$loadView(response) {
                 return $q.when(response).then(function responseReady(response) {

@@ -9,9 +9,9 @@
  * @element A
  *
  * @param {template} apiHref Any URL. Behavior changes whether this URL is inside API base or not.
- * @param {template} type Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
+ * @param {template=} type Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
  *                         browser performs full redirect.
- * @param {template} target Optional. Target of the link according to HTML specification. If it is specified, full redirect
+ * @param {template=} target Optional. Target of the link according to HTML specification. If it is specified, full redirect
  *                           is always performed. To force full reload instead of navigation, set this to `_self`.
  *
  * @description
