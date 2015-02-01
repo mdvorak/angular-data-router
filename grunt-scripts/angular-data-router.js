@@ -742,6 +742,7 @@
     }]);
     /**
      * @ngdoc directive
+     * @module mdvorakDataRouter
      * @name apiHref
      * @restrict AC
      * @priority 90
