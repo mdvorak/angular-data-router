@@ -20,6 +20,8 @@ NG_DOCS={
   "editExample": true,
   "startPage": "/api",
   "scripts": [
-    "angular.min.js"
+    "angular.min.js",
+    "angular-animate.min.js",
+    "angular-data-router.min.js"
   ]
 };
