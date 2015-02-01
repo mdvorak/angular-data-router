@@ -241,8 +241,8 @@ module.exports = function (grunt) {
                 ]
             },
             api: {
-                src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/**/*.spec.js'],
-                title: 'Angular DataRouter Documentation'
+                src: ['<%=cfg.build%>/dist/angular-data-router.js'],
+                title: 'Angular Data Router Documentation'
             }
         },
         'gh-pages': {

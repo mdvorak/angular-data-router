@@ -2,8 +2,8 @@
 
 /**
  * @ngdoc directive
- * @module mdvorakDataRouter
- * @name apiHref
+ * @name mdvorakDataRouter.apiHref
+ * @kind directive
  * @restrict AC
  * @priority 90
  * @element A
