@@ -15,6 +15,7 @@ module.exports = function (grunt) {
         clean: {
             build: ['<%=cfg.build%>'],
             dist: ['<%=cfg.dist%>', '<%=cfg.docs%>'],
+            docs: ['<%=cfg.docs%>'],
             tmp: ['<%=cfg.build%>/bundle.js']
         },
 
@@ -280,7 +281,7 @@ module.exports = function (grunt) {
     grunt.registerTask('debug', ['karma:debug']);
     grunt.registerTask('demo', ['jshint:demo', 'default', 'connect:server', 'watch']);
 
-    grunt.registerTask('docs', ['jshint:grunt', 'clean:build', 'javascript', 'ngdocs', 'gh-pages']);
+    grunt.registerTask('docs', ['jshint:grunt', 'clean:build', 'clean:docs', 'javascript', 'ngdocs', 'gh-pages']);
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
     grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);
 };
