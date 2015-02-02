@@ -100,6 +100,22 @@
 /**
  * @ngdoc method
  * @methodOf locals.$dataResponse
+ * @name reload
+ *
+ * @description
+ * Reloads the data of the view. By the parameter you can specify, whether you want to just reload the data
+ * or always recreate the view. Note that even when you don't want to recreate the view, if the media type changes,
+ * new view is always created.
+ *
+ * @param {boolean=} forceReload If true, view is always refreshed (controller recreated). Otherwise it is recreated
+ * only if media type of the response changes. If the view remains same,
+ * {@link locals.$dataResponse#events_$routeUpdate $routeUpdate} event is fired and it is up to the controller to update
+ * the view.
+ */
+
+/**
+ * @ngdoc method
+ * @methodOf locals.$dataResponse
  * @name $on
  *
  * @description
