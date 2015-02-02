@@ -16,7 +16,7 @@ module.exports = function (grunt) {
             build: ['<%=cfg.build%>'],
             dist: ['<%=cfg.dist%>', '<%=cfg.docs%>'],
             docs: ['<%=cfg.docs%>'],
-            tmp: ['<%=cfg.build%>/bundle.js']
+            tmp: ['<%=cfg.build%>/router.js', '<%=cfg.build%>/api.js']
         },
 
         // Validate
@@ -99,7 +99,7 @@ module.exports = function (grunt) {
 
         // Compile
         concat: {
-            build: {
+            router: {
                 options: {
                     get banner() {
                         var licence = grunt.file.read('LICENCE').replace(/^/mg, ' ').replace(/[ ]+$/mg, '');
@@ -111,21 +111,35 @@ module.exports = function (grunt) {
                         return src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
                     }
                 },
-                files: [
-                    {
-                        dest: '<%=cfg.build%>/bundle.js',
-                        src: [
-                            '<%=cfg.src%>/dataRouterRegistry.js',
-                            '<%=cfg.src%>/dataRouterLoader.js',
-                            '<%=cfg.src%>/dataRouter.js',
-                            '<%=cfg.src%>/matchMap.js',
-                            '<%=cfg.src%>/eventSupport.js',
-                            '<%=cfg.src%>/directives/**/*.js',
-                            '<%=cfg.src%>/apiMap.js',
-                            '!<%=cfg.src%>/**/*.specs.js'
-                        ]
+                files: [{
+                    dest: '<%=cfg.build%>/router.js',
+                    src: [
+                        '<%=cfg.src%>/dataRouterRegistry.js',
+                        '<%=cfg.src%>/dataRouterLoader.js',
+                        '<%=cfg.src%>/dataRouter.js',
+                        '<%=cfg.src%>/matchMap.js',
+                        '<%=cfg.src%>/eventSupport.js',
+                        '<%=cfg.src%>/directives/**/*.js',
+                        '<%=cfg.src%>/dataApi.js',
+                        '!<%=cfg.src%>/**/*.specs.js'
+                    ]
+                }]
+            },
+            api: {
+                options: {
+                    get banner() {
+                        var licence = grunt.file.read('LICENCE').replace(/^/mg, ' ').replace(/[ ]+$/mg, '');
+                        return '/*\n' + licence + ' */\n\n(function dataApiModule(angular) {\n"use strict";\n';
+                    },
+                    footer: '\n})(angular);',
+                    process: function (src) {
+                        return src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
                     }
-                ]
+                },
+                files: [{
+                    dest: '<%=cfg.build%>/api.js',
+                    src: ['<%=cfg.src%>/dataApi.js', '!<%=cfg.src%>/**/*.specs.js']
+                }]
             }
         },
 
@@ -133,7 +147,8 @@ module.exports = function (grunt) {
             build: {
                 files: [
                     {
-                        '<%=cfg.build%>/dist/angular-data-router.js': '<%=cfg.build%>/bundle.js'
+                        '<%=cfg.build%>/dist/angular-data-router.js': '<%=cfg.build%>/router.js',
+                        '<%=cfg.build%>/dist/components/data-api.js': '<%=cfg.build%>/api.js'
                     }
                 ]
             }
@@ -144,7 +159,10 @@ module.exports = function (grunt) {
                 jslintHappy: true
             },
             build: {
-                src: ['<%=cfg.build%>/dist/angular-data-router.js']
+                src: [
+                    '<%=cfg.build%>/dist/angular-data-router.js',
+                    '<%=cfg.build%>/dist/components/*.js'
+                ]
             }
         },
 
@@ -215,8 +233,7 @@ module.exports = function (grunt) {
                 },
                 files: {
                     src: [
-                        '<%=cfg.dist%>/**',
-                        '<%=cfg.docs%>/**'
+                        '<%=cfg.dist%>/**'
                     ]
                 }
             }
@@ -264,9 +281,9 @@ module.exports = function (grunt) {
         watch: {
             src: {
                 files: ['<%=cfg.src%>/**/*.js'],
-                tasks: ['javascript', 'jshint:test']
+                tasks: ['javascript', 'jshint:test', 'ngdocs']
             },
-            demojs: {
+            demo: {
                 files: ['<%=cfg.demo%>/**/*.js'],
                 tasks: ['jshint:demo']
             }
@@ -274,7 +291,7 @@ module.exports = function (grunt) {
     });
 
     // Private tasks
-    grunt.registerTask('javascript', ['jshint:src', 'concat:build', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build', 'clean:tmp']);
+    grunt.registerTask('javascript', ['jshint:src', 'concat:router', 'concat:api', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build', 'clean:tmp']);
 
     // Public tasks
     grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'jshint:test', 'karma:default']);

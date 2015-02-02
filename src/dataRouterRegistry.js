@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ * @ngdoc service
+ * @name mdvorakDataRouter.$dataRouterRegistryProvider
+ */
 module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$dataRouterMatchMap) {
     var provider = this;
     var views = provider.$$views = $$dataRouterMatchMap.create();
@@ -72,7 +76,10 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
         return mimeType;
     };
 
-    // Factory
+    /**
+     * @ngdoc service
+     * @name mdvorakDataRouter.$dataRouterRegistry
+     */
     this.$get = function $dataRouterRegistryFactory() {
         return {
             /**

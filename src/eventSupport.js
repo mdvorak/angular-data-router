@@ -11,6 +11,15 @@ module.factory('$$dataRouterEventSupport', function dataRouterEventSupportFactor
         return new EventSupport();
     };
 
+    EventSupport.$$extend = function (dst, src) {
+        // Preserve listeners
+        var $$listeners = dst.$$listeners;
+        angular.extend(dst, src);
+        dst.$$listeners = $$listeners;
+
+        return dst;
+    };
+
     EventSupport.prototype = {
         constructor: EventSupport,
 
