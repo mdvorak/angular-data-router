@@ -33,6 +33,32 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     };
 
     /**
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterLoaderProvider
+     * @name extractType
+     *
+     * @description
+     * Extracts media type from given response. Default implementation returns `Content-Type` header.
+     *
+     * _Note: If the return value is empty, `application/octet-stream` will be used._
+     *
+     * @example
+     * Example of custom implementation.
+     * ```js
+     *     $dataRouterLoader.extractType = function extractTypeFromJson(response) {
+     *         return response.data && response.data._type;
+     *     };
+     * ```
+     *
+     * @param {Object} response Response object, see $http documentation for details.
+     *                          _Note that while `response` itself is never null, data property can be._
+     * @returns {String} Media type of the response. It will be normalized afterwards.
+     */
+    provider.extractType = function extractTypeFromContentType(response) {
+        return response.headers('Content-Type');
+    };
+
+    /**
      * @ngdoc service
      * @name mdvorakDataRouter.$dataRouterLoader
      * @description
@@ -150,7 +176,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                 // Fetch data and return promise
                 return $http.get(url).then(function dataLoaded(response) {
                     // Match existing resource
-                    var mediaType = $dataRouterRegistry.normalizeMediaType(response.headers('Content-Type')) || 'text/plain';
+                    var mediaType = $dataRouterRegistry.normalizeMediaType(provider.extractType(response)) || 'application/octet-stream';
                     var view = $dataRouterRegistry.match(mediaType);
 
                     // Unknown media type
