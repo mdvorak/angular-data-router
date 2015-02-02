@@ -264,9 +264,9 @@ module.exports = function (grunt) {
         watch: {
             src: {
                 files: ['<%=cfg.src%>/**/*.js'],
-                tasks: ['javascript', 'jshint:test']
+                tasks: ['javascript', 'jshint:test', 'ngdocs']
             },
-            demojs: {
+            demo: {
                 files: ['<%=cfg.demo%>/**/*.js'],
                 tasks: ['jshint:demo']
             }
