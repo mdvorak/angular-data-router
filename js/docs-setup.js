@@ -118,7 +118,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Allows simple configuration of all parts of the data router in one place.",
-      "keywords": "$dataapiprovider $datarouterloaderprovider $datarouterprovider absolute alias allows api apiprefix base changed config configuration configures currently data default details disable disables documentation enabled enables event false global handling href includes intended key mapping mdvorakdataapi mdvorakdatarouter merged method methods_global methods_prefix normalized object parts phase place precedence prefix provider reference relative resolve resource returns router routes service set sets simple supported tests unit url view"
+      "keywords": "$dataapiprovider $datarouterloaderprovider $datarouterprovider $datarouterregistryprovider absolute alias allows api apiprefix base changed config configuration configures content currently data default details disable disables displayed documentation enabled enables error event fails false force forces global handling href includes intended key loaded location mapping match mdvorakdataapi mdvorakdatarouter mediatype merged method methods_error methods_global methods_prefix methods_when normalized object parameters parts path phase place precedence prefix provider redirect redirected redirectto reference relative resolvables resolve resource returns router routes service set sets simple supported supports template tests type unit url view wildcards"
     },
     {
       "section": "api",
@@ -135,7 +135,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "This is the place where media types are configured to the views.",
-      "keywords": "$datarouterregistryprovider $injector _note alias allowed api application behavior config configuration configured configures considered content controller controlleras created dataas declaration details displayed documentation error exact fails force forces format function ignored include injected iterated loaded location map match matcher matchers mdvorakdatarouter media mediatype method methods_error methods_when mimetype ngroute normalized normalizemediatype normalizes object optional order parameters path place precedence prepends provided provider redirect redirected redirectto reference registration removes resolvables resolve resolved resource returns rules service signature slower string subtype suffix suffixes supported supports takes template templateurl transformresponse type types view views wildcard wildcards"
+      "keywords": "$datarouterregistryprovider $injector _note allowed api application behavior config configuration configured configures considered content controller controlleras created dataas declaration displayed error exact fails format function ignored include injected iterated loaded map match matcher matchers mdvorakdatarouter media mediatype method methods_when mimetype ngroute normalized normalizemediatype normalizes object optional order place precedence prepends provided reference registration removes resolvables resolve resolved resource rules service signature slower string subtype suffix suffixes supported takes template templateurl transformresponse type types view views wildcard wildcards"
     },
     {
       "section": "api",

@@ -24,6 +24,16 @@ Cannot be changed after config phase.</p>
 </div></td></tr></tbody></table><h5 id="methods_enabled_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="enabled-page"><p>Returns provider.</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_error">error(config)</h3>
+<div class="error"><div class="error-page"><p>Configures view for error page. Error page is displayed when resource or view template cannot be loaded or
+any of the resolvables fails.</p>
+<p>This is just an alias for
+<a href="#/api/mdvorakDataRouter.$dataRouterRegistryProvider#methods_error">$dataRouterRegistryProvider.error(config)</a>
+method, see its documentation for details.</p>
+</div><h5 id="methods_error_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="error-page"><p>Configuration object, as in
+<a href="#/api/mdvorakDataRouter.$dataRouterRegistryProvider#methods_when">when(config)</a>.</p>
+</div></td></tr></tbody></table></div>
+</li>
 <li><h3 id="methods_global">global(config)</h3>
 <div class="global"><div class="global-page"><p>Sets global configuration for all routes. It is then merged into each view configuration, with view taking precedence.</p>
 <p>This is just an alias for
@@ -32,6 +42,22 @@ see its documentation for details.</p>
 </div><h5 id="methods_global_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Configuration object. Currently only <code>&quot;resolve&quot;</code> key is supported.</p>
 </div></td></tr></tbody></table><h5 id="methods_global_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Reference to the provider.</p>
 </div></td></tr></table></div>
+</li>
+<li><h3 id="methods_redirect">redirect(path, redirectTo)</h3>
+<div class="redirect"><div class="redirect-page"><p>Forces redirect from one location to another.</p>
+</div><h5 id="methods_redirect_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>path</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="redirect-page"><p>View to force redirect on. Supports wildcards. Parameters are not supported</p>
+</div></td></tr><tr><td>redirectTo</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="redirect-page"><p>View path which should be redirected to.</p>
+</div></td></tr></tbody></table><h5 id="methods_redirect_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="redirect-page"><p>Returns the provider.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_when">when(mediaType, config)</h3>
+<div class="when"><div class="when-page"><p>Configures view for given content type.</p>
+<p>This is just an alias for
+<a href="#/api/mdvorakDataRouter.$dataRouterRegistryProvider#methods_when">$dataRouterRegistryProvider.when(mediaType,config)</a>
+method, see its documentation for details.</p>
+</div><h5 id="methods_when_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>mediaType</td><td><a href="" class="label type-hint type-hint-string">String</a><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="when-page"><p>Content type to match.</p>
+</div></td></tr><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="when-page"><p>Configuration object.</p>
+</div></td></tr></tbody></table></div>
 </li>
 </ul>
 </div>

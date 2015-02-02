@@ -1,27 +1,8 @@
-/*
- The MIT License
-
- Copyright (c) 2015 Michal Dvorak <michal@mdvorak.org>, https://github.com/mdvorak/angular-data-router
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
+/**
+ * @license angular-data-router v0.1.0
+ * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
+ * License: MIT
  */
-
 (function dataRouterModule(angular) {
     "use strict";
 
@@ -581,7 +562,7 @@
 
         /**
          * @ngdoc method
-         * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+         * @methodOf mdvorakDataRouter.$dataRouterProvider
          * @name when
          *
          * @description
@@ -601,7 +582,7 @@
 
         /**
          * @ngdoc method
-         * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+         * @methodOf mdvorakDataRouter.$dataRouterProvider
          * @name error
          *
          * @description
@@ -622,7 +603,7 @@
 
         /**
          * @ngdoc method
-         * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+         * @methodOf mdvorakDataRouter.$dataRouterProvider
          * @name redirect
          *
          * @description
@@ -1154,7 +1135,7 @@
      *
      * @param {expression=} src API URL to be displayed. If not set, main view is shown.
      * @param {expression=} autoscroll Whether dataview should call `$anchorScroll` to scroll the viewport after the view
-     *                                 is updated. Applies only to the main view, that is without the `src` attribute.
+     *                                 is updated. Applies only to the main view, that is, without the `src` attribute.
      * @param {expression=} onload Onload handler.
      */
     module.directive('dataview', ["$animate", "$anchorScroll", "$log", "$dataRouterLoader", "$dataRouter", "$$dataRouterEventSupport", function dataViewFactory($animate, $anchorScroll, $log, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
