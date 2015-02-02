@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ * @ngdoc service
+ * @name mdvorakApiMap.$apiMap
+ */
 angular.module('mdvorakApiMap', []).provider('$apiMap', function $apiMapProvider() {
     var provider = this;
     // Intentionally using document object instead of $document
