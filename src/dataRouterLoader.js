@@ -199,7 +199,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                 $log.debug("Loading resource " + url);
 
                 // Fetch data and return promise
-                return $http.get(url).then(function dataLoaded(response) {
+                return $http({url: url, method: 'GET', dataRouter: true}).then(function dataLoaded(response) {
                     // Match existing resource
                     var mediaType = $dataRouterRegistry.normalizeMediaType(provider.extractType(response)) || 'application/octet-stream';
                     var view = $dataRouterRegistry.match(mediaType);
