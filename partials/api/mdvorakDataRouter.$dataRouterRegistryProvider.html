@@ -30,13 +30,14 @@ subtype of <code>application/</code> type. You should not include suffixes
 like <code>+json</code>, they are ignored by the matcher. Wildcards using <code>*</code> are supported.</p>
 <p>It can be function with signature <code>[boolean] function([string])</code> as well.</p>
 </div></td></tr><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="when-page"><p>Configuration object, similar to ngRoute one. Allowed keys are:
-<code>template, templateUrl, controller, controllerAs, dataAs, resolve, transformResponse</code>,
+<code>template</code>, <code>templateUrl</code>, <code>controller</code>, <code>controllerAs</code>, <code>dataAs</code>,
+<code>resolve</code>, <code>transformResponse</code>,
 where either <code>template</code> or <code>templateUrl</code> must be specified.
 <code>template</code> has precedence over <code>templateUrl</code>.
 <code>controller</code> is optional. Can be either String reference or declaration
 according to <code>$injector</code> rules. <code>resolve</code> is map of resolvables, that are
-resolved before controller is created, and are injected into controller. Same behavior
-as in ngRoute.</p>
+resolved before controller is created, and are injected into controller.
+Same behavior as in ngRoute.</p>
 </div></td></tr></tbody></table></div>
 </li>
 </ul>
