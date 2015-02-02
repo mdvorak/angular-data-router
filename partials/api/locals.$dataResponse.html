@@ -6,8 +6,16 @@
 <div><h2 id="description">Description</h2>
 <div class="description"><div class="locals-dataresponse-page"><p><code>$dataResponse</code> is the whole response object, which provides same attributes as <code>$http</code> plus some more.
 The instance never changes for the given view, its data might however.</p>
-<h5 id="description_data-refresh">Data refresh</h5>
-<p>TODO</p>
+<h4 id="description_data-refresh">Data refresh</h4>
+<p>You can reload the data of this view by calling <a href="#/api/locals.$dataResponse#methods_reload">reload(boolean)</a> method.
+Router handles everything for you as if it would be first load, including errors.</p>
+<p>When you pass <code>true</code> as the argument, your view controller will always be destroyed and recreated, and view recompiled.
+If the view is main view, route change lifecycle will occur (<code>$routeChange*</code> events will be fired).</p>
+<p>When you pass <code>false</code> or <code>undefined</code>, behavior depends on the response. If request succeeds, the media type and URL
+does not change, the <a href="#/api/locals.$dataResponse#events_$routeupdate">$routeUpdate</a> event will be fired and it is up
+to the controller to update the view (note that if you are using <code>dataAs</code> view configuration, scope variable will be
+updated automatically). If something changes (when request fails, media type of the response is <code>$error</code>), full
+reload is performed, as if you would pass <code>true</code> as the argument.</p>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>
 <ul class="methods"><li><h3 id="methods_$broadcast">$broadcast(name, args)</h3>
@@ -90,7 +98,18 @@ and controller needs to update the view.</p>
 </div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="locals-dataresponse-page"><pre><code class="lang-js">module.controller(&#39;sampleCtrl&#39;, function($scope, $dataResponse) {
-    // TODO
+    $scope.data = $dataResponse.data;
+
+    // Listen for updates
+    $dataResponse.$on(&#39;$routeUpdate&#39;, function () {
+        // Update the data
+        $scope.data = $dataResponse.data;
+    });
+
+    // Reload handler
+    $scope.refresh = function refresh() {
+        $dataResponse.reload();
+    };
 });
 </code></pre>
 </div></div>
