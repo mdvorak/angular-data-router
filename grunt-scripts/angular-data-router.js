@@ -46,7 +46,7 @@
          * It can be function with signature `[boolean] function([string])` as well.
          *
          * @param {Object} config Configuration object, similar to ngRoute one. Allowed keys are:
-         *                        `template`, `templateUrl`, `controller`, `controllerAs`, `dataAs`,
+         *                        `template`, `templateUrl`, `controller`, `controllerAs`, `dataAs`, `responseAs`,
          *                        `resolve`, `transformResponse`,
          *                        where either `template` or `templateUrl` must be specified.
          *                        `template` has precedence over `templateUrl`.
@@ -403,7 +403,6 @@
                         };
 
                         if (view.transformResponse) {
-                            result.originalData = response.data;
                             return asResponse(view.transformResponse(result));
                         } else {
                             return asResponse(result);
@@ -1321,6 +1320,10 @@
                         current.$on('$routeUpdate', function routeDataUpdated(e, response) {
                             scope[view.dataAs] = response.data;
                         }, scope);
+                    }
+
+                    if (view.responseAs) {
+                        scope[view.responseAs] = current;
                     }
                 }
 

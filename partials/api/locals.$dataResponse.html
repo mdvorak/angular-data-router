@@ -40,13 +40,39 @@ the view.</p>
 </ul>
 </div>
 <div class="member property"><h2 id="properties">Properties</h2>
-<ul class="properties"><li><h3 id="properties_data">data</h3>
+<ul class="properties"><li><h3 id="properties_config">config</h3>
+<div class="config"><h5 id="properties_config_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="config-page"><p>Configuration object from <code>$http</code> request.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="properties_data">data</h3>
 <div class="data"><div class="data-page"><p>Note that data can be null or pretty much anything. It is not modified by the router itself.</p>
 </div><h5 id="properties_data_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="data-page"><p>The loaded data. Same as <a href="#/api/locals.$data">$data</a>.</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="properties_headers">headers</h3>
+<div class="headers"><h5 id="properties_headers_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="headers-page"><p>Headers the response. Same as in <code>$http</code> response.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="properties_mediatype">mediaType</h3>
+<div class="mediatype"><h5 id="properties_mediatype_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mediatype-page"><p>Normalized media type of the response. For error view, it has special value <code>$error</code>.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="properties_status">status</h3>
+<div class="status"><div class="status-page"><p>Corresponds to the HTTP response status code. Special case is if there was application error, this is set to <code>999</code>.</p>
+</div><h5 id="properties_status_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-number">Number</a></td><td><div class="status-page"><p>Status code of the response. Same as in <code>$http</code> response.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="properties_statustext">statusText</h3>
+<div class="statustext"><h5 id="properties_statustext_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="statustext-page"><p>Status text of the response. Same as in <code>$http</code> response.</p>
+</div></td></tr></table></div>
+</li>
 <li><h3 id="properties_url">url</h3>
 <div class="url"><h5 id="properties_url_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="url-page"><p>API URL of the loaded resource. Same as <a href="#/api/locals.$dataUrl">$dataUrl</a> object.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="properties_view">view</h3>
+<div class="view"><div class="view-page"><p>Configuration of the matched view.</p>
+</div><h5 id="properties_view_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="view-page"><p>View configuration. This is actual configuration (not a copy), so don&#39;t modify in any case!</p>
 </div></td></tr></table></div>
 </li>
 </ul>

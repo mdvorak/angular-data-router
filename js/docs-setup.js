@@ -28,7 +28,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "locals",
       "shortDescription": "$dataResponse is the whole response object, which provides same attributes as $http plus some more.",
-      "keywords": "$broadcast $data $dataresponse $dataurl $http $on $routeupdate api args arguments attributes automatically behaves call callback changes controller created currently data deregister deregistered destroyed directly don event events events_ fired fires forcereload function instance js listener loaded locals media method modified module note null number object parameter pretty propagated property provided recreate recreated refresh refreshed registers reload reloads remains remover required resource response router samplectrl scope sense service todo true type update url view"
+      "keywords": "$broadcast $data $dataresponse $dataurl $error $http $on $routeupdate actual api application args arguments attributes automatically behaves call callback case changes code config configuration controller copy corresponds created currently data deregister deregistered destroyed directly don error event events events_ fired fires forcereload function headers http instance js listener loaded locals matched media mediatype method modified modify module normalized note null number object parameter pretty propagated property provided recreate recreated refresh refreshed registers reload reloads remains remover request required resource response router samplectrl scope sense service set special status statustext text todo true type update url view"
     },
     {
       "section": "api",
@@ -135,7 +135,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "This is the place where media types are configured to the views.",
-      "keywords": "$datarouterregistryprovider $injector _note allowed api application behavior config configuration configured configures considered content controller controlleras created dataas declaration displayed error exact fails format function ignored include injected iterated loaded map match matcher matchers mdvorakdatarouter media mediatype method methods_when mimetype ngroute normalized normalizemediatype normalizes object optional order place precedence prepends provided reference registration removes resolvables resolve resolved resource rules service signature slower string subtype suffix suffixes supported takes template templateurl transformresponse type types view views wildcard wildcards"
+      "keywords": "$datarouterregistryprovider $injector _note allowed api application behavior config configuration configured configures considered content controller controlleras created dataas declaration displayed error exact fails format function ignored include injected iterated loaded map match matcher matchers mdvorakdatarouter media mediatype method methods_when mimetype ngroute normalized normalizemediatype normalizes object optional order place precedence prepends provided reference registration removes resolvables resolve resolved resource responseas rules service signature slower string subtype suffix suffixes supported takes template templateurl transformresponse type types view views wildcard wildcards"
     },
     {
       "section": "api",
