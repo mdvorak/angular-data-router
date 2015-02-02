@@ -29,7 +29,7 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
      * It can be function with signature `[boolean] function([string])` as well.
      *
      * @param {Object} config Configuration object, similar to ngRoute one. Allowed keys are:
-     *                        `template`, `templateUrl`, `controller`, `controllerAs`, `dataAs`,
+     *                        `template`, `templateUrl`, `controller`, `controllerAs`, `dataAs`, `responseAs`,
      *                        `resolve`, `transformResponse`,
      *                        where either `template` or `templateUrl` must be specified.
      *                        `template` has precedence over `templateUrl`.

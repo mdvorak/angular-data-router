@@ -202,6 +202,10 @@ module.directive('dataview', function dataViewFillContentFactory($compile, $cont
                         scope[view.dataAs] = response.data;
                     }, scope);
                 }
+
+                if (view.responseAs) {
+                    scope[view.responseAs] = current;
+                }
             }
 
             link(scope);

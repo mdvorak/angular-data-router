@@ -46,13 +46,14 @@
          * It can be function with signature `[boolean] function([string])` as well.
          *
          * @param {Object} config Configuration object, similar to ngRoute one. Allowed keys are:
-         *                        `template, templateUrl, controller, controllerAs, dataAs, resolve, transformResponse`,
+         *                        `template`, `templateUrl`, `controller`, `controllerAs`, `dataAs`, `responseAs`,
+         *                        `resolve`, `transformResponse`,
          *                        where either `template` or `templateUrl` must be specified.
          *                        `template` has precedence over `templateUrl`.
          *                        `controller` is optional. Can be either String reference or declaration
          *                        according to `$injector` rules. `resolve` is map of resolvables, that are
-         *                        resolved before controller is created, and are injected into controller. Same behavior
-         *                        as in ngRoute.
+         *                        resolved before controller is created, and are injected into controller.
+         *                        Same behavior as in ngRoute.
          */
         provider.when = function when(mediaType, config) {
             // Make our copy
@@ -562,7 +563,7 @@
 
         /**
          * @ngdoc method
-         * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+         * @methodOf mdvorakDataRouter.$dataRouterProvider
          * @name when
          *
          * @description
@@ -582,7 +583,7 @@
 
         /**
          * @ngdoc method
-         * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+         * @methodOf mdvorakDataRouter.$dataRouterProvider
          * @name error
          *
          * @description
@@ -603,7 +604,7 @@
 
         /**
          * @ngdoc method
-         * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+         * @methodOf mdvorakDataRouter.$dataRouterProvider
          * @name redirect
          *
          * @description
@@ -1320,6 +1321,10 @@
                         current.$on('$routeUpdate', function routeDataUpdated(e, response) {
                             scope[view.dataAs] = response.data;
                         }, scope);
+                    }
+
+                    if (view.responseAs) {
+                        scope[view.responseAs] = current;
                     }
                 }
 
