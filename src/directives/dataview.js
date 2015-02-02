@@ -15,7 +15,7 @@
  *
  * @param {expression=} src API URL to be displayed. If not set, main view is shown.
  * @param {expression=} autoscroll Whether dataview should call `$anchorScroll` to scroll the viewport after the view
- *                                 is updated. Applies only to the main view, that is without the `src` attribute.
+ *                                 is updated. Applies only to the main view, that is, without the `src` attribute.
  * @param {expression=} onload Onload handler.
  */
 module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $log, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
