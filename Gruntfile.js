@@ -297,19 +297,6 @@ module.exports = function (grunt) {
     // Private tasks
     grunt.registerTask('javascript', ['jshint:src', 'concat:router', 'concat:api', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build', 'clean:tmp']);
 
-    grunt.registerTask('bump_wrapper', function () {
-        switch (grunt.option('ver')) {
-            case 'major':
-                return grunt.tasks.run('bump:major');
-
-            case 'minor':
-                return grunt.tasks.run('bump:minor');
-
-            default:
-                return grunt.tasks.run('bump:patch');
-        }
-    });
-
     // Public tasks
     grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'jshint:test', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
@@ -317,5 +304,5 @@ module.exports = function (grunt) {
 
     grunt.registerTask('docs', ['jshint:grunt', 'clean:build', 'clean:docs', 'javascript', 'ngdocs', 'gh-pages']);
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
-    grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump_wrapper', 'git-is-clean']);
+    grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);
 };
