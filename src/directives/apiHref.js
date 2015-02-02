@@ -65,7 +65,7 @@
  * </file>
  * </example>
  */
-module.directive('apiHref', function apiHrefFactory($apiMap, $dataRouterRegistry, $dataRouterLoader, $location, $browser) {
+module.directive('apiHref', function apiHrefFactory($dataApi, $dataRouterRegistry, $dataRouterLoader, $location, $browser) {
     return {
         restrict: 'AC',
         priority: 90,
@@ -89,7 +89,7 @@ module.directive('apiHref', function apiHrefFactory($apiMap, $dataRouterRegistry
                 }
 
                 // Map URL
-                var href = $apiMap.mapApiToView(attrs.apiHref);
+                var href = $dataApi.mapApiToView(attrs.apiHref);
 
                 if (angular.isString(href)) {
                     // Hashbang mode

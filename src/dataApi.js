@@ -2,9 +2,9 @@
 
 /**
  * @ngdoc service
- * @name mdvorakApiMap.$apiMap
+ * @name mdvorakDataApi.$dataApi
  */
-angular.module('mdvorakApiMap', []).provider('$apiMap', function $apiMapProvider() {
+angular.module('mdvorakDataApi', []).provider('$dataApi', function $dataApiProvider() {
     var provider = this;
     // Intentionally using document object instead of $document
     var urlParsingNode = document.createElement("A");
@@ -95,10 +95,10 @@ angular.module('mdvorakApiMap', []).provider('$apiMap', function $apiMapProvider
         return null;
     };
 
-    this.$get = function $apiMapFactory($log, $location) {
+    this.$get = function $dataApiFactory($log, $location) {
         $log.debug("Using API prefix " + provider.$apiPrefix);
 
-        var $apiMap = {
+        var $dataApi = {
             /**
              * Returns configured API prefix.
              *
@@ -144,11 +144,11 @@ angular.module('mdvorakApiMap', []).provider('$apiMap', function $apiMapProvider
             url: function urlFn(url) {
                 // Getter
                 if (arguments.length < 1) {
-                    return $apiMap.mapViewToApi($location.path());
+                    return $dataApi.mapViewToApi($location.path());
                 }
 
                 // Setter
-                var path = $apiMap.mapApiToView(url);
+                var path = $dataApi.mapApiToView(url);
 
                 if (path) {
                     $location.path(path);
@@ -167,6 +167,6 @@ angular.module('mdvorakApiMap', []).provider('$apiMap', function $apiMapProvider
             }
         };
 
-        return $apiMap;
+        return $dataApi;
     };
 });

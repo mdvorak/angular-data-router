@@ -4,7 +4,7 @@
  * @ngdoc service
  * @name mdvorakDataRouter.$dataRouterProvider
  */
-module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $apiMapProvider) {
+module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $dataApiProvider) {
     var provider = this;
 
     /**
@@ -26,7 +26,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
      * @return {String} API URL prefix. It's absolute URL, includes base href.
      */
     provider.apiPrefix = function apiPrefix(prefix) {
-        return $apiMapProvider.prefix(prefix);
+        return $dataApiProvider.prefix(prefix);
     };
 
     /**
@@ -121,16 +121,16 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
         return provider;
     };
 
-    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $apiMap, $$dataRouterEventSupport) {
+    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $dataApi, $$dataRouterEventSupport) {
         var $dataRouter = {
             /**
              * @ngdoc property
              * @name api
              *
              * @description
-             * Reference to the {@link mdvorakDataRouter.$apiMap} instance. Its here to make your life easier.
+             * Reference to the {@link mdvorakDataRouter.$dataApi} instance. Its here to make your life easier.
              */
-            api: $apiMap,
+            api: $dataApi,
 
             /**
              * @ngdoc property
@@ -165,7 +165,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                 }
 
                 // Load resource
-                url = $apiMap.mapViewToApi($location.path());
+                url = $dataApi.mapViewToApi($location.path());
 
                 // Load data and view
                 $log.debug("Loading main view");

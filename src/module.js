@@ -6,4 +6,4 @@
  * @description
  * TODO
  */
-var module = angular.module("mdvorakDataRouter", ['mdvorakApiMap']);
+var module = angular.module("mdvorakDataRouter", ['mdvorakDataApi']);
