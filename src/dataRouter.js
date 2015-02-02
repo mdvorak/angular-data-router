@@ -121,7 +121,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
         return provider;
     };
 
-    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $apiMap) {
+    this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $apiMap, $$dataRouterEventSupport) {
         var $dataRouter = {
             /**
              * @ngdoc property
@@ -183,9 +183,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                             $log.debug("Replacing current data");
 
                             // Update current (preserve listeners)
-                            var $$listeners = $dataRouter.current.$$listeners;
-                            angular.extend($dataRouter.current, response);
-                            $dataRouter.current.$$listeners = $$listeners;
+                            $$dataRouterEventSupport.$$extend($dataRouter.current, response);
 
                             // Fire event on the response (only safe way for both main view and fragments)
                             $dataRouter.current.$broadcast('$routeUpdate', $dataRouter.current);

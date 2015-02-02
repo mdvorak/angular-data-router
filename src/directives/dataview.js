@@ -1,6 +1,6 @@
 "use strict";
 
-module.directive('dataview', function dataViewFactory($animate, $log, $dataRouterLoader, $dataRouter) {
+module.directive('dataview', function dataViewFactory($animate, $log, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
     return {
         restrict: 'EAC',
         terminal: true,
@@ -110,9 +110,7 @@ module.directive('dataview', function dataViewFactory($animate, $log, $dataRoute
                             $log.debug("Replacing view data of ", $element[0]);
 
                             // Update current (preserve listeners)
-                            var $$listeners = context.current.$$listeners;
-                            angular.extend(context.current, response);
-                            context.current.$$listeners = $$listeners;
+                            $$dataRouterEventSupport.$$extend($dataRouter.current, response);
 
                             // Fire event on the response (only safe way for both main view and fragments)
                             context.current.$broadcast('$routeUpdate', context.current);
