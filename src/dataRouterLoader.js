@@ -3,10 +3,10 @@
 /**
  * @ngdoc service
  * @name mdvorakDataRouter.$dataRouterLoaderProvider
- * @kind provider
  *
  * @description
- * TODO
+ * Provider allows configuration of loading and resolving views. Note that media types are registered in
+ * {@link mdvorakDataRouter.$dataRouterRegistryProvider} and not here.
  */
 module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     var provider = this;
@@ -17,7 +17,30 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
      * @name global
      *
      * @description
-     * Sets global configuration for all routes.
+     * Sets global configuration for all routes. It is then merged into each view configuration, with view taking precedence.
+     *
+     * _Note: This method is also available directly on `$dataRouter` to ease configuration._
+     *
+     * @example
+     * This example shows how to load additional data from URL provided in the response. `relatedData` object will be
+     * then available in view controllers.
+     *
+     * ```js
+     *     $dataRouterLoader.global({
+     *         resolve: {
+     *             relatedData: function($http, $data) {
+     *                 if ($data._links && $data._links.related) {
+     *                     return $http.get($data._links.related.href)
+     *                         .then(function(response) {
+     *                             return response.data;
+     *                         });
+     *                 }
+     *
+     *                 return null;
+     *             }
+     *         }
+     *     });
+     * ```
      *
      * @param {Object} config Configuration object. Currently only `"resolve"` key is supported.
      * @returns {Object} Reference to the provider.
@@ -40,8 +63,6 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
      * @description
      * Extracts media type from given response. Default implementation returns `Content-Type` header.
      *
-     * _Note: If the return value is empty, `application/octet-stream` will be used._
-     *
      * @example
      * Example of custom implementation.
      * ```js
@@ -50,9 +71,12 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
      *     };
      * ```
      *
-     * @param {Object} response Response object, see $http documentation for details.
-     *                          _Note that while `response` itself is never null, data property can be._
-     * @returns {String} Media type of the response. It will be normalized afterwards.
+     * @param {Object} response Response object, see `$http` documentation for details.
+     *
+     * _Note that while `response` itself is never null, data property can be._
+     *
+     * @returns {String} Media type of the response. It will be normalized afterwards. If the return value is empty,
+     * `application/octet-stream` will be used.
      */
     provider.extractType = function extractTypeFromContentType(response) {
         return response.headers('Content-Type');
@@ -61,8 +85,9 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     /**
      * @ngdoc service
      * @name mdvorakDataRouter.$dataRouterLoader
+     *
      * @description
-     * TODO
+     * Abstraction of data loading and view preparation. It uses views registered in {@link mdvorakDataRouter.$dataRouterRegistry}.
      */
     this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry, $$dataRouterEventSupport) {
         var $dataRouterLoader = {
