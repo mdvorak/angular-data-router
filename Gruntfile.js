@@ -4,6 +4,7 @@ module.exports = function (grunt) {
 
     // Project configuration.
     grunt.initConfig({
+        pkg: require('./package.json'),
         cfg: {
             src: 'src',
             demo: 'demo',
@@ -99,12 +100,14 @@ module.exports = function (grunt) {
 
         // Compile
         concat: {
+            options: {
+                banner: '/**\n * @license angular-data-router v<%=pkg.version%>\n * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router\n * License: MIT\n */'
+            },
             router: {
                 options: {
                     get banner() {
-                        var licence = grunt.file.read('LICENCE').replace(/^/mg, ' ').replace(/[ ]+$/mg, '');
                         var module = grunt.file.read('src/module.js');
-                        return '/*\n' + licence + ' */\n\n(function dataRouterModule(angular) {\n' + module + '\n';
+                        return '<%=concat.options.banner%>\n(function dataRouterModule(angular) {\n' + module + '\n';
                     },
                     footer: '\n})(angular);',
                     process: function (src) {
@@ -127,10 +130,7 @@ module.exports = function (grunt) {
             },
             api: {
                 options: {
-                    get banner() {
-                        var licence = grunt.file.read('LICENCE').replace(/^/mg, ' ').replace(/[ ]+$/mg, '');
-                        return '/*\n' + licence + ' */\n\n(function dataApiModule(angular) {\n"use strict";\n';
-                    },
+                    banner: '<%=concat.options.banner%>\n(function dataApiModule(angular) {\n"use strict";\n',
                     footer: '\n})(angular);',
                     process: function (src) {
                         return src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
@@ -169,6 +169,7 @@ module.exports = function (grunt) {
         uglify: {
             build: {
                 options: {
+                    banner: '/*\n angular-data-router v<%=pkg.version%>\n (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router\n License: MIT\n*/',
                     sourceMap: true
                 },
                 files: [{
@@ -296,6 +297,19 @@ module.exports = function (grunt) {
     // Private tasks
     grunt.registerTask('javascript', ['jshint:src', 'concat:router', 'concat:api', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build', 'clean:tmp']);
 
+    grunt.registerTask('bump_wrapper', function () {
+        switch (grunt.option('ver')) {
+            case 'major':
+                return grunt.tasks.run('bump:major');
+
+            case 'minor':
+                return grunt.tasks.run('bump:minor');
+
+            default:
+                return grunt.tasks.run('bump:patch');
+        }
+    });
+
     // Public tasks
     grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'jshint:test', 'karma:default']);
     grunt.registerTask('debug', ['karma:debug']);
@@ -303,5 +317,5 @@ module.exports = function (grunt) {
 
     grunt.registerTask('docs', ['jshint:grunt', 'clean:build', 'clean:docs', 'javascript', 'ngdocs', 'gh-pages']);
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
-    grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);
+    grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump_wrapper', 'git-is-clean']);
 };
