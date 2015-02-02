@@ -526,6 +526,27 @@
      *
      * @description
      * Allows simple configuration of all parts of the data router in one place.
+     *
+     * @example
+     * ```javascript
+     *     angular.module('example', ['mdvorakDataRouter'])
+     *         .config(function configRouter($dataRouterProvider) {
+     *             // URL prefixes
+     *             $dataRouterProvider.apiPrefix('api/');
+     *
+     *             // Error route
+     *             $dataRouterProvider.error({
+     *                 templateUrl: 'error.html',
+     *                 dataAs: 'error'
+     *             });
+     *
+     *             // Routes
+     *             $dataRouterProvider.when('application/x.example', {
+     *                 templateUrl: 'example.html',
+     *                 controller: 'ExampleCtrl'
+     *             });
+     *         });
+     * ```
      */
     module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", "$dataApiProvider", function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $dataApiProvider) {
         var provider = this;

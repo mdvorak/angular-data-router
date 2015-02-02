@@ -61,4 +61,24 @@ method, see its documentation for details.</p>
 </li>
 </ul>
 </div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="mdvorakdatarouter-datarouterprovider-page"><pre><code class="lang-javascript">angular.module(&#39;example&#39;, [&#39;mdvorakDataRouter&#39;])
+    .config(function configRouter($dataRouterProvider) {
+        // URL prefixes
+        $dataRouterProvider.apiPrefix(&#39;api/&#39;);
+
+        // Error route
+        $dataRouterProvider.error({
+            templateUrl: &#39;error.html&#39;,
+            dataAs: &#39;error&#39;
+        });
+
+        // Routes
+        $dataRouterProvider.when(&#39;application/x.example&#39;, {
+            templateUrl: &#39;example.html&#39;,
+            controller: &#39;ExampleCtrl&#39;
+        });
+    });
+</code></pre>
+</div></div>
 </div>

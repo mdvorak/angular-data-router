@@ -21,7 +21,7 @@ reload is performed, as if you would pass <code>true</code> as the argument.</p>
         $scope.data = $dataResponse.data;
 
         // Listen for updates
-        $dataResponse.$on(&#39;$routeUpdate&#39;, function () {
+        $dataResponse.$on(&#39;$routeUpdate&#39;, function routeUpdateListener() {
             // Update the data
             $scope.data = $dataResponse.data;
         });
