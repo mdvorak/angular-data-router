@@ -1,8 +1,8 @@
 "use strict";
 
-module.directive('dataView', function dataViewFactory($dataRouterLoader, $animate, $log) {
+module.directive('dataview', function dataViewFactory($animate, $log, $dataRouterLoader, $dataRouter) {
     return {
-        restrict: 'EC',
+        restrict: 'EAC',
         terminal: true,
         priority: 400,
         transclude: 'element',
@@ -15,14 +15,27 @@ module.directive('dataView', function dataViewFactory($dataRouterLoader, $animat
                 onloadExp = attr.onload || '';
 
             // Store context
-            var context = scope.$$dataRouterCtx = {};
+            var context;
 
-            // Watch for href changes
-            scope.$watch(hrefExp, function hrefWatch(href) {
-                currentHref = href;
-                reload(true);
-            });
+            if (attr.hasOwnProperty('src')) {
+                // Custom context
+                context = {};
 
+                // Custom view - watch for href changes
+                scope.$watch(hrefExp, function hrefWatch(href) {
+                    currentHref = href;
+                    reload(true);
+                });
+            }
+            else {
+                // Main view - use $dataRouter as context
+                context = $dataRouter;
+
+                // Show view on route change
+                scope.$on('$routeChangeSuccess', showView);
+            }
+
+            // Implementation
             function cleanupLastView() {
                 if (previousLeaveAnimation) {
                     $animate.cancel(previousLeaveAnimation);
@@ -42,6 +55,42 @@ module.directive('dataView', function dataViewFactory($dataRouterLoader, $animat
                 }
             }
 
+            function showView() {
+                // Show view
+                var locals = context.current && context.current.locals,
+                    template = locals && locals.$template;
+
+                if (angular.isDefined(template)) {
+                    $log.debug("Setting view ", $element[0], " to ", context.current.mediaType);
+
+                    var newScope = scope.$new();
+                    newScope.$$dataRouterCtx = context;
+
+                    // Note: This will also link all children of ng-view that were contained in the original
+                    // html. If that content contains controllers, ... they could pollute/change the scope.
+                    // However, using ng-view on an element with additional content does not make sense...
+                    // Note: We can't remove them in the cloneAttchFn of $transclude as that
+                    // function is called before linking the content, which would apply child
+                    // directives to non existing elements.
+                    currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
+                        $animate.enter(clone, null, currentElement || $element);
+                        cleanupLastView();
+                    });
+
+                    currentScope = context.current.scope = newScope;
+                    currentScope.$eval(onloadExp);
+                } else {
+                    $log.debug("Resetting view ", $element[0], ", got no response");
+                    cleanupLastView();
+                }
+            }
+
+            /**
+             * Loads the data from currentHref and shows the view.
+             * Used when this directive shows custom URL and not the main view.
+             *
+             * @param forceReload {boolean=} Specifies whether view needs to be refreshed or just $routeUpdate event will be fired.
+             */
             function reload(forceReload) {
                 var next = attr.next = {};
 
@@ -72,35 +121,13 @@ module.directive('dataView', function dataViewFactory($dataRouterLoader, $animat
                             context.current = response;
                             attr.next = undefined;
 
-                            // Show view
-                            var locals = response && response.locals,
-                                template = locals && locals.$template;
-
-                            if (angular.isDefined(template)) {
-                                $log.debug("Setting view ", $element[0], " to ", response.mediaType);
-
-                                // Add reload implementation
+                            // Add reload implementation
+                            if (response) {
                                 response.reload = reload;
-
-                                var newScope = scope.$new();
-
-                                // Note: This will also link all children of ng-view that were contained in the original
-                                // html. If that content contains controllers, ... they could pollute/change the scope.
-                                // However, using ng-view on an element with additional content does not make sense...
-                                // Note: We can't remove them in the cloneAttchFn of $transclude as that
-                                // function is called before linking the content, which would apply child
-                                // directives to non existing elements.
-                                currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
-                                    $animate.enter(clone, null, currentElement || $element);
-                                    cleanupLastView();
-                                });
-
-                                currentScope = response.scope = newScope;
-                                currentScope.$eval(onloadExp);
-                            } else {
-                                $log.debug("Resetting view ", $element[0], ", got no response");
-                                cleanupLastView();
                             }
+
+                            // Show view
+                            showView();
                         }
                     }
                 }
@@ -109,14 +136,14 @@ module.directive('dataView', function dataViewFactory($dataRouterLoader, $animat
     };
 });
 
-module.directive('dataView', function dataViewFillContentFactory($compile, $controller) {
+module.directive('dataview', function dataViewFillContentFactory($compile, $controller) {
     // This directive is called during the $transclude call of the first `dataView` directive.
     // It will replace and compile the content of the element with the loaded template.
     // We need this directive so that the element content is already filled when
     // the link function of another directive on the same element as dataView
     // is called.
     return {
-        restrict: 'EC',
+        restrict: 'EAC',
         priority: -400,
         link: function dataViewFillContentLink(scope, $element) {
             var context = scope.$$dataRouterCtx; // Get context
@@ -124,6 +151,10 @@ module.directive('dataView', function dataViewFillContentFactory($compile, $cont
             var view = current.view;
             var locals = current.locals;
 
+            // delete context from the scope
+            delete context.$$dataRouterCtx;
+
+            // Compile
             $element.html(locals.$template);
 
             var link = $compile($element.contents());

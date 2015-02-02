@@ -19,7 +19,7 @@
             $dataRouterProvider.when(function (type) {
                 return type.lastIndexOf('json') === type.length - 4;
             }, {
-                template: '<pre>{{json|json}}</pre><a api-href="api/sample.txt">Text</a> <a api-href="api/sample.error">Error</a> <h2>Fragment</h2><div datafragment="\'api/sample.txt\'"></div>',
+                template: '<pre>{{json|json}}</pre><a api-href="api/sample.txt">Text</a> <a api-href="api/sample.error">Error</a> <h2>Fragment</h2><dataview src="\'api/sample.txt\'"></dataview>',
                 dataAs: 'json'
             });
 
