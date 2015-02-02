@@ -150,7 +150,7 @@ module.directive('dataview', function dataViewFillContentFactory($compile, $cont
             var locals = current.locals;
 
             // delete context from the scope
-            delete context.$$dataRouterCtx;
+            delete scope.$$dataRouterCtx;
 
             // Compile
             $element.html(locals.$template);
