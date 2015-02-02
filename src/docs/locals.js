@@ -66,7 +66,7 @@
  * `$dataResponse` is the whole response object, which provides same attributes as `$http` plus some more.
  * The instance never changes for the given view, its data might however.
  *
- * ## Data refresh
+ * ## Data reloading
  * You can reload the data of this view by calling {@link locals.$dataResponse#methods_reload reload(boolean)} method.
  * Router handles everything for you as if it would be first load, including errors.
  *
@@ -79,13 +79,13 @@
  * updated automatically). If something changes (when request fails, media type of the response is `$error`), full
  * reload is performed, as if you would pass `true` as the argument.
  *
- * @example
+ * ### Example
  * ```js
  *     module.controller('sampleCtrl', function($scope, $dataResponse) {
  *         $scope.data = $dataResponse.data;
  *
  *         // Listen for updates
- *         $dataResponse.$on('$routeUpdate', function () {
+ *         $dataResponse.$on('$routeUpdate', function routeUpdateListener() {
  *             // Update the data
  *             $scope.data = $dataResponse.data;
  *         });
