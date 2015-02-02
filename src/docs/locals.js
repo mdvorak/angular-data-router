@@ -95,7 +95,57 @@
  * Note that data can be null or pretty much anything. It is not modified by the router itself.
  */
 
-// TODO rest of properties and methods
+/**
+ * @ngdoc property
+ * @propertyOf locals.$dataResponse
+ * @name config
+ * @returns {Object}
+ * Configuration object from `$http` request.
+ */
+
+/**
+ * @ngdoc property
+ * @propertyOf locals.$dataResponse
+ * @name mediaType
+ * @returns {String}
+ * Normalized media type of the response. For error view, it has special value `$error`.
+ */
+
+/**
+ * @ngdoc property
+ * @propertyOf locals.$dataResponse
+ * @name status
+ * @returns {Number}
+ * Status code of the response. Same as in `$http` response.
+ * @description
+ * Corresponds to the HTTP response status code. Special case is if there was application error, this is set to `999`.
+ */
+
+/**
+ * @ngdoc property
+ * @propertyOf locals.$dataResponse
+ * @name statusText
+ * @returns {String}
+ * Status text of the response. Same as in `$http` response.
+ */
+
+/**
+ * @ngdoc property
+ * @propertyOf locals.$dataResponse
+ * @name headers
+ * @returns {Function}
+ * Headers the response. Same as in `$http` response.
+ */
+
+/**
+ * @ngdoc property
+ * @propertyOf locals.$dataResponse
+ * @name view
+ * @returns {Object}
+ * View configuration. This is actual configuration (not a copy), so don't modify in any case!
+ * @description
+ * Configuration of the matched view.
+ */
 
 /**
  * @ngdoc method

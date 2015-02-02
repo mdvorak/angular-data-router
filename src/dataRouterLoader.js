@@ -230,7 +230,6 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     };
 
                     if (view.transformResponse) {
-                        result.originalData = response.data;
                         return asResponse(view.transformResponse(result));
                     } else {
                         return asResponse(result);
