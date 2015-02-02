@@ -234,6 +234,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     } else {
                         return asResponse(result);
                     }
+                }, function dataFailed(response) {
+                    return $q.reject(asResponse(response));
                 });
             },
 
