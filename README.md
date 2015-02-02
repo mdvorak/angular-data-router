@@ -54,7 +54,7 @@ There are several special locals provided to your controllers, that represent cu
 * **$data** - Currently loaded data for your view.
 * **$dataType** - Media type of the payload.
 * **$dataUrl** - URL used to retrieve the data. Useful when you need to `PUT/POST/DELETE` the resource. Note that if you want
-to refresh the data, it is better to use `$dataRouter.reload(false)` method instead of reloading it yourself.
+to refresh just the data, use `$dataResponse.reload(false)` method instead of reloading it yourself.
 * **$dataResponse** - Full response object, which contains extensions like view property, containing current view configuration. Do not modify!
 
 
