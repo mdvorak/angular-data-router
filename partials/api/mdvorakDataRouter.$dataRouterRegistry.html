@@ -1,0 +1,29 @@
+<h1><code ng:non-bindable="">$dataRouterRegistry</code>
+<div><span class="hint">service in module <code ng:non-bindable="">mdvorakDataRouter</code>
+</span>
+</div>
+</h1>
+<div><div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_isknowntype">isKnownType(mediaType)</h3>
+<div class="isknowntype"><div class="isknowntype-page"><p>Determines whether type matches a registered view.</p>
+</div><h5 id="methods_isknowntype_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>mediaType</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="isknowntype-page"><p>Matched content type. Doesn&#39;t have to be normalized.</p>
+</div></td></tr></tbody></table><h5 id="methods_isknowntype_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="isknowntype-page"><p><code>true</code> if type is has registered view, <code>false</code> if no match was found.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_match">match(mediaType)</h3>
+<div class="match"><div class="match-page"><p>Matches the media type against registered media types. If found, view configuration is return.</p>
+</div><h5 id="methods_match_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>mediaType</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="match-page"><p>Media type to be matched. It <em>MUST</em> be normalized, it is compared as is.</p>
+</div></td></tr></tbody></table><h5 id="methods_match_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="match-page"><p>Matched view or undefined. Note that original configuration object will be returned,
+so don&#39;t modify it!</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_normalizemediatype">normalizeMediaType(mimeType)</h3>
+<div class="normalizemediatype"><div class="normalizemediatype-page"><p>Normalizes the media type. Removes format suffix (everything after +), and prepends <code>application/</code> if there is
+just subtype provided.</p>
+</div><h5 id="methods_normalizemediatype_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>mimeType</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="normalizemediatype-page"><p>Media type to match.</p>
+</div></td></tr></tbody></table><h5 id="methods_normalizemediatype_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="normalizemediatype-page"><p>Normalized media type.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>

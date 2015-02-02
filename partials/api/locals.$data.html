@@ -1,0 +1,16 @@
+<h1><code ng:non-bindable="">$data</code>
+<div><span class="hint">service in module <code ng:non-bindable="">locals</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="locals-data-page"><p><code>$data</code> object contains loaded data, as parsed by the <code>$http</code> service.</p>
+</div></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="locals-data-page"><pre><code class="lang-js">module.controller(&#39;sampleCtrl&#39;, function($scope, $data) {
+    // Set name from the loaded data to the scope
+    $scope.name = $data.name;
+});
+</code></pre>
+</div></div>
+</div>

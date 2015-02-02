@@ -5,12 +5,93 @@ NG_DOCS={
   "pages": [
     {
       "section": "api",
+      "id": "locals",
+      "shortName": "locals",
+      "type": "overview",
+      "moduleName": "locals",
+      "shortDescription": "This is not an existing module, but describes locals available in the view controllers, provided by the router.",
+      "keywords": "_note api controllers describes existing locals module overview provided resolvables router view"
+    },
+    {
+      "section": "api",
+      "id": "locals.$data",
+      "shortName": "locals.$data",
+      "type": "service",
+      "moduleName": "locals",
+      "shortDescription": "$data object contains loaded data, as parsed by the $http service.",
+      "keywords": "$data $http $scope api controller data function js loaded locals module object parsed samplectrl scope service set"
+    },
+    {
+      "section": "api",
+      "id": "locals.$dataResponse",
+      "shortName": "locals.$dataResponse",
+      "type": "service",
+      "moduleName": "locals",
+      "shortDescription": "$dataResponse is the whole response object, which provides same attributes as $http plus some more.",
+      "keywords": "$broadcast $data $dataresponse $dataurl $http $on $routeupdate api args arguments attributes automatically behaves call callback changes controller created currently data deregister deregistered destroyed directly don event events events_ fired fires forcereload function instance js listener loaded locals media method modified module note null number object parameter pretty propagated property provided recreate recreated refresh refreshed registers reload reloads remains remover required resource response router samplectrl scope sense service todo true type update url view"
+    },
+    {
+      "section": "api",
+      "id": "locals.$dataType",
+      "shortName": "locals.$dataType",
+      "type": "service",
+      "moduleName": "locals",
+      "shortDescription": "$dataType object contains media type of the loaded data.",
+      "keywords": "$datatype $scope api controller data function js loaded locals media module object samplectrl service type"
+    },
+    {
+      "section": "api",
+      "id": "locals.$dataUrl",
+      "shortName": "locals.$dataUrl",
+      "type": "service",
+      "moduleName": "locals",
+      "shortDescription": "$dataUrl equals to the API URL used to get the data.",
+      "keywords": "$dataurl $http $scope api controller data delete deleteself equals function header js locals location module note perform redirect remove resource response samplectrl service url"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataApi",
+      "shortName": "mdvorakDataApi",
+      "type": "overview",
+      "moduleName": "mdvorakDataApi",
+      "shortDescription": "This is standalone module that allows two-way mapping of view and API URLs.",
+      "keywords": "$dataapiprovider allows api details mapping mdvorakdataapi module overview provider standalone two-way urls view"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataApi.$dataApi",
+      "shortName": "mdvorakDataApi.$dataApi",
+      "type": "service",
+      "moduleName": "mdvorakDataApi",
+      "shortDescription": "Extension of Angular $location. It maps view URLs to API and vice versa.",
+      "keywords": "$dataapi $location absolute account angular api base behavior browser change changed configuration configured context counterpart current currently default dependent error expected extension full hostname href html5 http includes including inside location logged mapapitoview maps mapviewtoapi mdvorakdataapi method methods_mapapitoview methods_mapviewtoapi methods_url mode namespace normalized normalizes normalizeurl note null overridden path paths performs point prefix relative requests resource returned returns server-relative service set sets tag takes url urls versa vice view viewed"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataApi.$dataApiProvider",
+      "shortName": "mdvorakDataApi.$dataApiProvider",
+      "type": "service",
+      "moduleName": "mdvorakDataApi",
+      "shortDescription": "Provider allows you to configure API prefix.",
+      "keywords": "$dataapi $dataapiprovider $datarouterprovider $location _note absolute account allows anchor api apiprefix attribute base behave behaves behavior browser cases configuration configure configured configures context counterpart current default dependent expected full hostname href html5 http ignored includes including inside mapapitoview mapping maps mapviewtoapi mdvorakdataapi mdvorakdatarouter method methods_apiprefix methods_mapapitoview methods_mapviewtoapi methods_normalizeurl methods_prefix mode namespace normalized normalizes normalizeurl note null object overridden path paths prefix provider relative requests resource returned server-relative service shortcut starts tag takes url view weird"
+    },
+    {
+      "section": "api",
       "id": "mdvorakDataRouter",
       "shortName": "mdvorakDataRouter",
       "type": "overview",
       "moduleName": "mdvorakDataRouter",
-      "shortDescription": "TODO",
-      "keywords": "api mdvorakdatarouter overview todo"
+      "shortDescription": "Angular Data Router module. You should configure it using",
+      "keywords": "$datarouterprovider angular api configure data mdvorakdataapi mdvorakdatarouter module overview router"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.$dataRouter",
+      "shortName": "mdvorakDataRouter.$dataRouter",
+      "type": "service",
+      "moduleName": "mdvorakDataRouter",
+      "shortDescription": "Centerpiece of the data router. It tracks the $location and loads the main view data.",
+      "keywords": "$dataapi $dataresponse $datarouter $datarouterregistry $location api cases centerpiece controller current currently data easier instance life loaded loads locals main mdvorakdataapi mdvorakdatarouter note object property reference registry response router service signature tracks view work"
     },
     {
       "section": "api",
@@ -18,8 +99,8 @@ NG_DOCS={
       "shortName": "mdvorakDataRouter.$dataRouterLoader",
       "type": "service",
       "moduleName": "mdvorakDataRouter",
-      "shortDescription": "TODO",
-      "keywords": "$datarouterloader allows api application completely content current data displayed doesn eagerly false fetched fetches finally flag forcereload format including indicating initialized loaded loads locals match mdvorakdatarouter media mediatype method mimetype normalized normalizemediatype normalizes parameter prefetch prefetchtemplate prepares prepareview prepends promise provided reloaded removes resolvables resolves response returned returns routedataupdate service set subtype suffix template todo type unknown update url view"
+      "shortDescription": "Abstraction of data loading and view preparation. It uses views registered in",
+      "keywords": "$datarouterloader $datarouterregistry abstraction allows api application completely content current data displayed doesn eagerly false fetched fetches finally flag forcereload format including indicating initialized loaded loading loads locals match mdvorakdatarouter media mediatype method mimetype normalized normalizemediatype normalizes parameter prefetch prefetchtemplate preparation prepares prepareview prepends promise provided registered reloaded removes resolvables resolves response returned returns routedataupdate service set subtype suffix template type unknown update url view views"
     },
     {
       "section": "api",
@@ -27,8 +108,34 @@ NG_DOCS={
       "shortName": "mdvorakDataRouter.$dataRouterLoaderProvider",
       "type": "service",
       "moduleName": "mdvorakDataRouter",
-      "shortDescription": "TODO",
-      "keywords": "$datarouterloaderprovider api config configuration currently global key mdvorakdatarouter method object provider reference resolve routes service sets supported todo"
+      "shortDescription": "Provider allows configuration of loading and resolving views. Note that media types are registered in",
+      "keywords": "$data $datarouter $datarouterloader $datarouterloaderprovider $datarouterregistryprovider $http _links _note _type additional allows api application config configuration content-type controllers currently custom data default details directly documentation ease empty example extracts extracttype extracttypefromjson function global header href implementation js key load loading mdvorakdatarouter media merged method normalized note null object precedence property provided provider reference registered relateddata resolve resolving response return returns routes service sets supported type types url view views"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.$dataRouterProvider",
+      "shortName": "mdvorakDataRouter.$dataRouterProvider",
+      "type": "service",
+      "moduleName": "mdvorakDataRouter",
+      "shortDescription": "Allows simple configuration of all parts of the data router in one place.",
+      "keywords": "$dataapiprovider $datarouterloaderprovider $datarouterprovider absolute alias allows api apiprefix base changed config configuration configures currently data default details disable disables documentation enabled enables event false global handling href includes intended key mapping mdvorakdataapi mdvorakdatarouter merged method methods_global methods_prefix normalized object parts phase place precedence prefix provider reference relative resolve resource returns router routes service set sets simple supported tests unit url view"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.$dataRouterRegistry",
+      "shortName": "mdvorakDataRouter.$dataRouterRegistry",
+      "type": "service",
+      "moduleName": "mdvorakDataRouter",
+      "keywords": "$datarouterregistry api application compared configuration content determines doesn don false format isknowntype match matched matches mdvorakdatarouter media mediatype method mimetype modify normalized normalizemediatype normalizes note object original prepends provided registered removes return returned service subtype suffix true type types undefined view"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.$dataRouterRegistryProvider",
+      "shortName": "mdvorakDataRouter.$dataRouterRegistryProvider",
+      "type": "service",
+      "moduleName": "mdvorakDataRouter",
+      "shortDescription": "This is the place where media types are configured to the views.",
+      "keywords": "$datarouterregistryprovider $injector _note alias allowed api application behavior config configuration configured configures considered content controller controlleras created dataas declaration details displayed documentation error exact fails force forces format function ignored include injected iterated loaded location map match matcher matchers mdvorakdatarouter media mediatype method methods_error methods_when mimetype ngroute normalized normalizemediatype normalizes object optional order parameters path place precedence prepends provided provider redirect redirected redirectto reference registration removes resolvables resolve resolved resource returns rules service signature slower string subtype suffix suffixes supported supports takes template templateurl transformresponse type types view views wildcard wildcards"
     },
     {
       "section": "api",
@@ -37,7 +144,16 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.",
-      "keywords": "$datarouterprovider $scope _blank _self ac angular api api-href apihref apiprefix application attribute base behave behavior browser button case changes code config configured controller data detail directive download downloaded error example external force full function hasbang href html html5mode ignored image inside js link links mapped maps mdvorakdatarouter media mode module navigates navigation ng-controller nghref opens optional parent performed performs points prefetched redirect reload replacement resource sample samplectrl scenarios screen server set sets specification supported supports target template templateurl translates triggers type url users view window"
+      "keywords": "$datarouterprovider $scope _blank _self ac angular api api-href apihref apiprefix application attribute base behave behavior browser case changes code config configured controller data detail directive download downloaded error example external force full function hasbang href html html5mode ignored image inside js link links mapped maps mdvorakdatarouter media mode module navigates navigation ng-controller nghref opens optional parent performed performs points prefetched redirect reload replacement resource sample samplectrl scenarios screen server set sets specification supported supports target template templateurl translates triggers type url users view window"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.dataview",
+      "shortName": "mdvorakDataRouter.dataview",
+      "type": "directive",
+      "moduleName": "mdvorakDataRouter",
+      "shortDescription": "Renders the view for the given data. This directive works in two modes.",
+      "keywords": "$anchorscroll $dataapi api applies attribute autoscroll browser call configured current data dataview directive displayed displays eac handler loaded location main mapped mapviewtoapi mdvorakdataapi mdvorakdatarouter method methods_mapviewtoapi modes onload renders resource scroll set src updated url view viewport works"
     }
   ],
   "apis": {

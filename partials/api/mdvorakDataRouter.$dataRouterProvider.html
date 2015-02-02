@@ -1,0 +1,38 @@
+<h1><code ng:non-bindable="">$dataRouterProvider</code>
+<div><span class="hint">service in module <code ng:non-bindable="">mdvorakDataRouter</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="mdvorakdatarouter-datarouterprovider-page"><p>Allows simple configuration of all parts of the data router in one place.</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_apiprefix">apiPrefix(prefix)</h3>
+<div class="apiprefix"><div class="apiprefix-page"><p>Configures prefix for default view to resource mapping.</p>
+<p>This is just an alias for <a href="#/api/mdvorakDataApi.$dataApiProvider#methods_prefix">$dataApiProvider.prefix(prefix)</a>
+method, see its documentation for details.</p>
+</div><h5 id="methods_apiprefix_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prefix</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="apiprefix-page"><p>Relative URL prefix, relative to base href.</p>
+</div></td></tr></tbody></table><h5 id="methods_apiprefix_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="apiprefix-page"><p>API URL prefix. It&#39;s always normalized absolute URL, includes base href.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_enabled">enabled(enabled)</h3>
+<div class="enabled"><div class="enabled-page"><p>Enables  or disables the router. May be used to disable the router event handling.
+Cannot be changed after config phase.</p>
+<p>This method is intended mostly for unit tests.</p>
+<p>Enabled by default.</p>
+</div><h5 id="methods_enabled_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>enabled</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="enabled-page"><p>Set to <code>false</code> to disable the router.</p>
+</div></td></tr></tbody></table><h5 id="methods_enabled_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="enabled-page"><p>Returns provider.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_global">global(config)</h3>
+<div class="global"><div class="global-page"><p>Sets global configuration for all routes. It is then merged into each view configuration, with view taking precedence.</p>
+<p>This is just an alias for
+<a href="#/api/mdvorakDataRouter.$dataRouterLoaderProvider#methods_global">$dataRouterLoaderProvider.global(config)</a>,
+see its documentation for details.</p>
+</div><h5 id="methods_global_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Configuration object. Currently only <code>&quot;resolve&quot;</code> key is supported.</p>
+</div></td></tr></tbody></table><h5 id="methods_global_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Reference to the provider.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>

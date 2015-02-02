@@ -32,12 +32,12 @@ is always performed. To force full reload instead of navigation, set this to <co
 <h2 id="example">Example</h2>
 <div class="example"><div class="mdvorakdatarouter-apihref-page"><p>This example shows behavior of the directive in different scenarios.</p>
 <ul>
-<li>Back button navigates to parent, since its maps to configured API. The template for the given type is
+<li><strong>Back</strong> navigates to parent, since its maps to configured API. The template for the given type is
 prefetched. This link would behave same even without type attribute, but template would not be prefetched.</li>
-<li>External performs full navigation, since URL cannot be mapped to API. Type attribute is ignored in this case.</li>
-<li>Image link shows image full screen or triggers download (depends on the server), since the type is not supported.
+<li><strong>External</strong> performs full navigation, since URL cannot be mapped to API. Type attribute is ignored in this case.</li>
+<li><strong>Image</strong> link shows image full screen or triggers download (depends on the server), since the type is not supported.
 If the type would not be set, data would be downloaded and error page would be shown afterwards.</li>
-<li>New Window opens the link in new window, regardless where it points, since it has target specified.
+<li><strong>New Window</strong> opens the link in new window, regardless where it points, since it has target specified.
 <h4 id="example_source">Source</h4>
 <div source-edit="sample" source-edit-deps="angular.js controller.js" source-edit-html="index.html" source-edit-css="" source-edit-js="controller.js" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">

@@ -1,0 +1,52 @@
+<h1><code ng:non-bindable="">$dataApiProvider</code>
+<div><span class="hint">service in module <code ng:non-bindable="">mdvorakDataApi</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="mdvorakdataapi-dataapiprovider-page"><p>Provider allows you to configure API <a href="#/api/mdvorakDataApi.$dataApiProvider#methods_prefix">prefix</a>.</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_mapapitoview">mapApiToView(url)</h3>
+<div class="mapapitoview"><div class="mapapitoview-page"><p>Maps resource URL to view path. Can be overridden during configuration.
+By default it maps API url to view paths one to one.</p>
+<p>Counterpart to <a href="#/api/mdvorakDataApi.$dataApiProvider#methods_mapviewtoapi">mapViewToApi</a>.</p>
+<p>This method is also available on <a href="#/api/mdvorakDataApi.$dataApi#methods_mapviewtoapi">$dataApi</a> object.</p>
+</div><h5 id="methods_mapapitoview_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>url</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mapapitoview-page"><p>Resource url. It must be inside API namespace. If it is not, <code>null</code> is returned.</p>
+</div></td></tr></tbody></table><h5 id="methods_mapapitoview_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mapapitoview-page"><p>View path.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_mapviewtoapi">mapViewToApi(path)</h3>
+<div class="mapviewtoapi"><div class="mapviewtoapi-page"><p>Maps view path to resource URL. Can be overridden during configuration.
+By default it maps path to API one to one.</p>
+<p>Counterpart to <a href="#/api/mdvorakDataApi.$dataApiProvider#methods_mapapitoview">mapApiToView</a>.</p>
+<p>This method is also available on <a href="#/api/mdvorakDataApi.$dataApi#methods_mapapitoview">$dataApi</a> object.</p>
+</div><h5 id="methods_mapviewtoapi_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>path</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mapviewtoapi-page"><p>View path, as in <code>$location.path()</code>.</p>
+</div></td></tr></tbody></table><h5 id="methods_mapviewtoapi_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mapviewtoapi-page"><p>Resource url, for e.g. HTTP requests.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_normalizeurl">normalizeUrl(href)</h3>
+<div class="normalizeurl"><div class="normalizeurl-page"><p>Normalizes the URL for current page. It takes into account base tag etc. It is browser dependent.</p>
+<p>It is browser dependent, and takes into account <code>&lt;base&gt;</code> tag or current URL.
+Note that in HTML5 mode, there should be always specified base tag ending with <code>/</code> to get expected behavior.</p>
+<p>This method is also available on <a href="#/api/mdvorakDataApi.$dataApi#methods_normalizeurl">$dataApi</a> object.</p>
+</div><h5 id="methods_normalizeurl_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>href</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="normalizeurl-page"><p>URL to be normalized. Can be absolute, server-relative or context relative.</p>
+</div></td></tr></tbody></table><h5 id="methods_normalizeurl_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="normalizeurl-page"><p>Normalized URL, including full hostname.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_prefix">prefix(prefix)</h3>
+<div class="prefix"><div class="prefix-page"><p>Configures prefix for default view to resource mapping.</p>
+<p>It behaves just like Anchor href attribute.</p>
+<ul>
+<li>It should always end with <code>/</code>, otherwise it will behave as configured, which may be weird in some cases.</li>
+<li>If it starts with <code>/</code>, it is server-relative, and <code>&lt;base&gt;</code> tag is ignored.</li>
+</ul>
+<p>_Note: This method also has shortcut on <code>$dataRouterProvider</code> as
+<a href="#/api/mdvorakDataRouter.$dataRouterProvider#methods_apiprefix">apiPrefix(prefix)</a>.</p>
+</div><h5 id="methods_prefix_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prefix</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="prefix-page"><p>Relative URL prefix, relative to base href.</p>
+</div></td></tr></tbody></table><h5 id="methods_prefix_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="prefix-page"><p>API URL prefix. It&#39;s always normalized absolute URL, includes base href.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>

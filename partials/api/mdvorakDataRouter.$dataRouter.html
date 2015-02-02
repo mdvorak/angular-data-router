@@ -1,0 +1,66 @@
+<h1><code ng:non-bindable="">$dataRouter</code>
+<div><span class="hint">service in module <code ng:non-bindable="">mdvorakDataRouter</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="mdvorakdatarouter-datarouter-page"><p>Centerpiece of the data router. It tracks the <code>$location</code> and loads the main view data.</p>
+</div></div>
+<div class="member property"><h2 id="properties">Properties</h2>
+<ul class="properties"><li><h3 id="properties_api">api</h3>
+<div class="api"><div class="api-page"><p>Its here to make your life easier.</p>
+</div><h5 id="properties_api_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="api-page"><p>Reference to the <a href="#/api/mdvorakDataApi.$dataApi">$dataApi</a> instance.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="properties_current">current</h3>
+<div class="current"><div class="current-page"><p>Note that you should in most cases use <a href="#/api/locals.$dataResponse">$dataResponse</a> object in the
+controller to work with the data instead of this reference.</p>
+</div><h5 id="properties_current_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="current-page"><p>Currently loaded response for the main view is available here.
+See <a href="#/api/locals.$dataResponse">$dataResponse</a> for its signature.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="properties_registry">registry</h3>
+<div class="registry"><div class="registry-page"><p>Its here to make your life easier.</p>
+</div><h5 id="properties_registry_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="registry-page"><p>Reference to the <a href="#/api/mdvorakDataRouter.$dataRouterRegistry">$dataRouterRegistry</a> instance.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+<div class="member event"><h2 id="events">Events</h2>
+<ul class="events"><li><h3 id="events_$routechangeerror">$routeChangeError</h3>
+<div class="$routechangeerror"><div class="-routechangeerror-page"><p>This event is broadcasted when the view or data failed to load and there is no error view configured
+(or error view failed to load). There is not much you can do at this point, it probably means you have
+configuration error in your application.</p>
+</div><div class="inline"><h4 id="events_$routechangeerror_type">Type:</h4>
+<div class="type">broadcast</div>
+</div>
+<div class="inline"><h4 id="events_$routechangeerror_target">Target:</h4>
+<div class="target">root scope</div>
+</div>
+</div>
+</li>
+<li><h3 id="events_$routechangestart">$routeChangeStart</h3>
+<div class="$routechangestart"><div class="-routechangestart-page"><p>This event is broadcasted whenever main view is about to change. The change can be averted
+by setting preventDefault on the vent.</p>
+</div><div class="inline"><h4 id="events_$routechangestart_type">Type:</h4>
+<div class="type">broadcast</div>
+</div>
+<div class="inline"><h4 id="events_$routechangestart_target">Target:</h4>
+<div class="target">root scope</div>
+</div>
+</div>
+</li>
+<li><h3 id="events_$routechangesuccess">$routeChangeSuccess</h3>
+<div class="$routechangesuccess"><div class="-routechangesuccess-page"><p>This event is broadcasted whenever main view has changed and the data are loaded.
+View is ready to be displayed.</p>
+</div><div class="inline"><h4 id="events_$routechangesuccess_type">Type:</h4>
+<div class="type">broadcast</div>
+</div>
+<div class="inline"><h4 id="events_$routechangesuccess_target">Target:</h4>
+<div class="target">root scope</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>

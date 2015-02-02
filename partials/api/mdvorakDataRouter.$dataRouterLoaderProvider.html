@@ -4,14 +4,50 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="mdvorakdatarouter-datarouterloaderprovider-page"><p>TODO</p>
+<div class="description"><div class="mdvorakdatarouter-datarouterloaderprovider-page"><p>Provider allows configuration of loading and resolving views. Note that media types are registered in
+<a href="#/api/mdvorakDataRouter.$dataRouterRegistryProvider">$dataRouterRegistryProvider</a> and not here.</p>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_global">global(config)</h3>
-<div class="global"><div class="global-page"><p>Sets global configuration for all routes.</p>
+<ul class="methods"><li><h3 id="methods_extracttype">extractType(response)</h3>
+<div class="extracttype"><div class="extracttype-page"><p>Extracts media type from given response. Default implementation returns <code>Content-Type</code> header.</p>
+</div><h5 id="methods_extracttype_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>response</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="extracttype-page"><p>Response object, see <code>$http</code> documentation for details.</p>
+<p><em>Note that while <code>response</code> itself is never null, data property can be.</em></p>
+</div></td></tr></tbody></table><h5 id="methods_extracttype_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="extracttype-page"><p>Media type of the response. It will be normalized afterwards. If the return value is empty,
+<code>application/octet-stream</code> will be used.</p>
+</div></td></tr></table><h4 id="methods_extracttype_example">Example</h4>
+<div class="example"><div class="extracttype-page"><p>Example of custom implementation.</p>
+<pre><code class="lang-js">    $dataRouterLoader.extractType = function extractTypeFromJson(response) {
+        return response.data &amp;&amp; response.data._type;
+    };
+</code></pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_global">global(config)</h3>
+<div class="global"><div class="global-page"><p>Sets global configuration for all routes. It is then merged into each view configuration, with view taking precedence.</p>
+<p><em>Note: This method is also available directly on <code>$dataRouter</code> to ease configuration.</em></p>
 </div><h5 id="methods_global_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Configuration object. Currently only <code>&quot;resolve&quot;</code> key is supported.</p>
 </div></td></tr></tbody></table><h5 id="methods_global_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Reference to the provider.</p>
-</div></td></tr></table></div>
+</div></td></tr></table><h4 id="methods_global_example">Example</h4>
+<div class="example"><div class="global-page"><p>This example shows how to load additional data from URL provided in the response. <code>relatedData</code> object will be
+then available in view controllers.</p>
+<pre><code class="lang-js">    $dataRouterLoader.global({
+        resolve: {
+            relatedData: function($http, $data) {
+                if ($data._links &amp;&amp; $data._links.related) {
+                    return $http.get($data._links.related.href)
+                        .then(function(response) {
+                            return response.data;
+                        });
+                }
+
+                return null;
+            }
+        }
+    });
+</code></pre>
+</div></div>
+</div>
 </li>
 </ul>
 </div>
