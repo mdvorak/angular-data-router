@@ -6,7 +6,7 @@
 <div><h2 id="description">Description</h2>
 <div class="description"><div class="locals-dataresponse-page"><p><code>$dataResponse</code> is the whole response object, which provides same attributes as <code>$http</code> plus some more.
 The instance never changes for the given view, its data might however.</p>
-<h4 id="description_data-refresh">Data refresh</h4>
+<h4 id="description_data-reloading">Data reloading</h4>
 <p>You can reload the data of this view by calling <a href="#/api/locals.$dataResponse#methods_reload">reload(boolean)</a> method.
 Router handles everything for you as if it would be first load, including errors.</p>
 <p>When you pass <code>true</code> as the argument, your view controller will always be destroyed and recreated, and view recompiled.
@@ -16,7 +16,7 @@ does not change, the <a href="#/api/locals.$dataResponse#events_$routeupdate">$r
 to the controller to update the view (note that if you are using <code>dataAs</code> view configuration, scope variable will be
 updated automatically). If something changes (when request fails, media type of the response is <code>$error</code>), full
 reload is performed, as if you would pass <code>true</code> as the argument.</p>
-<h5 id="description_data-refresh_data-reload-example">Data reload example</h5>
+<h5 id="description_data-reloading_example">Example</h5>
 <pre><code class="lang-js">    module.controller(&#39;sampleCtrl&#39;, function($scope, $dataResponse) {
         $scope.data = $dataResponse.data;
 
