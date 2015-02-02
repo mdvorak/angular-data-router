@@ -16,6 +16,22 @@ does not change, the <a href="#/api/locals.$dataResponse#events_$routeupdate">$r
 to the controller to update the view (note that if you are using <code>dataAs</code> view configuration, scope variable will be
 updated automatically). If something changes (when request fails, media type of the response is <code>$error</code>), full
 reload is performed, as if you would pass <code>true</code> as the argument.</p>
+<h5 id="description_data-refresh_data-reload-example">Data reload example</h5>
+<pre><code class="lang-js">    module.controller(&#39;sampleCtrl&#39;, function($scope, $dataResponse) {
+        $scope.data = $dataResponse.data;
+
+        // Listen for updates
+        $dataResponse.$on(&#39;$routeUpdate&#39;, function () {
+            // Update the data
+            $scope.data = $dataResponse.data;
+        });
+
+        // Reload handler
+        $scope.refresh = function refresh() {
+            $dataResponse.reload();
+        };
+    });
+</code></pre>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>
 <ul class="methods"><li><h3 id="methods_$broadcast">$broadcast(name, args)</h3>
@@ -96,21 +112,4 @@ and controller needs to update the view.</p>
 </li>
 </ul>
 </div>
-<h2 id="example">Example</h2>
-<div class="example"><div class="locals-dataresponse-page"><pre><code class="lang-js">module.controller(&#39;sampleCtrl&#39;, function($scope, $dataResponse) {
-    $scope.data = $dataResponse.data;
-
-    // Listen for updates
-    $dataResponse.$on(&#39;$routeUpdate&#39;, function () {
-        // Update the data
-        $scope.data = $dataResponse.data;
-    });
-
-    // Reload handler
-    $scope.refresh = function refresh() {
-        $dataResponse.reload();
-    };
-});
-</code></pre>
-</div></div>
 </div>
