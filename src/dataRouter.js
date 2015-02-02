@@ -189,9 +189,10 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              * @ngdoc property
              * @propertyOf mdvorakDataRouter.$dataRouter
              * @name api
+             * @returns {Object} Reference to the {@link mdvorakDataApi.$dataApi $dataApi} instance.
              *
              * @description
-             * Reference to the {@link mdvorakDataApi.$dataApi $dataApi} instance. Its here to make your life easier.
+             * Its here to make your life easier.
              */
             api: $dataApi,
 
@@ -199,9 +200,9 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              * @ngdoc property
              * @propertyOf mdvorakDataRouter.$dataRouter
              * @name registry
+             * @returns {Object} Reference to the {@link mdvorakDataRouter.$dataRouterRegistry $dataRouterRegistry} instance.
              *
              * @description
-             * Reference to the {@link mdvorakDataRouter.$dataRouterRegistry $dataRouterRegistry} instance.
              * Its here to make your life easier.
              */
             registry: $dataRouterRegistry,
@@ -210,12 +211,12 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              * @ngdoc property
              * @propertyOf mdvorakDataRouter.$dataRouter
              * @name current
+             * @returns {Object} Currently loaded response for the main view is available here.
+             * See {@link locals.$dataResponse $dataResponse} for its signature.
              *
              * @description
-             * Currently loaded response for the main view is available here.
-             *
-             * Note that you should in most cases use `$dataResponse` object in the controller to work with the
-             * data instead of this reference.
+             * Note that you should in most cases use {@link locals.$dataResponse $dataResponse} object in the
+             * controller to work with the data instead of this reference.
              */
             current: undefined,
 

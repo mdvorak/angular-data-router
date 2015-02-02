@@ -1,5 +1,6 @@
 # Build files
 /build/
+/docs/
 
 # Node and bower directories
 node_modules/
@@ -10,7 +11,6 @@ bower_components/
 *.log
 *.mo
 .grunt/
-docs/
 
 # IDE files
 .idea/
