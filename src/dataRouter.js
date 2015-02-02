@@ -121,23 +121,30 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
         return provider;
     };
 
+    /**
+     * @ngdoc service
+     * @name mdvorakDataRouter.$dataRouter
+     */
     this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $dataApi, $$dataRouterEventSupport) {
         var $dataRouter = {
             /**
              * @ngdoc property
+             * @propertyOf mdvorakDataRouter.$dataRouter
              * @name api
              *
              * @description
-             * Reference to the {@link mdvorakDataRouter.$dataApi} instance. Its here to make your life easier.
+             * Reference to the {@link mdvorakDataApi.$dataApi $dataApi} instance. Its here to make your life easier.
              */
             api: $dataApi,
 
             /**
              * @ngdoc property
+             * @propertyOf mdvorakDataRouter.$dataRouter
              * @name registry
              *
              * @description
-             * Reference to the {@link mdvorakDataRouter.$dataRouterRegistry} instance. Its here to make your life easier.
+             * Reference to the {@link mdvorakDataRouter.$dataRouterRegistry $dataRouterRegistry} instance.
+             * Its here to make your life easier.
              */
             registry: $dataRouterRegistry,
 

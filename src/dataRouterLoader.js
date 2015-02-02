@@ -6,7 +6,7 @@
  *
  * @description
  * Provider allows configuration of loading and resolving views. Note that media types are registered in
- * {@link mdvorakDataRouter.$dataRouterRegistryProvider} and not here.
+ * {@link mdvorakDataRouter.$dataRouterRegistryProvider $dataRouterRegistryProvider} and not here.
  */
 module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     var provider = this;
@@ -87,7 +87,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
      * @name mdvorakDataRouter.$dataRouterLoader
      *
      * @description
-     * Abstraction of data loading and view preparation. It uses views registered in {@link mdvorakDataRouter.$dataRouterRegistry}.
+     * Abstraction of data loading and view preparation. It uses views registered in
+     * {@link mdvorakDataRouter.$dataRouterRegistry $dataRouterRegistry}.
      */
     this.$get = function $dataRouterLoaderFactory($log, $sce, $http, $templateCache, $q, $injector, $rootScope, $dataRouterRegistry, $$dataRouterEventSupport) {
         var $dataRouterLoader = {

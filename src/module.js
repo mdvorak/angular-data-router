@@ -3,7 +3,9 @@
 /**
  * @ngdoc overview
  * @name mdvorakDataRouter
+ * @requires mdvorakDataApi
+ *
  * @description
- * TODO
+ * Angular Data Router module.
  */
 var module = angular.module("mdvorakDataRouter", ['mdvorakDataApi']);
