@@ -42,7 +42,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
     /**
      * @ngdoc method
-     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @methodOf mdvorakDataRouter.$dataRouterProvider
      * @name when
      *
      * @description
@@ -62,7 +62,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
     /**
      * @ngdoc method
-     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @methodOf mdvorakDataRouter.$dataRouterProvider
      * @name error
      *
      * @description
@@ -83,7 +83,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
     /**
      * @ngdoc method
-     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @methodOf mdvorakDataRouter.$dataRouterProvider
      * @name redirect
      *
      * @description
