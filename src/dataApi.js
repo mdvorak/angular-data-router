@@ -79,7 +79,7 @@ angular.module('mdvorakDataApi', []).provider('$dataApi', function $dataApiProvi
      * {@link mdvorakDataRouter.$dataRouterProvider#methods_apiPrefix apiPrefix(prefix)}.
      *
      * @param {String} prefix Relative URL prefix, relative to base href.
-     * @return {String} API URL prefix. It's absolute URL, includes base href.
+     * @return {String} API URL prefix. It's always normalized absolute URL, includes base href.
      */
     provider.prefix = function prefixFn(prefix) {
         if (arguments.length > 0) {

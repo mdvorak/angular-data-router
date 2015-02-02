@@ -1,6 +1,24 @@
 "use strict";
 
-module.directive('dataview', function dataViewFactory($animate, $log, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
+/**
+ * @ngdoc directive
+ * @name mdvorakDataRouter.dataview
+ * @restrict EAC
+ *
+ * @description
+ * Renders the view for the given data. This directive works in two modes.
+ *
+ * * **Main view** - It displays current data, specified by browser location, and mapped to the resource by
+ * {@link mdvorakDataApi.$dataApi#methods_mapViewToApi $dataApi.mapViewToApi()} method.
+ * * **Custom view** - When `src` attribute is set, the data are loaded by this directive itself and displayed
+ * according to the configured view.
+ *
+ * @param {expression=} src API URL to be displayed. If not set, main view is shown.
+ * @param {expression=} autoscroll Whether dataview should call `$anchorScroll` to scroll the viewport after the view
+ *                                 is updated. Applies only to the main view, that is without the `src` attribute.
+ * @param {expression=} onload Onload handler.
+ */
+module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $log, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
     return {
         restrict: 'EAC',
         terminal: true,
@@ -12,6 +30,7 @@ module.directive('dataview', function dataViewFactory($animate, $log, $dataRoute
                 currentScope,
                 currentElement,
                 previousLeaveAnimation,
+                autoScrollExp = attr.autoscroll,
                 onloadExp = attr.onload || '';
 
             // Store context
@@ -48,7 +67,7 @@ module.directive('dataview', function dataViewFactory($animate, $log, $dataRoute
                 }
                 if (currentElement) {
                     previousLeaveAnimation = $animate.leave(currentElement);
-                    previousLeaveAnimation.then(function animLeave() {
+                    previousLeaveAnimation.then(function onDataviewLeave() {
                         previousLeaveAnimation = null;
                     });
                     currentElement = null;
@@ -73,7 +92,11 @@ module.directive('dataview', function dataViewFactory($animate, $log, $dataRoute
                     // function is called before linking the content, which would apply child
                     // directives to non existing elements.
                     currentElement = $transclude(newScope, function cloneLinkingFn(clone) {
-                        $animate.enter(clone, null, currentElement || $element);
+                        $animate.enter(clone, null, currentElement || $element).then(function onDataviewEnter() {
+                            if (angular.isDefined(autoScrollExp) && (!autoScrollExp || scope.$eval(autoScrollExp))) {
+                                $anchorScroll();
+                            }
+                        });
                         cleanupLastView();
                     });
 

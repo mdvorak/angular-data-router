@@ -3,6 +3,9 @@
 /**
  * @ngdoc service
  * @name mdvorakDataRouter.$dataRouterProvider
+ *
+ * @description
+ * Allows simple configuration of all parts of the data router in one place.
  */
 module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $dataApiProvider) {
     var provider = this;
@@ -20,35 +23,37 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     provider.$redirects = $$dataRouterMatchMap.create();
 
     /**
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterProvider
+     * @name apiPrefix
+     *
+     * @description
      * Configures prefix for default view to resource mapping.
      *
+     * This is just an alias for {@link mdvorakDataApi.$dataApiProvider#methods_prefix $dataApiProvider.prefix(prefix)}
+     * method, see its documentation for details.
+     *
      * @param {String} prefix Relative URL prefix, relative to base href.
-     * @return {String} API URL prefix. It's absolute URL, includes base href.
+     * @return {String} API URL prefix. It's always normalized absolute URL, includes base href.
      */
     provider.apiPrefix = function apiPrefix(prefix) {
         return $dataApiProvider.prefix(prefix);
     };
 
     /**
-     * Configures view for given content type.
-     * <p>
-     * Note: Wildcard or function matchers are much slower then exact match. The are iterated one by one, in order of registration.
-     * Exact string matchers takes always precedence over function matchers.
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @name when
      *
-     * @param {String|Function} mediaType Content type to match. When there is no / in the string, it is considered
-     *                                    subtype of `application/` type. You should not include suffixes
-     *                                    like `+json`, it is ignored by the matcher. Wildcards are supported.
-     *                                    <p>
-     *                                    It can be function with signature [Boolean] function([String]) as well.
-     * @param {Object} config Configuration object, similar to ngRoute one. Allowed keys are:
-     *                        `template, templateUrl, controller, controllerAs, dataAs, resolve`,
-     *                        where either `template` or `templateUrl` must be specified.
-     *                        `template` has precedence over `templateUrl`.
-     *                        `controller` is optional. Can be either String reference or declaration
-     *                        according to $injector rules. `resolve` is map of resolvables, that are
-     *                        resolved before controller is created, and are injected into controller. Same behavior
-     *                        as in ngRoute.
-     * @returns {Object} Returns the provider.
+     * @description
+     * Configures view for given content type.
+     *
+     * This is just an alias for
+     * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_when $dataRouterRegistryProvider.when(mediaType,config)}
+     * method, see its documentation for details.
+     *
+     * @param {String|Function} mediaType Content type to match.
+     * @param {Object} config Configuration object.
      */
     provider.when = function when(mediaType, config) {
         $dataRouterRegistryProvider.when(mediaType, config);
@@ -56,10 +61,20 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     };
 
     /**
-     * Configures view for error page. Displayed when resource or view template cannot be loaded.
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @name error
      *
-     * @param {Object} config Configuration object, as in #when().
-     * @returns {Object} Returns the provider.
+     * @description
+     * Configures view for error page. Error page is displayed when resource or view template cannot be loaded or
+     * any of the resolvables fails.
+     *
+     * This is just an alias for
+     * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_error $dataRouterRegistryProvider.error(config)}
+     * method, see its documentation for details.
+     *
+     * @param {Object} config Configuration object, as in
+     * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_when when(config)}.
      */
     provider.error = function error(config) {
         $dataRouterRegistryProvider.error(angular.copy(config));
@@ -67,7 +82,12 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     };
 
     /**
-     * Forces redirect from one view to another.
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @name redirect
+     *
+     * @description
+     * Forces redirect from one location to another.
      *
      * @param {String} path View to force redirect on. Supports wildcards. Parameters are not supported
      * @param {String} redirectTo View path which should be redirected to.
@@ -89,8 +109,9 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
      * @description
      * Sets global configuration for all routes. It is then merged into each view configuration, with view taking precedence.
      *
-     * _Note: This is just shortcut for {@link mdvorakDataRouter.$dataRouterLoaderProvider#methods_global $dataRouterLoaderProvider.global(config)},
-     * see its documentation for details._
+     * This is just an alias for
+     * {@link mdvorakDataRouter.$dataRouterLoaderProvider#methods_global $dataRouterLoaderProvider.global(config)},
+     * see its documentation for details.
      *
      * @param {Object} config Configuration object. Currently only `"resolve"` key is supported.
      * @returns {Object} Reference to the provider.
@@ -124,8 +145,45 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
     /**
      * @ngdoc service
      * @name mdvorakDataRouter.$dataRouter
+     *
+     * @description
+     * Centerpiece of the data router. It tracks the `$location` and loads the main view data.
      */
     this.$get = function $dataRouterFactory($log, $location, $rootScope, $q, $dataRouterRegistry, $dataRouterLoader, $dataApi, $$dataRouterEventSupport) {
+        /**
+         * @ngdoc event
+         * @eventOf mdvorakDataRouter.$dataRouter
+         * @name $routeChangeStart
+         * @eventType broadcast on root scope
+         *
+         * @description
+         * This event is broadcasted whenever main view is about to change. The change can be averted
+         * by setting preventDefault on the vent.
+         */
+
+        /**
+         * @ngdoc event
+         * @eventOf mdvorakDataRouter.$dataRouter
+         * @name $routeChangeSuccess
+         * @eventType broadcast on root scope
+         *
+         * @description
+         * This event is broadcasted whenever main view has changed and the data are loaded.
+         * View is ready to be displayed.
+         */
+
+        /**
+         * @ngdoc event
+         * @eventOf mdvorakDataRouter.$dataRouter
+         * @name $routeChangeError
+         * @eventType broadcast on root scope
+         *
+         * @description
+         * This event is broadcasted when the view or data failed to load and there is no error view configured
+         * (or error view failed to load). There is not much you can do at this point, it probably means you have
+         * configuration error in your application.
+         */
+
         var $dataRouter = {
             /**
              * @ngdoc property
@@ -147,6 +205,19 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              * Its here to make your life easier.
              */
             registry: $dataRouterRegistry,
+
+            /**
+             * @ngdoc property
+             * @propertyOf mdvorakDataRouter.$dataRouter
+             * @name current
+             *
+             * @description
+             * Currently loaded response for the main view is available here.
+             *
+             * Note that you should in most cases use `$dataResponse` object in the controller to work with the
+             * data instead of this reference.
+             */
+            current: undefined,
 
             /**
              * Reloads data at current location. If content type remains same, only data are refreshed,

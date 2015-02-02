@@ -3,28 +3,37 @@
 /**
  * @ngdoc service
  * @name mdvorakDataRouter.$dataRouterRegistryProvider
+ *
+ * @description
+ * This is the place where media types are configured to the views.
  */
 module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$dataRouterMatchMap) {
     var provider = this;
     var views = provider.$$views = $$dataRouterMatchMap.create();
 
     /**
-     * Configures view for given content type.
-     * <p>
-     * Note: Wildcard or function matchers are much slower then exact match. The are iterated one by one, in order of registration.
-     * Exact string matchers takes always precedence over function matchers.
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @name when
      *
-     * @param mediaType {String|Function} Content type to match. When there is no / in the string, it is considered
-     *                                   subtype of <code>application/</code> type. You should not include suffixes
-     *                                   like <code>+json</code>, it is ignored by the matcher. Wildcards are supported.
-     *                                   <p>
-     *                                   It can be function with signature [Boolean] function([String]) as well.
-     * @param config {Object} Configuration object, similar to ngRoute one. Allowed keys are:
-     *                        <code>template, templateUrl, controller, controllerAs, dataAs, resolve</code>,
-     *                        where either <code>template</code> or <code>templateUrl</code> must be specified.
-     *                        <code>template</code> has precedence over <code>templateUrl</code>.
-     *                        <code>controller</code> is optional. Can be either String reference or declaration
-     *                        according to $injector rules. <code>resolve</code> is map of resolvables, that are
+     * @description
+     * Configures view for given content type.
+     *
+     * _Note: Wildcard or function matchers are much slower then exact match. The are iterated one by one, in order of registration.
+     * Exact string matchers also always takes precedence over function matchers._
+     *
+     * @param {String|Function} mediaType Content type to match. When there is no `/` in the string, it is considered
+     * subtype of `application/` type. You should not include suffixes
+     * like `+json`, they are ignored by the matcher. Wildcards using `*` are supported.
+     *
+     * It can be function with signature `[boolean] function([string])` as well.
+     *
+     * @param {Object} config Configuration object, similar to ngRoute one. Allowed keys are:
+     *                        `template, templateUrl, controller, controllerAs, dataAs, resolve`,
+     *                        where either `template` or `templateUrl` must be specified.
+     *                        `template` has precedence over `templateUrl`.
+     *                        `controller` is optional. Can be either String reference or declaration
+     *                        according to `$injector` rules. `resolve` is map of resolvables, that are
      *                        resolved before controller is created, and are injected into controller. Same behavior
      *                        as in ngRoute.
      */
@@ -46,9 +55,16 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
     };
 
     /**
-     * Configures view for error page. Displayed when resource or view template cannot be loaded.
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @name error
      *
-     * @param config {Object} Configuration object, as in #when().
+     * @description
+     * Configures view for error page. Error page is displayed when resource or view template cannot be loaded or
+     * any of the resolvables fails.
+     *
+     * @param {Object} config Configuration object, as in
+     * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_when when(config)}.
      */
     provider.error = function error(config) {
         views.addMatcher('$error', angular.copy(config));
@@ -56,10 +72,15 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
     };
 
     /**
-     * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
-     * just subtype.
+     * @ngdoc method
+     * @methodOf mdvorakDataRouter.$dataRouterRegistryProvider
+     * @name normalizeMediaType
      *
-     * @param mimeType {String} Media type to match.
+     * @description
+     * Normalizes the media type. Removes format suffix (everything after +), and prepends `application/` if there is
+     * just subtype provided.
+     *
+     * @param {String} mimeType Media type to match.
      * @returns {String} Normalized media type.
      */
     provider.normalizeMediaType = function normalizeMediaType(mimeType) {
@@ -83,18 +104,28 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
     this.$get = function $dataRouterRegistryFactory() {
         return {
             /**
-             * Normalizes the media type. Removes format suffix (everything after +), and prepends application/ if there is
-             * just subtype.
+             * @ngdoc method
+             * @methodOf mdvorakDataRouter.$dataRouterRegistry
+             * @name normalizeMediaType
              *
-             * @param mimeType {String} Media type to match.
+             * @description
+             * Normalizes the media type. Removes format suffix (everything after +), and prepends `application/` if there is
+             * just subtype provided.
+             *
+             * @param {String} mimeType Media type to match.
              * @returns {String} Normalized media type.
              */
             normalizeMediaType: provider.normalizeMediaType,
 
             /**
+             * @ngdoc method
+             * @methodOf mdvorakDataRouter.$dataRouterRegistry
+             * @name match
+             *
+             * @description
              * Matches the media type against registered media types. If found, view configuration is return.
              *
-             * @param mediaType {String} Media type to be matched. It *MUST* be normalized, it is compared as is.
+             * @param {String} mediaType Media type to be matched. It *MUST* be normalized, it is compared as is.
              * @returns {Object} Matched view or undefined. Note that original configuration object will be returned,
              *                   so don't modify it!
              */
@@ -103,10 +134,15 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
             },
 
             /**
-             * Returns true  if the type matches a registered view, false if we don't know how to view it.
+             * @ngdoc method
+             * @methodOf mdvorakDataRouter.$dataRouterRegistry
+             * @name isKnownType
              *
-             * @param mediaType {String} Matched content type. Doesn't have to be normalized.
-             * @returns {boolean} true if type is ahs registered view, false otherwise.
+             * @description
+             * Determines whether type matches a registered view.
+             *
+             * @param {String} mediaType Matched content type. Doesn't have to be normalized.
+             * @returns {boolean} `true` if type is has registered view, `false` if no match was found.
              */
             isKnownType: function isKnownType(mediaType) {
                 return mediaType && !!this.match(provider.normalizeMediaType(mediaType));
