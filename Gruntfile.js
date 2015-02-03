@@ -80,6 +80,7 @@ module.exports = function (grunt) {
             },
             test: {
                 options: {
+                    browser: true,
                     sub: true,
                     globalstrict: true,
                     globals: {
@@ -89,7 +90,8 @@ module.exports = function (grunt) {
                         beforeEach: true,
                         expect: true,
                         module: true,
-                        inject: true
+                        inject: true,
+                        spyOn: true
                     }
                 },
                 files: {
@@ -195,16 +197,6 @@ module.exports = function (grunt) {
 
                     // Tests
                     '<%=cfg.src%>/**/*.specs.js'
-                ],
-                plugins: [
-                    'karma-jasmine',
-                    'karma-chrome-launcher',
-                    'karma-firefox-launcher',
-                    'karma-ie-launcher',
-                    'karma-safari-launcher',
-                    'karma-opera-launcher',
-                    'karma-phantomjs-launcher',
-                    'karma-detect-browsers'
                 ]
             },
             default: {},

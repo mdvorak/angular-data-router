@@ -1,7 +1,7 @@
 "use strict";
 
 describe("mdvorakDataRouter", function () {
-    describe('hashbang mode', function () {
+    describe("hashbang mode", function () {
         // Module
         beforeEach(module('mdvorakDataRouter', function ($locationProvider, $dataRouterProvider) {
             $locationProvider.html5Mode(false);
@@ -47,7 +47,7 @@ describe("mdvorakDataRouter", function () {
         });
     });
 
-    describe('html5 mode', function () {
+    describe("html5 mode", function () {
         beforeEach(module('mdvorakDataRouter', function ($locationProvider, $dataRouterProvider) {
             $locationProvider.html5Mode(true);
             $dataRouterProvider.enabled(false);
