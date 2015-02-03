@@ -172,7 +172,7 @@
                  * @return {String} API URL prefix. It's absolute URL, includes base href.
                  */
                 prefix: function apiPrefix() {
-                    return provider.apiPrefix();
+                    return provider.prefix();
                 },
 
                 /**
@@ -227,11 +227,11 @@
                 url: function urlFn(url) {
                     // Getter
                     if (arguments.length < 1) {
-                        return $dataApi.mapViewToApi($location.path());
+                        return provider.mapViewToApi($location.path());
                     }
 
                     // Setter
-                    var path = $dataApi.mapApiToView(url);
+                    var path = provider.mapApiToView(url);
 
                     if (path) {
                         $location.path(path);

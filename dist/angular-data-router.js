@@ -403,7 +403,6 @@
                         };
 
                         if (view.transformResponse) {
-                            result.originalData = response.data;
                             return asResponse(view.transformResponse(result));
                         } else {
                             return asResponse(result);
@@ -527,6 +526,27 @@
      *
      * @description
      * Allows simple configuration of all parts of the data router in one place.
+     *
+     * @example
+     * ```javascript
+     *     angular.module('example', ['mdvorakDataRouter'])
+     *         .config(function configRouter($dataRouterProvider) {
+     *             // URL prefixes
+     *             $dataRouterProvider.apiPrefix('api/');
+     *
+     *             // Error route
+     *             $dataRouterProvider.error({
+     *                 templateUrl: 'error.html',
+     *                 dataAs: 'error'
+     *             });
+     *
+     *             // Routes
+     *             $dataRouterProvider.when('application/x.example', {
+     *                 templateUrl: 'example.html',
+     *                 controller: 'ExampleCtrl'
+     *             });
+     *         });
+     * ```
      */
     module.provider('$dataRouter', ["$$dataRouterMatchMap", "$dataRouterRegistryProvider", "$dataRouterLoaderProvider", "$dataApiProvider", function $dataRouterProvider($$dataRouterMatchMap, $dataRouterRegistryProvider, $dataRouterLoaderProvider, $dataApiProvider) {
         var provider = this;
@@ -1500,7 +1520,7 @@
                  * @return {String} API URL prefix. It's absolute URL, includes base href.
                  */
                 prefix: function apiPrefix() {
-                    return provider.apiPrefix();
+                    return provider.prefix();
                 },
 
                 /**
@@ -1555,11 +1575,11 @@
                 url: function urlFn(url) {
                     // Getter
                     if (arguments.length < 1) {
-                        return $dataApi.mapViewToApi($location.path());
+                        return provider.mapViewToApi($location.path());
                     }
 
                     // Setter
-                    var path = $dataApi.mapApiToView(url);
+                    var path = provider.mapApiToView(url);
 
                     if (path) {
                         $location.path(path);
