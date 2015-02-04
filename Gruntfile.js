@@ -49,7 +49,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/module.js', '!<%=cfg.src%>/**/*.specs.js']
+                    src: ['<%=cfg.src%>/**/*.js', '!<%=cfg.src%>/module.js', '!<%=cfg.src%>/**/*.spec.js']
                 }
             },
             bundle: {
@@ -95,7 +95,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    src: ['<%=cfg.src%>/**/*.specs.js']
+                    src: ['<%=cfg.src%>/**/*.spec.js']
                 }
             }
         },
@@ -126,7 +126,7 @@ module.exports = function (grunt) {
                         '<%=cfg.src%>/eventSupport.js',
                         '<%=cfg.src%>/directives/**/*.js',
                         '<%=cfg.src%>/dataApi.js',
-                        '!<%=cfg.src%>/**/*.specs.js'
+                        '!<%=cfg.src%>/**/*.spec.js'
                     ]
                 }]
             },
@@ -140,7 +140,7 @@ module.exports = function (grunt) {
                 },
                 files: [{
                     dest: '<%=cfg.build%>/api.js',
-                    src: ['<%=cfg.src%>/dataApi.js', '!<%=cfg.src%>/**/*.specs.js']
+                    src: ['<%=cfg.src%>/dataApi.js', '!<%=cfg.src%>/**/*.spec.js']
                 }]
             }
         },
@@ -196,7 +196,7 @@ module.exports = function (grunt) {
                     '<%=cfg.build%>/dist/angular-data-router.js',
 
                     // Tests
-                    '<%=cfg.src%>/**/*.specs.js'
+                    '<%=cfg.src%>/**/*.spec.js'
                 ]
             },
             default: {},
