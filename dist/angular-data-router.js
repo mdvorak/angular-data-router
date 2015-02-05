@@ -626,11 +626,13 @@
          * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_error $dataRouterRegistryProvider.error(config)}
          * method, see its documentation for details.
          *
+         * @param {Number=} status HTTP response status code this error view is for. This is optional argument, you should
+         * always have defined generic error view as well.
          * @param {Object} config Configuration object, as in
          * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_when when(config)}.
          */
-        provider.error = function error(config) {
-            $dataRouterRegistryProvider.error(angular.copy(config));
+        provider.error = function error(status, config) {
+            $dataRouterRegistryProvider.error(status, config);
             return provider;
         };
 
