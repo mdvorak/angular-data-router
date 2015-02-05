@@ -7,10 +7,12 @@
 <div class="description"><div class="mdvorakdatarouter-datarouterregistryprovider-page"><p>This is the place where media types are configured to the views.</p>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_error">error(config)</h3>
+<ul class="methods"><li><h3 id="methods_error">error(status, config)</h3>
 <div class="error"><div class="error-page"><p>Configures view for error page. Error page is displayed when resource or view template cannot be loaded or
 any of the resolvables fails.</p>
-</div><h5 id="methods_error_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="error-page"><p>Configuration object, as in
+</div><h5 id="methods_error_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>status <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-number">Number</a></td><td><div class="error-page"><p>HTTP response status code this error view is for. This is optional argument, you should
+always have defined generic error view as well.</p>
+</div></td></tr><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="error-page"><p>Configuration object, as in
 <a href="#/api/mdvorakDataRouter.$dataRouterRegistryProvider#methods_when">when(config)</a>.</p>
 </div></td></tr></tbody></table></div>
 </li>

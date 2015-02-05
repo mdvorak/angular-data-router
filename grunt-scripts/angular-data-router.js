@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.1.0
+ * @license angular-data-router v0.1.1
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -81,11 +81,21 @@
          * Configures view for error page. Error page is displayed when resource or view template cannot be loaded or
          * any of the resolvables fails.
          *
+         * @param {Number=} status HTTP response status code this error view is for. This is optional argument, you should
+         * always have defined generic error view as well.
          * @param {Object} config Configuration object, as in
          * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_when when(config)}.
          */
-        provider.error = function error(config) {
-            views.addMatcher('$error', angular.copy(config));
+        provider.error = function error(status, config) {
+            var name = '$error';
+
+            if (arguments.length < 2) {
+                config = arguments[0];
+            } else if (angular.isNumber(status)) {
+                name = '$error_' + status;
+            }
+
+            views.addMatcher(name, angular.copy(config));
             return provider;
         };
 
@@ -335,11 +345,18 @@
                     }
 
                     function loadError(response) {
-                        // Load error view
-                        response.mediaType = '$error';
-                        response.view = $dataRouterRegistry.match('$error');
                         response.routeError = true;
 
+                        // Try specific view first, then generic
+                        response.mediaType = '$error_' + response.status;
+                        response.view = $dataRouterRegistry.match(response.mediaType);
+
+                        if (!response.view) {
+                            response.mediaType = '$error';
+                            response.view = $dataRouterRegistry.match('$error');
+                        }
+
+                        // Load the view
                         if (response.view) {
                             return $dataRouterLoader.$$loadView(response);
                         } else {
@@ -408,6 +425,8 @@
                             return asResponse(result);
                         }
                     }, function dataFailed(response) {
+                        response.url = response.config.url;
+
                         return $q.reject(asResponse(response));
                     });
                 },
@@ -614,11 +633,13 @@
          * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_error $dataRouterRegistryProvider.error(config)}
          * method, see its documentation for details.
          *
+         * @param {Number=} status HTTP response status code this error view is for. This is optional argument, you should
+         * always have defined generic error view as well.
          * @param {Object} config Configuration object, as in
          * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_when when(config)}.
          */
-        provider.error = function error(config) {
-            $dataRouterRegistryProvider.error(angular.copy(config));
+        provider.error = function error(status, config) {
+            $dataRouterRegistryProvider.error(status, config);
             return provider;
         };
 
@@ -1520,7 +1541,7 @@
                  * @return {String} API URL prefix. It's absolute URL, includes base href.
                  */
                 prefix: function apiPrefix() {
-                    return provider.apiPrefix();
+                    return provider.prefix();
                 },
 
                 /**
@@ -1575,11 +1596,11 @@
                 url: function urlFn(url) {
                     // Getter
                     if (arguments.length < 1) {
-                        return $dataApi.mapViewToApi($location.path());
+                        return provider.mapViewToApi($location.path());
                     }
 
                     // Setter
-                    var path = $dataApi.mapApiToView(url);
+                    var path = provider.mapApiToView(url);
 
                     if (path) {
                         $location.path(path);
