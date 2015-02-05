@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.1.0
+ * @license angular-data-router v0.1.1
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -89,8 +89,8 @@
         provider.error = function error(status, config) {
             var name = '$error';
 
-            if (arguments.length < 2) {
-                config = arguments[0];
+            if (angular.isObject(status)) {
+                config = status;
             } else if (angular.isNumber(status)) {
                 name = '$error_' + status;
             }
