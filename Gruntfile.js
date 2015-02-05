@@ -296,5 +296,5 @@ module.exports = function (grunt) {
 
     grunt.registerTask('docs', ['jshint:grunt', 'clean:build', 'clean:docs', 'javascript', 'ngdocs', 'gh-pages']);
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
-    grunt.registerTask('release', ['git-is-clean', 'dist', 'gitadd:dist', 'bump', 'git-is-clean']);
+    grunt.registerTask('release', ['git-is-clean', 'bump-only', 'dist', 'gitadd:dist', 'bump-commit', 'git-is-clean']);
 };
