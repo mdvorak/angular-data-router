@@ -64,11 +64,21 @@ module.provider('$dataRouterRegistry', function $dataRouterRegistryProvider($$da
      * Configures view for error page. Error page is displayed when resource or view template cannot be loaded or
      * any of the resolvables fails.
      *
+     * @param {Number=} status HTTP response status code this error view is for. This is optional argument, you should
+     * always have defined generic error view as well.
      * @param {Object} config Configuration object, as in
      * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_when when(config)}.
      */
-    provider.error = function error(config) {
-        views.addMatcher('$error', angular.copy(config));
+    provider.error = function error(status, config) {
+        var name = '$error';
+
+        if (arguments.length < 2) {
+            config = arguments[0];
+        } else if (angular.isNumber(status)) {
+            name = '$error_' + status;
+        }
+
+        views.addMatcher(name, angular.copy(config));
         return provider;
     };
 

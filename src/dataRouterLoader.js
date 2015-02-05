@@ -166,11 +166,13 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                 }
 
                 function loadError(response) {
-                    // Load error view
                     response.mediaType = '$error';
-                    response.view = $dataRouterRegistry.match('$error');
                     response.routeError = true;
 
+                    // Try specific view first, then generic
+                    response.view = $dataRouterRegistry.match('$error_' + response.status) || $dataRouterRegistry.match('$error');
+
+                    // Load the view
                     if (response.view) {
                         return $dataRouterLoader.$$loadView(response);
                     } else {
