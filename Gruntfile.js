@@ -235,7 +235,8 @@ module.exports = function (grunt) {
             options: {
                 pushTo: 'origin',
                 commitMessage: '[release v%VERSION%]',
-                commitFiles: ['package.json', 'dist/**']
+                commitFiles: ['package.json', 'dist/**'],
+                updateConfigs: ['pkg']
             }
         },
 
