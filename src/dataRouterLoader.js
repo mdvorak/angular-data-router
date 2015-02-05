@@ -166,11 +166,16 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                 }
 
                 function loadError(response) {
-                    response.mediaType = '$error';
                     response.routeError = true;
 
                     // Try specific view first, then generic
-                    response.view = $dataRouterRegistry.match('$error_' + response.status) || $dataRouterRegistry.match('$error');
+                    response.mediaType = '$error_' + response.status;
+                    response.view = $dataRouterRegistry.match(response.mediaType);
+
+                    if (!response.view) {
+                        response.mediaType = '$error';
+                        response.view = $dataRouterRegistry.match('$error');
+                    }
 
                     // Load the view
                     if (response.view) {
@@ -237,6 +242,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         return asResponse(result);
                     }
                 }, function dataFailed(response) {
+                    response.url = response.config.url;
+
                     return $q.reject(asResponse(response));
                 });
             },
