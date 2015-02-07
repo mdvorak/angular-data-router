@@ -107,6 +107,19 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
             normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
 
             /**
+             * Extracts media type from the response, using configured
+             * {@link mdvorakDataRouter.$dataRouterLoaderProvider#methods_extractType method}.
+             * Unlike on provider, this method returns the type already
+             * {@link mdvorakDataRouter.$dataRouterRegistry#methods_normalizeMediaType normalized}.
+             *
+             * @param response {Object} Response object.
+             * @returns {String} Normalized media type of the response or null if it cannot be determined.
+             */
+            extractType: function extractType(response) {
+                return $dataRouterRegistry.normalizeMediaType(provider.extractType(response));
+            },
+
+            /**
              * @ngdoc method
              * @methodOf mdvorakDataRouter.$dataRouterLoader
              * @name prefetchTemplate
