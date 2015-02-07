@@ -4,6 +4,8 @@ angular-data-router
 [AngularJS](https://angularjs.org/) routing engine that drive views by media types. It loads data itself, and by response `Content-Type` header
 it displays configured view. From there, its very similar to original angular router.
 
+The aim of this framework is to allow building of RESTful clients using angular, following [HATEOAS](http://en.wikipedia.org/wiki/HATEOAS) principle.
+
 See also [API Documentation](https://mdvorak.github.io/angular-data-router#/api/mdvorakDataRouter).
 
 Installation
