@@ -360,11 +360,23 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
             }
         };
 
-        return $dataRouterLoader;
-
         // Converter function
+        var responseExtensions = {
+            dataAs: function dataAs(scope, name) {
+                scope[name] = this.data;
+
+                this.$on('$routeUpdate', function () {
+                    // Update data
+                    scope[name] = this.data;
+                }, scope);
+            }
+        };
+
         function asResponse(response) {
-            return angular.extend($$dataRouterEventSupport.$new(), response);
+            return angular.extend($$dataRouterEventSupport.$new(), response, responseExtensions);
         }
+
+        // Return
+        return $dataRouterLoader;
     };
 });

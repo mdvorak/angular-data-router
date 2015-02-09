@@ -218,6 +218,21 @@
  */
 
 /**
+ * @ngdoc method
+ * @methodOf locals.$dataResponse
+ * @name dataAs
+ *
+ * @description
+ * Stores the data object (and watches for {@link locals.$dataResponse#events_$routeUpdate $routeUpdate} event)
+ * in the scope. Performs automatic listener deregistration when the scope is destroyed.
+ *
+ * This is programatic alternative for view configuration `dataAs`.
+ *
+ * @param {Scope} scope Scope where the data will be set to.
+ * @param {String} name Name of the data object.
+ */
+
+/**
  * @ngdoc event
  * @eventOf locals.$dataResponse
  * @name $routeUpdate
