@@ -363,14 +363,15 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         // Converter function
         var responseExtensions = {
             dataAs: function dataAs(scope, name, listener) {
-                scope[name] = this.data;
+                var _this = this;
+                scope[name] = _this.data;
 
                 this.$on('$routeUpdate', function () {
                     // Update data
-                    scope[name] = this.data;
+                    scope[name] = _this.data;
 
                     if (angular.isFunction(listener)) {
-                        listener(this.data);
+                        listener(_this.data);
                     }
                 }, scope);
             }
