@@ -362,12 +362,16 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
         // Converter function
         var responseExtensions = {
-            dataAs: function dataAs(scope, name) {
+            dataAs: function dataAs(scope, name, listener) {
                 scope[name] = this.data;
 
                 this.$on('$routeUpdate', function () {
                     // Update data
                     scope[name] = this.data;
+
+                    if (angular.isFunction(listener)) {
+                        listener(this.data);
+                    }
                 }, scope);
             }
         };

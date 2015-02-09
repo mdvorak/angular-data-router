@@ -230,6 +230,7 @@
  *
  * @param {Scope} scope Scope where the data will be set to.
  * @param {String} name Name of the data object.
+ * @param {Function=} listener Callback with signature `function(data)` that is called after the data on the scope were changed.
  */
 
 /**
