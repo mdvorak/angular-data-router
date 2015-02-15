@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.1.1
+ * @license angular-data-router v0.1.5
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -89,8 +89,8 @@
         provider.error = function error(status, config) {
             var name = '$error';
 
-            if (arguments.length < 2) {
-                config = arguments[0];
+            if (angular.isObject(status)) {
+                config = status;
             } else if (angular.isNumber(status)) {
                 name = '$error_' + status;
             }
@@ -284,6 +284,19 @@
                  * @returns {String} Normalized media type.
                  */
                 normalizeMediaType: $dataRouterRegistry.normalizeMediaType,
+
+                /**
+                 * Extracts media type from the response, using configured
+                 * {@link mdvorakDataRouter.$dataRouterLoaderProvider#methods_extractType method}.
+                 * Unlike on provider, this method returns the type already
+                 * {@link mdvorakDataRouter.$dataRouterRegistry#methods_normalizeMediaType normalized}.
+                 *
+                 * @param response {Object} Response object.
+                 * @returns {String} Normalized media type of the response or null if it cannot be determined.
+                 */
+                extractType: function extractType(response) {
+                    return $dataRouterRegistry.normalizeMediaType(provider.extractType(response));
+                },
 
                 /**
                  * @ngdoc method
@@ -530,12 +543,29 @@
                 }
             };
 
-            return $dataRouterLoader;
-
             // Converter function
+            var responseExtensions = {
+                dataAs: function dataAs(scope, name, listener) {
+                    var _this = this;
+                    scope[name] = _this.data;
+
+                    this.$on('$routeUpdate', function() {
+                        // Update data
+                        scope[name] = _this.data;
+
+                        if (angular.isFunction(listener)) {
+                            listener(_this.data);
+                        }
+                    }, scope);
+                }
+            };
+
             function asResponse(response) {
-                return angular.extend($$dataRouterEventSupport.$new(), response);
+                return angular.extend($$dataRouterEventSupport.$new(), response, responseExtensions);
             }
+
+            // Return
+            return $dataRouterLoader;
         }];
     });
 
@@ -793,20 +823,18 @@
                  *                               when needed.
                  */
                 $$reload: function reload(forceReload) {
-                    var path = $location.path() || '/';
                     var redirectTo;
-                    var url;
-                    var next = $dataRouter.$$next = {};
 
-                    // Forced redirect
-                    if ((redirectTo = provider.$redirects.match(path))) {
+                    // Forced redirect (Note: This matches search params as well)
+                    if ((redirectTo = provider.$redirects.match($location.url() || '/'))) {
                         $log.debug("Redirecting to " + redirectTo);
-                        $location.path(redirectTo).replace();
+                        $location.url(redirectTo).replace();
                         return;
                     }
 
                     // Load resource
-                    url = $dataApi.mapViewToApi($location.path());
+                    var url = $dataApi.url();
+                    var next = $dataRouter.$$next = {};
 
                     // Load data and view
                     $log.debug("Loading main view");
@@ -1586,7 +1614,7 @@
                  * @name url
                  *
                  * @description
-                 * Gets or sets current view resource URL (modifies `$location.path()`).
+                 * Gets or sets current view resource URL (it internally modifies `$location.url()`).
                  *
                  * If the `url` is not in the configured API namespace, error is logged and nothing happens.
                  *
@@ -1596,14 +1624,15 @@
                 url: function urlFn(url) {
                     // Getter
                     if (arguments.length < 1) {
-                        return provider.mapViewToApi($location.path());
+                        // Map view URL to API.
+                        return provider.mapViewToApi($location.url());
                     }
 
                     // Setter
                     var path = provider.mapApiToView(url);
 
                     if (path) {
-                        $location.path(path);
+                        $location.url(path);
                         return url;
                     } else {
                         $log.warn("Cannot navigate to URL " + url + ", it cannot be mapped to the API");

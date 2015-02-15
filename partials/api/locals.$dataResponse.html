@@ -51,6 +51,15 @@ reload is performed, as if you would pass <code>true</code> as the argument.</p>
 </div></td></tr></tbody></table><h5 id="methods_$on_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="-on-page"><p>Remover function, as with scope events. Call it to deregister the listener.</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_dataas">dataAs(scope, name, listener)</h3>
+<div class="dataas"><div class="dataas-page"><p>Stores the data object (and watches for <a href="#/api/locals.$dataResponse#events_$routeupdate">$routeUpdate</a> event)
+in the scope. Performs automatic listener deregistration when the scope is destroyed.</p>
+<p>This is programatic alternative for view configuration <code>dataAs</code>.</p>
+</div><h5 id="methods_dataas_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>scope</td><td><a href="" class="label type-hint type-hint-scope">Scope</a></td><td><div class="dataas-page"><p>Scope where the data will be set to.</p>
+</div></td></tr><tr><td>name</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="dataas-page"><p>Name of the data object.</p>
+</div></td></tr><tr><td>listener <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="dataas-page"><p>Callback with signature <code>function(data)</code> that is called after the data on the scope were changed.</p>
+</div></td></tr></tbody></table></div>
+</li>
 <li><h3 id="methods_reload">reload(forceReload)</h3>
 <div class="reload"><div class="reload-page"><p>Reloads the data of the view. By the parameter you can specify, whether you want to just reload the data
 or always recreate the view. Note that even when you don&#39;t want to recreate the view, if the media type changes,
