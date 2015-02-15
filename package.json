@@ -27,8 +27,9 @@
     "load-grunt-tasks": "~3.1.0"
   },
   "scripts": {
-    "postinstall": "bower install",
+    "bower": "bower install",
     "test": "grunt default",
+    "prerelease": "bower update",
     "release": "grunt release",
     "dist": "grunt dist",
     "demo": "grunt demo",
