@@ -39,6 +39,18 @@ describe("mdvorakDataApi", function () {
             it("should normalize port of absolute URL", function () {
                 expect($dataApiProvider.normalizeUrl('https://tests:443/foo')).toBe('https://tests/foo');
             });
+
+            it("should retain URL parameters", function () {
+                expect($dataApiProvider.normalizeUrl('foo/415?moo=451&boo=aaa')).toBe(host + 'foo/415?moo=451&boo=aaa');
+            });
+
+            it("should retain hash in the URL", function () {
+                expect($dataApiProvider.normalizeUrl('foo/415#someid')).toBe(host + 'foo/415#someid');
+            });
+
+            it("should retain both URL parameters and hash", function () {
+                expect($dataApiProvider.normalizeUrl('foo/415?moo=451&boo=aaa#someid')).toBe(host + 'foo/415?moo=451&boo=aaa#someid');
+            });
         });
 
         describe("prefix", function () {
@@ -71,6 +83,13 @@ describe("mdvorakDataApi", function () {
 
                 // Test
                 expect($dataApiProvider.mapViewToApi('bar/44')).toBe('http://foo/api/bar/44');
+            });
+
+            it("should retain search parameters and hash", function () {
+                $dataApiProvider.$apiPrefix = 'http://foo/api/';
+
+                // Test
+                expect($dataApiProvider.mapViewToApi('bar/44?foo=23&moo=asd#rest')).toBe('http://foo/api/bar/44?foo=23&moo=asd#rest');
             });
         });
 
@@ -118,6 +137,15 @@ describe("mdvorakDataApi", function () {
                 // Test
                 expect($dataApiProvider.mapApiToView('http://foo/api/boo/444')).toBe('boo/444');
                 expect($dataApiProvider.normalizeUrl).toHaveBeenCalledWith('http://foo/api/boo/444');
+            });
+
+            it("should retain URL parameters and hash", function () {
+                $dataApiProvider.$apiPrefix = 'http://foo/api/';
+                spyOn($dataApiProvider, "normalizeUrl").and.returnValue('http://foo/api/boo/444?moo=33&goo=xxx#itrules');
+
+                // Test
+                expect($dataApiProvider.mapApiToView('http://foo/api/boo/444?moo=33&goo=xxx#itrules')).toBe('boo/444?moo=33&goo=xxx#itrules');
+                expect($dataApiProvider.normalizeUrl).toHaveBeenCalledWith('http://foo/api/boo/444?moo=33&goo=xxx#itrules');
             });
         });
     });
@@ -194,39 +222,51 @@ describe("mdvorakDataApi", function () {
                 $location = _$location_;
             }));
 
-            it("should return view path mapped to API", function () {
+            it("should return view url mapped to API", function () {
                 // Mock
-                spyOn($location, "path").and.returnValue('/foo/bar');
+                spyOn($location, "url").and.returnValue('/foo/bar');
                 spyOn($dataApiProvider, "mapViewToApi").and.returnValue('http://test/api/foo/bar');
 
                 // Test
                 expect($dataApi.url()).toBe('http://test/api/foo/bar');
 
-                expect($location.path).toHaveBeenCalledWith();
+                expect($location.url).toHaveBeenCalledWith();
                 expect($dataApiProvider.mapViewToApi).toHaveBeenCalledWith('/foo/bar');
+            });
+
+            it("should return view url with parameters and hash", function () {
+                // Mock
+                spyOn($location, "url").and.returnValue('/foo/bar?moo=555&boo=asd#something');
+                spyOn($dataApiProvider, "mapViewToApi").and.returnValue('http://test/api/foo/bar?moo=555&boo=asd#something');
+
+                // Test
+                expect($dataApi.url()).toBe('http://test/api/foo/bar?moo=555&boo=asd#something');
+
+                expect($location.url).toHaveBeenCalledWith();
+                expect($dataApiProvider.mapViewToApi).toHaveBeenCalledWith('/foo/bar?moo=555&boo=asd#something');
             });
 
             it("should set view to mapped API URL", function () {
                 // Mock
-                spyOn($location, "path");
+                spyOn($location, "url");
                 spyOn($dataApiProvider, "mapApiToView").and.returnValue('/foo/bar');
 
                 // Test
                 expect($dataApi.url('http://test/api/foo/bar')).toBe('http://test/api/foo/bar');
 
-                expect($location.path).toHaveBeenCalledWith('/foo/bar');
+                expect($location.url).toHaveBeenCalledWith('/foo/bar');
                 expect($dataApiProvider.mapApiToView).toHaveBeenCalledWith('http://test/api/foo/bar');
             });
 
             it("should do nothing when URL cannot be mapped to API", function () {
                 // Mock
-                spyOn($location, "path");
+                spyOn($location, "url");
                 spyOn($dataApiProvider, "mapApiToView").and.returnValue(null);
 
                 // Test
                 expect($dataApi.url('http://test/api/foo/bar')).toBe(undefined);
 
-                expect($location.path.calls.count()).toBe(0);
+                expect($location.url.calls.count()).toBe(0);
                 expect($dataApiProvider.mapApiToView).toHaveBeenCalledWith('http://test/api/foo/bar');
             });
         });

@@ -823,20 +823,18 @@
                  *                               when needed.
                  */
                 $$reload: function reload(forceReload) {
-                    var path = $location.path() || '/';
                     var redirectTo;
-                    var url;
-                    var next = $dataRouter.$$next = {};
 
-                    // Forced redirect
-                    if ((redirectTo = provider.$redirects.match(path))) {
+                    // Forced redirect (Note: This matches search params as well)
+                    if ((redirectTo = provider.$redirects.match($location.url() || '/'))) {
                         $log.debug("Redirecting to " + redirectTo);
-                        $location.path(redirectTo).replace();
+                        $location.url(redirectTo).replace();
                         return;
                     }
 
                     // Load resource
-                    url = $dataApi.mapViewToApi($location.path());
+                    var url = $dataApi.url();
+                    var next = $dataRouter.$$next = {};
 
                     // Load data and view
                     $log.debug("Loading main view");
@@ -1616,7 +1614,7 @@
                  * @name url
                  *
                  * @description
-                 * Gets or sets current view resource URL (modifies `$location.path()`).
+                 * Gets or sets current view resource URL (it internally modifies `$location.url()`).
                  *
                  * If the `url` is not in the configured API namespace, error is logged and nothing happens.
                  *
@@ -1626,14 +1624,15 @@
                 url: function urlFn(url) {
                     // Getter
                     if (arguments.length < 1) {
-                        return provider.mapViewToApi($location.path());
+                        // Map view URL to API.
+                        return provider.mapViewToApi($location.url());
                     }
 
                     // Setter
                     var path = provider.mapApiToView(url);
 
                     if (path) {
-                        $location.path(path);
+                        $location.url(path);
                         return url;
                     } else {
                         $log.warn("Cannot navigate to URL " + url + ", it cannot be mapped to the API");

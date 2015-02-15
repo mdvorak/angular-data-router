@@ -217,7 +217,7 @@
                  * @name url
                  *
                  * @description
-                 * Gets or sets current view resource URL (modifies `$location.path()`).
+                 * Gets or sets current view resource URL (it internally modifies `$location.url()`).
                  *
                  * If the `url` is not in the configured API namespace, error is logged and nothing happens.
                  *
@@ -227,14 +227,15 @@
                 url: function urlFn(url) {
                     // Getter
                     if (arguments.length < 1) {
-                        return provider.mapViewToApi($location.path());
+                        // Map view URL to API.
+                        return provider.mapViewToApi($location.url());
                     }
 
                     // Setter
                     var path = provider.mapApiToView(url);
 
                     if (path) {
-                        $location.path(path);
+                        $location.url(path);
                         return url;
                     } else {
                         $log.warn("Cannot navigate to URL " + url + ", it cannot be mapped to the API");

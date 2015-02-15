@@ -254,20 +254,18 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              *                               when needed.
              */
             $$reload: function reload(forceReload) {
-                var path = $location.path() || '/';
                 var redirectTo;
-                var url;
-                var next = $dataRouter.$$next = {};
 
-                // Forced redirect
-                if ((redirectTo = provider.$redirects.match(path))) {
+                // Forced redirect (Note: This matches search params as well)
+                if ((redirectTo = provider.$redirects.match($location.url() || '/'))) {
                     $log.debug("Redirecting to " + redirectTo);
-                    $location.path(redirectTo).replace();
+                    $location.url(redirectTo).replace();
                     return;
                 }
 
                 // Load resource
-                url = $dataApi.mapViewToApi($location.path());
+                var url = $dataApi.url();
+                var next = $dataRouter.$$next = {};
 
                 // Load data and view
                 $log.debug("Loading main view");
