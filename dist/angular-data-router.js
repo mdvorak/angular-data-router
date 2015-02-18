@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.1.5
+ * @license angular-data-router v0.1.6
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -1435,7 +1435,7 @@
                 switch (angular.lowercase(attrs['emptyHref'])) {
                     case 'hide':
                         observer = function hrefHideObserver(href) {
-                            element.toggleClass('ng-hide', !!href);
+                            element.toggleClass('ng-hide', !href);
                         };
                         break;
 
@@ -1451,6 +1451,13 @@
                                 element.addClass('disabled').on('click', disabledHandler);
                             }
                         };
+
+                        // Fix init in disabled state
+                        if (!attrs.href) {
+                            // Handler modifies the object only when change occur.
+                            // But during init, oldHref is undefined, and link is not properly disabled.
+                            element.addClass('disabled').on('click', disabledHandler);
+                        }
                         break;
 
                     default:
@@ -1465,6 +1472,32 @@
                 function disabledHandler(e) {
                     e.preventDefault();
                 }
+            }
+        };
+    }]);
+
+    /**
+     * @ngdoc directive
+     * @name mdvorakDataRouter.entryPointHref
+     * @kind directive
+     * @restrict AC
+     * @priority 90
+     * @element A
+     *
+     * @decription
+     * Generates link to the application entry-point, that is root of the API. It produces same behavior as
+     * calling `$location.path('/')`.
+     *
+     * Do not use in conjuction with `api-href` or `ng-href`.
+     */
+    module.directive('entryPointHref', ["$browser", function entryPointHrefFactory($browser) {
+        var baseHref = $browser.baseHref();
+
+        return {
+            restrict: 'AC',
+            priority: 90,
+            link: function entryPointHrefLink(scope, element, attrs) {
+                attrs.$set('href', baseHref);
             }
         };
     }]);
