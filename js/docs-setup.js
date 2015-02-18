@@ -154,6 +154,23 @@ NG_DOCS={
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Renders the view for the given data. This directive works in two modes.",
       "keywords": "$anchorscroll $dataapi api applies attribute autoscroll browser call configured current data dataview directive displayed displays eac handler loaded location main mapped mapviewtoapi mdvorakdataapi mdvorakdatarouter method methods_mapviewtoapi modes onload renders resource scroll set src updated url view viewport works"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.emptyHref",
+      "shortName": "mdvorakDataRouter.emptyHref",
+      "type": "directive",
+      "moduleName": "mdvorakDataRouter",
+      "shortDescription": "Defines behavior when link has empty href attribute. It is complementary to apiHref",
+      "keywords": "ac active api api-href apihref attr attribute behavior complementary defines directive directives disable empty empty-href emptyhref example hide href html ignored invalid link logged mdvorakdatarouter nghref usage visible warning"
+    },
+    {
+      "section": "api",
+      "id": "mdvorakDataRouter.entryPointHref",
+      "shortName": "mdvorakDataRouter.entryPointHref",
+      "type": "directive",
+      "moduleName": "mdvorakDataRouter",
+      "keywords": "$location ac api api-href application behavior calling conjuction directive entry-point entrypointhref generates link mdvorakdatarouter ng-href path produces root"
     }
   ],
   "apis": {

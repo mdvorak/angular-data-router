@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.1.5
+ * @license angular-data-router v0.1.6
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -411,7 +411,7 @@
                         // Unknown media type
                         if (!view) {
                             return $q.reject(asResponse({
-                                url: response.config.url,
+                                url: url,
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Unknown content type " + mediaType,
@@ -422,7 +422,7 @@
 
                         // Success
                         var result = {
-                            url: response.config.url,
+                            url: url,
                             status: response.status,
                             statusText: response.statusText,
                             headers: response.headers,
@@ -438,7 +438,7 @@
                             return asResponse(result);
                         }
                     }, function dataFailed(response) {
-                        response.url = response.config.url;
+                        response.url = url;
 
                         return $q.reject(asResponse(response));
                     });
@@ -467,7 +467,7 @@
                             var builtInLocals = {
                                 $data: response.data,
                                 $dataType: response.mediaType,
-                                $dataUrl: response.config.url,
+                                $dataUrl: response.url,
                                 $dataResponse: response
                             };
 
@@ -498,7 +498,7 @@
                             }, function localsError() {
                                 // Failure
                                 return $q.reject(asResponse({
-                                    url: response.config.url,
+                                    url: response.url,
                                     status: 999,
                                     statusText: "Application Error",
                                     data: "Failed to resolve view " + response.mediaType,
@@ -1398,6 +1398,106 @@
                 }
 
                 link(scope);
+            }
+        };
+    }]);
+
+    /**
+     * @ngdoc directive
+     * @name mdvorakDataRouter.emptyHref
+     * @kind directive
+     * @restrict AC
+     * @priority 0
+     * @element A
+     *
+     * @param {Boolean} emptyHref Must be either `hide` or `disable`. Any other value is ignored and warning is logged.
+     *
+     * @description
+     * Defines behavior when link has empty href attribute. It is complementary to {@link mdvorakDataRouter.apiHref apiHref}
+     * or `ngHref` directives.
+     *
+     * @example
+     * Usage
+     * ```html
+     *     <a api-href="{{links.example.href}} empty-href="hide">Hide when no link is given</a>
+     *     <a api-href="{{links.example.href}} empty-href="disable">Disabled when no link is given</a>
+     *     <a api-href="{{links.example.href}} empty-href="anything">Always visible and active, since attr is invalid</a>
+     * ```
+     */
+    module.directive('emptyHref', ["$log", function emptyHrefFactory($log) {
+        return {
+            restrict: 'AC',
+            priority: 0,
+            link: function emptyHrefLink(scope, element, attrs) {
+                var observer;
+
+                // Modes
+                switch (angular.lowercase(attrs['emptyHref'])) {
+                    case 'hide':
+                        observer = function hrefHideObserver(href) {
+                            element.toggleClass('ng-hide', !href);
+                        };
+                        break;
+
+                    case 'disable':
+                    case 'disabled':
+                        observer = function hrefDisableObserver(href, oldHref) {
+                            // Boolean value has changed
+                            if (href && !oldHref) {
+                                // From disabled to enabled
+                                element.removeClass('disabled').off('click', disabledHandler);
+                            } else if (!href && oldHref) {
+                                // From enabled to disabled
+                                element.addClass('disabled').on('click', disabledHandler);
+                            }
+                        };
+
+                        // Fix init in disabled state
+                        if (!attrs.href) {
+                            // Handler modifies the object only when change occur.
+                            // But during init, oldHref is undefined, and link is not properly disabled.
+                            element.addClass('disabled').on('click', disabledHandler);
+                        }
+                        break;
+
+                    default:
+                        $log.warn("Unsupported empty-href value: " + attrs['emptyHref']);
+                        return;
+                }
+
+                // Watch for href
+                attrs.$observe('href', observer);
+
+                // Disabled handler
+                function disabledHandler(e) {
+                    e.preventDefault();
+                }
+            }
+        };
+    }]);
+
+    /**
+     * @ngdoc directive
+     * @name mdvorakDataRouter.entryPointHref
+     * @kind directive
+     * @restrict AC
+     * @priority 90
+     * @element A
+     *
+     * @decription
+     * Generates link to the application entry-point, that is root of the API. It produces same behavior as
+     * calling `$location.path('/')`.
+     *
+     * Do not use in conjuction with `api-href` or `ng-href`.
+     */
+    module.directive('entryPointHref', ["$browser", function entryPointHrefFactory($browser) {
+        var baseHref = $browser.baseHref();
+
+        return {
+            restrict: 'AC',
+            priority: 90,
+            link: function entryPointHrefLink(scope, element, attrs) {
+                attrs.$set('href', baseHref);
             }
         };
     }]);
