@@ -29,10 +29,10 @@
   "scripts": {
     "bower": "bower install",
     "test": "grunt default",
+    "start": "grunt demo",
     "prerelease": "bower update",
     "release": "grunt release",
     "dist": "grunt dist",
-    "demo": "grunt demo",
     "docs": "grunt docs"
   }
 }
