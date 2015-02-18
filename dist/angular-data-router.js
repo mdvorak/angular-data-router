@@ -411,7 +411,7 @@
                         // Unknown media type
                         if (!view) {
                             return $q.reject(asResponse({
-                                url: response.config.url,
+                                url: url,
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Unknown content type " + mediaType,
@@ -422,7 +422,7 @@
 
                         // Success
                         var result = {
-                            url: response.config.url,
+                            url: url,
                             status: response.status,
                             statusText: response.statusText,
                             headers: response.headers,
@@ -438,7 +438,7 @@
                             return asResponse(result);
                         }
                     }, function dataFailed(response) {
-                        response.url = response.config.url;
+                        response.url = url;
 
                         return $q.reject(asResponse(response));
                     });
@@ -467,7 +467,7 @@
                             var builtInLocals = {
                                 $data: response.data,
                                 $dataType: response.mediaType,
-                                $dataUrl: response.config.url,
+                                $dataUrl: response.url,
                                 $dataResponse: response
                             };
 
@@ -498,7 +498,7 @@
                             }, function localsError() {
                                 // Failure
                                 return $q.reject(asResponse({
-                                    url: response.config.url,
+                                    url: response.url,
                                     status: 999,
                                     statusText: "Application Error",
                                     data: "Failed to resolve view " + response.mediaType,
@@ -1440,6 +1440,7 @@
                         break;
 
                     case 'disable':
+                    case 'disabled':
                         observer = function hrefDisableObserver(href, oldHref) {
                             // Boolean value has changed
                             if (href && !oldHref) {

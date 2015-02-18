@@ -228,7 +228,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     // Unknown media type
                     if (!view) {
                         return $q.reject(asResponse({
-                            url: response.config.url,
+                            url: url,
                             status: 999,
                             statusText: "Application Error",
                             data: "Unknown content type " + mediaType,
@@ -239,7 +239,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                     // Success
                     var result = {
-                        url: response.config.url,
+                        url: url,
                         status: response.status,
                         statusText: response.statusText,
                         headers: response.headers,
@@ -255,7 +255,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         return asResponse(result);
                     }
                 }, function dataFailed(response) {
-                    response.url = response.config.url;
+                    response.url = url;
 
                     return $q.reject(asResponse(response));
                 });
@@ -284,7 +284,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         var builtInLocals = {
                             $data: response.data,
                             $dataType: response.mediaType,
-                            $dataUrl: response.config.url,
+                            $dataUrl: response.url,
                             $dataResponse: response
                         };
 
@@ -315,7 +315,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                         }, function localsError() {
                             // Failure
                             return $q.reject(asResponse({
-                                url: response.config.url,
+                                url: response.url,
                                 status: 999,
                                 statusText: "Application Error",
                                 data: "Failed to resolve view " + response.mediaType,
