@@ -49,7 +49,13 @@ module.directive('emptyHref', function emptyHrefFactory($log) {
                             element.addClass('disabled').on('click', disabledHandler);
                         }
                     };
-                    observer(attrs.href, '$');
+
+                    // Fix init in disabled state
+                    if (!attrs.href) {
+                        // Handler modifies the object only when change occur.
+                        // But during init, oldHref is undefined, and link is not properly disabled.
+                        element.addClass('disabled').on('click', disabledHandler);
+                    }
                     break;
 
                 default:
