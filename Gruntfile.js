@@ -84,10 +84,12 @@ module.exports = function (grunt) {
                     sub: true,
                     globalstrict: true,
                     globals: {
+                        console: true,
                         angular: true,
                         describe: true,
                         it: true,
                         beforeEach: true,
+                        afterEach: true,
                         expect: true,
                         module: true,
                         inject: true,

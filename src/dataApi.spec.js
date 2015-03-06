@@ -4,52 +4,108 @@ describe("mdvorakDataApi", function () {
     describe("$dataApiProvider", function () {
         var host = location.href.match(/^\w+:\/\/[^\/]+\//)[0];
         var $dataApiProvider;
+        var headElement;
 
         beforeEach(module('mdvorakDataApi', function (_$dataApiProvider_) {
             $dataApiProvider = _$dataApiProvider_;
         }));
 
-        // Needed so the module is initialized
-        beforeEach(inject(function ($dataApi) {
+        // Reference to the $dataApi is needed so the module is initialized
+        beforeEach(inject(function ($dataApi, $document) {
+            headElement = $document.find('head');
         }));
 
-        // Tests
+        // No base
         describe("normalizeUrl", function () {
-            it("should return null for undefined or null", function () {
-                expect($dataApiProvider.normalizeUrl(null)).toBe(null);
-                expect($dataApiProvider.normalizeUrl(undefined)).toBe(null);
+            describe("without base href", function () {
+                it("should return null for undefined or null", function () {
+                    expect($dataApiProvider.normalizeUrl(null)).toBe(null);
+                    expect($dataApiProvider.normalizeUrl(undefined)).toBe(null);
+                });
+
+                it("should return hostname for empty string", function () {
+                    expect($dataApiProvider.normalizeUrl('')).toBe(host);
+                });
+
+                it("should correctly treat base-relative URL", function () {
+                    expect($dataApiProvider.normalizeUrl('foo/415')).toBe(host + 'foo/415');
+                });
+
+                it("should correctly treat server-relative URL", function () {
+                    expect($dataApiProvider.normalizeUrl('/foo/415')).toBe(host + 'foo/415');
+                });
+
+                it("should not modify absoulte URL", function () {
+                    expect($dataApiProvider.normalizeUrl('https://tests:11/foo')).toBe('https://tests:11/foo');
+                });
+
+                it("should normalize port of absolute URL", function () {
+                    expect($dataApiProvider.normalizeUrl('https://tests:443/foo')).toBe('https://tests/foo');
+                });
+
+                it("should retain URL parameters", function () {
+                    expect($dataApiProvider.normalizeUrl('foo/415?moo=451&boo=aaa')).toBe(host + 'foo/415?moo=451&boo=aaa');
+                });
+
+                it("should retain hash in the URL", function () {
+                    expect($dataApiProvider.normalizeUrl('foo/415#someid')).toBe(host + 'foo/415#someid');
+                });
+
+                it("should retain both URL parameters and hash", function () {
+                    expect($dataApiProvider.normalizeUrl('foo/415?moo=451&boo=aaa#someid')).toBe(host + 'foo/415?moo=451&boo=aaa#someid');
+                });
             });
 
-            it("should return hostname for empty string", function () {
-                expect($dataApiProvider.normalizeUrl('')).toBe(host);
-            });
+            describe("with some base href", function () {
+                var baseElement;
+                var baseHref = host + 'my/context/';
 
-            it("should correctly treat base-relative URL", function () {
-                expect($dataApiProvider.normalizeUrl('foo/415')).toBe(host + 'foo/415');
-            });
+                beforeEach(function () {
+                    baseElement = document.createElement('base');
+                    baseElement.href = '/my/context/';
+                    headElement.append(baseElement);
+                });
 
-            it("should correctly treat server-relative URL", function () {
-                expect($dataApiProvider.normalizeUrl('/foo/415')).toBe(host + 'foo/415');
-            });
+                afterEach(function () {
+                    angular.element(baseElement).remove();
+                });
 
-            it("should not modify absoulte URL", function () {
-                expect($dataApiProvider.normalizeUrl('https://tests:11/foo')).toBe('https://tests:11/foo');
-            });
+                it("should return null for undefined or null", function () {
+                    expect($dataApiProvider.normalizeUrl(null)).toBe(null);
+                    expect($dataApiProvider.normalizeUrl(undefined)).toBe(null);
+                });
 
-            it("should normalize port of absolute URL", function () {
-                expect($dataApiProvider.normalizeUrl('https://tests:443/foo')).toBe('https://tests/foo');
-            });
+                it("should return baseHref for empty string", function () {
+                    expect($dataApiProvider.normalizeUrl('')).toBe(baseHref);
+                });
 
-            it("should retain URL parameters", function () {
-                expect($dataApiProvider.normalizeUrl('foo/415?moo=451&boo=aaa')).toBe(host + 'foo/415?moo=451&boo=aaa');
-            });
+                it("should correctly treat base-relative URL", function () {
+                    expect($dataApiProvider.normalizeUrl('foo/415')).toBe(baseHref + 'foo/415');
+                });
 
-            it("should retain hash in the URL", function () {
-                expect($dataApiProvider.normalizeUrl('foo/415#someid')).toBe(host + 'foo/415#someid');
-            });
+                it("should correctly treat server-relative URL", function () {
+                    expect($dataApiProvider.normalizeUrl('/foo/415')).toBe(host + 'foo/415');
+                });
 
-            it("should retain both URL parameters and hash", function () {
-                expect($dataApiProvider.normalizeUrl('foo/415?moo=451&boo=aaa#someid')).toBe(host + 'foo/415?moo=451&boo=aaa#someid');
+                it("should not modify absoulte URL", function () {
+                    expect($dataApiProvider.normalizeUrl('https://tests:11/foo')).toBe('https://tests:11/foo');
+                });
+
+                it("should normalize port of absolute URL", function () {
+                    expect($dataApiProvider.normalizeUrl('https://tests:443/foo')).toBe('https://tests/foo');
+                });
+
+                it("should retain URL parameters", function () {
+                    expect($dataApiProvider.normalizeUrl('foo/415?moo=451&boo=aaa')).toBe(baseHref + 'foo/415?moo=451&boo=aaa');
+                });
+
+                it("should retain hash in the URL", function () {
+                    expect($dataApiProvider.normalizeUrl('foo/415#someid')).toBe(baseHref + 'foo/415#someid');
+                });
+
+                it("should retain both URL parameters and hash", function () {
+                    expect($dataApiProvider.normalizeUrl('foo/415?moo=451&boo=aaa#someid')).toBe(baseHref + 'foo/415?moo=451&boo=aaa#someid');
+                });
             });
         });
 
