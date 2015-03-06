@@ -203,6 +203,49 @@ describe("mdvorakDataApi", function () {
                 expect($dataApiProvider.mapApiToView('http://foo/api/boo/444?moo=33&goo=xxx#itrules')).toBe('boo/444?moo=33&goo=xxx#itrules');
                 expect($dataApiProvider.normalizeUrl).toHaveBeenCalledWith('http://foo/api/boo/444?moo=33&goo=xxx#itrules');
             });
+
+            describe("with baseHref", function () {
+                var baseElement;
+                var baseHref = host + 'my/context/';
+
+                beforeEach(function () {
+                    baseElement = document.createElement('base');
+                    baseElement.href = '/my/context/';
+                    headElement.append(baseElement);
+                });
+
+                afterEach(function () {
+                    angular.element(baseElement).remove();
+                });
+
+                it("should return empty string when url is api prefix", function () {
+                    $dataApiProvider.prefix('apix/');
+
+                    // Test
+                    expect($dataApiProvider.mapApiToView(baseHref + 'apix/')).toBe('');
+                });
+
+                it("should return relative part of the path", function () {
+                    $dataApiProvider.prefix('apix/');
+
+                    // Test
+                    expect($dataApiProvider.mapApiToView(baseHref + 'apix/boo')).toBe('boo');
+                });
+
+                it("should return relative part of the path with absolute prefix", function () {
+                    $dataApiProvider.prefix('/goo/apix/');
+
+                    // Test
+                    expect($dataApiProvider.mapApiToView('/goo/apix/boo')).toBe('boo');
+                });
+
+                it("should return empty string when api prefix is before base", function () {
+                    $dataApiProvider.prefix('/my/');
+
+                    // Test
+                    expect($dataApiProvider.mapApiToView(baseHref + 'boo/42')).toBe('context/boo/42');
+                });
+            });
         });
     });
 
