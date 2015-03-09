@@ -7,23 +7,23 @@
 <div class="description"><div class="mdvorakdatarouter-apihref-page"><p>Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.
 It supports HTML 5 mode as well hasbang mode.</p>
 <p>Following code sets href to <code>#/users/12347</code> or <code>users/12347</code> for html5Mode respectively.</p>
-<pre><code class="lang-html">    &lt;a api-href=&quot;api/users/12347&quot;&gt;User Detail&lt;/a&gt;
+<pre><code class="lang-html">    &lt;a api-href=&quot;&#39;api/users/12347;&quot;&gt;User Detail&lt;/a&gt;
 </code></pre>
 </div></div>
 <h2 id="usage">Usage</h2>
-<div class="usage">as attribute<pre class="prettyprint linenums">&lt;A api-href="{template}"
+<div class="usage">as attribute<pre class="prettyprint linenums">&lt;A api-href="{expression}"
      [type="{template}"]
      [target="{template}"]&gt;
    ...
 &lt;/A&gt;</pre>
-as class<pre class="prettyprint linenums">&lt;A class="api-href: {template}; [type: {template};] [target: {template};]"&gt;
+as class<pre class="prettyprint linenums">&lt;A class="api-href: {expression}; [type: {template};] [target: {template};]"&gt;
    ...
 &lt;/A&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive executes at priority level 90.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>apiHref</td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Any URL. Behavior changes whether this URL is inside API base or not.</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>apiHref</td><td><a href="" class="label type-hint type-hint-expression">expression</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Any URL. Behavior changes whether this URL is inside API base or not.</p>
 </div></td></tr><tr><td>type <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
 browser performs full redirect.</p>
 </div></td></tr><tr><td>target <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Optional. Target of the link according to HTML specification. If it is specified, full redirect
@@ -45,13 +45,13 @@ If the type would not be set, data would be downloaded and error page would be s
 <script type="text/ng-template" id="index.html">
 <div ng-controller="sampleCtrl">
     <!-- href: api/some/parent type: application/x.example -->
-    <a api-href="{{links.parent.href}}" type="{{links.parent.type}}">Back</a>
+    <a api-href="links.parent.href" type="{{links.parent.type}}">Back</a>
     <!-- href: external/url type: application/x.example -->
-    <a api-href="{{links.external.href}}" type="{{links.external.type}}">Website</a>
+    <a api-href="links.external.href" type="{{links.external.type}}">Website</a>
     <!-- href: api/my/photo type: image/png -->
-    <a api-href="{{links.image.href}}" type="{{links.image.type}}">Image</a>
+    <a api-href="links.image.href" type="{{links.image.type}}">Image</a>
     <!-- href: external/url type: application/x.example -->
-    <a api-href="{{links.external.href}}" target="_blank">New Window</a>
+    <a api-href="links.external.href" target="_blank">New Window</a>
 </div>
 </script>
 </div>

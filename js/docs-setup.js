@@ -162,7 +162,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Defines behavior when link has empty href attribute. It is complementary to apiHref",
-      "keywords": "ac active api api-href apihref attr attribute behavior complementary defines directive directives disable empty empty-href emptyhref example hide href html ignored invalid link logged mdvorakdatarouter nghref usage visible warning"
+      "keywords": "ac active api api-href apihref attr attribute behavior complementary defines directive directives disable disabled empty empty-href emptyhref example hide href html ignored invalid link logged mdvorakdatarouter nghref usage visible warning"
     },
     {
       "section": "api",

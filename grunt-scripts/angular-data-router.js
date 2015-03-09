@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.1.6
+ * @license angular-data-router v0.2.0
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -1066,7 +1066,7 @@
      * @priority 90
      * @element A
      *
-     * @param {template} apiHref Any URL. Behavior changes whether this URL is inside API base or not.
+     * @param {expression} apiHref Any URL. Behavior changes whether this URL is inside API base or not.
      * @param {template=} type Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
      *                         browser performs full redirect.
      * @param {template=} target Optional. Target of the link according to HTML specification. If it is specified, full redirect
@@ -1078,7 +1078,7 @@
      *
      * Following code sets href to `#/users/12347` or `users/12347` for html5Mode respectively.
      * ```html
-     *     <a api-href="api/users/12347">User Detail</a>
+     *     <a api-href="'api/users/12347;">User Detail</a>
      * ```
      *
      * @example
@@ -1094,13 +1094,13 @@
      * <file name="index.html">
      * <div ng-controller="sampleCtrl">
      *     <!-- href: api/some/parent type: application/x.example -->
-     *     <a api-href="{{links.parent.href}}" type="{{links.parent.type}}">Back</a>
+     *     <a api-href="links.parent.href" type="{{links.parent.type}}">Back</a>
      *     <!-- href: external/url type: application/x.example -->
-     *     <a api-href="{{links.external.href}}" type="{{links.external.type}}">Website</a>
+     *     <a api-href="links.external.href" type="{{links.external.type}}">Website</a>
      *     <!-- href: api/my/photo type: image/png -->
-     *     <a api-href="{{links.image.href}}" type="{{links.image.type}}">Image</a>
+     *     <a api-href="links.image.href" type="{{links.image.type}}">Image</a>
      *     <!-- href: external/url type: application/x.example -->
-     *     <a api-href="{{links.external.href}}" target="_blank">New Window</a>
+     *     <a api-href="links.external.href" target="_blank">New Window</a>
      * </div>
      * </file>
      * <file name="controller.js">
@@ -1123,12 +1123,13 @@
      * </file>
      * </example>
      */
-    module.directive('apiHref', ["$dataApi", "$dataRouterRegistry", "$dataRouterLoader", "$location", "$browser", function apiHrefFactory($dataApi, $dataRouterRegistry, $dataRouterLoader, $location, $browser) {
+    module.directive('apiHref', ["$dataApi", "$dataRouterRegistry", "$dataRouterLoader", "$location", "$browser", "$parse", function apiHrefFactory($dataApi, $dataRouterRegistry, $dataRouterLoader, $location, $browser, $parse) {
         return {
             restrict: 'AC',
             priority: 90,
             link: function apiHrefLink(scope, element, attrs) {
                 var hasTarget = 'target' in attrs;
+                var apiHrefGetter = $parse(attrs.apiHref);
 
                 function setHref(href, target) {
                     attrs.$set('href', href);
@@ -1139,36 +1140,45 @@
                 }
 
                 function updateHref() {
+                    var href = apiHrefGetter(scope);
+
                     // Do we have a type? And it is supported?
                     if (attrs.type && !$dataRouterRegistry.isKnownType(attrs.type)) {
                         // If not, do not modify the URL
-                        setHref(attrs.apiHref, '_self');
+                        setHref(href, '_self');
                         return;
                     }
 
-                    // Map URL
-                    var href = $dataApi.mapApiToView(attrs.apiHref);
-
                     if (angular.isString(href)) {
-                        // Hashbang mode
-                        if (!$location.$$html5) {
-                            href = '#/' + href;
-                        } else if (href === '') {
-                            // HTML 5 mode and we are going to the base, so force it
-                            // (it is special case, since href="" obviously does not work)
-                            // In normal cases, browser handles relative URLs on its own
-                            href = $browser.baseHref();
+                        // Map URL
+                        var mappedHref = $dataApi.mapApiToView(href);
+
+                        // Use URL directly
+                        if (!angular.isString(mappedHref)) {
+                            setHref(href, '_self');
+                            return;
                         }
 
-                        setHref(href, null);
+                        // Hashbang mode
+                        if (!$location.$$html5) {
+                            mappedHref = '#/' + mappedHref;
+                        } else if (mappedHref === '') {
+                            // HTML 5 mode and we are going to the base, so force it
+                            // (it is special case, since href="" does not work with angular)
+                            // In normal cases, browser handles relative URLs on its own
+                            mappedHref = $browser.baseHref();
+                        }
+
+                        setHref(mappedHref, null);
                     } else {
-                        // Use URL on its own
-                        setHref(attrs.apiHref, '_self');
+                        // Reset href
+                        setHref();
                     }
                 }
 
                 // Update href accordingly
-                attrs.$observe('apiHref', updateHref);
+                var offWatch = scope.$watch(attrs.apiHref, updateHref);
+                element.on('$destroy', offWatch); // We don't have own scope, so don't rely on its destruction
 
                 // Don't watch for type if it is not defined at all
                 if ('type' in attrs) {
@@ -1176,7 +1186,7 @@
 
                     element.on('click', function clickHandler() {
                         // Invoke apply only if needed
-                        if (attrs.type) {
+                        if (attrs.type && attrs.href) {
                             scope.$applyAsync(function applyCallback() {
                                 // Race condition
                                 if (attrs.type) {
@@ -1421,6 +1431,7 @@
      * ```html
      *     <a api-href="{{links.example.href}} empty-href="hide">Hide when no link is given</a>
      *     <a api-href="{{links.example.href}} empty-href="disable">Disabled when no link is given</a>
+     *     <a api-href="{{links.example.href}} empty-href="disabled">Same as disable</a>
      *     <a api-href="{{links.example.href}} empty-href="anything">Always visible and active, since attr is invalid</a>
      * ```
      */
@@ -1435,13 +1446,17 @@
                 switch (angular.lowercase(attrs['emptyHref'])) {
                     case 'hide':
                         observer = function hrefHideObserver(href) {
-                            element.toggleClass('ng-hide', !href);
+                            element.toggleClass('ng-hide', !href && href !== '');
                         };
                         break;
 
                     case 'disable':
                     case 'disabled':
                         observer = function hrefDisableObserver(href, oldHref) {
+                            // Handle empty string correctly
+                            if (href === '') href = true;
+                            if (oldHref === '') oldHref = true;
+
                             // Boolean value has changed
                             if (href && !oldHref) {
                                 // From disabled to enabled
@@ -1453,7 +1468,7 @@
                         };
 
                         // Fix init in disabled state
-                        if (!attrs.href) {
+                        if (!attrs.href && attrs.href !== '') {
                             // Handler modifies the object only when change occur.
                             // But during init, oldHref is undefined, and link is not properly disabled.
                             element.addClass('disabled').on('click', disabledHandler);
@@ -1490,8 +1505,9 @@
      *
      * Do not use in conjuction with `api-href` or `ng-href`.
      */
-    module.directive('entryPointHref', ["$browser", function entryPointHrefFactory($browser) {
-        var baseHref = $browser.baseHref();
+    module.directive('entryPointHref', ["$browser", "$location", function entryPointHrefFactory($browser, $location) {
+        // For hashbang mode, all we need is #/, otherwise use base href
+        var baseHref = $location.$$html5 ? $browser.baseHref() : '#/';
 
         return {
             restrict: 'AC',
