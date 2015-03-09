@@ -31,9 +31,11 @@
     "test": "grunt default",
     "start": "grunt demo",
     "prerelease": "bower update",
-    "release": "grunt release",
     "dist": "grunt dist",
     "docs": "grunt docs",
-    "debug": "grunt debug"
+    "debug": "grunt debug",
+    "release": "grunt release-patch",
+    "minor": "grunt release-minor",
+    "major": "grunt release-major"
   }
 }
