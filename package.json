@@ -33,6 +33,7 @@
     "prerelease": "bower update",
     "release": "grunt release",
     "dist": "grunt dist",
-    "docs": "grunt docs"
+    "docs": "grunt docs",
+    "debug": "grunt debug"
   }
 }

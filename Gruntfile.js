@@ -204,6 +204,7 @@ module.exports = function (grunt) {
             default: {},
             debug: {
                 options: {
+                    frameworks: ['jasmine'],
                     singleRun: false,
                     browsers: ['Chrome']
                 }
@@ -299,5 +300,5 @@ module.exports = function (grunt) {
 
     grunt.registerTask('docs', ['jshint:grunt', 'clean:build', 'clean:docs', 'javascript', 'ngdocs', 'gh-pages']);
     grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
-    grunt.registerTask('release', ['git-is-clean', 'bump-only', 'dist', 'gitadd:dist', 'bump-commit', 'git-is-clean']);
+    grunt.registerTask('release', ['git-is-clean', 'bump-only:minor', 'dist', 'gitadd:dist', 'bump-commit', 'git-is-clean']);
 };

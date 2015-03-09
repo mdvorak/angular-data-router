@@ -19,6 +19,7 @@
  * ```html
  *     <a api-href="{{links.example.href}} empty-href="hide">Hide when no link is given</a>
  *     <a api-href="{{links.example.href}} empty-href="disable">Disabled when no link is given</a>
+ *     <a api-href="{{links.example.href}} empty-href="disabled">Same as disable</a>
  *     <a api-href="{{links.example.href}} empty-href="anything">Always visible and active, since attr is invalid</a>
  * ```
  */
@@ -33,13 +34,17 @@ module.directive('emptyHref', function emptyHrefFactory($log) {
             switch (angular.lowercase(attrs['emptyHref'])) {
                 case 'hide':
                     observer = function hrefHideObserver(href) {
-                        element.toggleClass('ng-hide', !href);
+                        element.toggleClass('ng-hide', !href && href !== '');
                     };
                     break;
 
                 case 'disable':
                 case 'disabled':
                     observer = function hrefDisableObserver(href, oldHref) {
+                        // Handle empty string correctly
+                        if (href === '') href = true;
+                        if (oldHref === '') oldHref = true;
+
                         // Boolean value has changed
                         if (href && !oldHref) {
                             // From disabled to enabled
@@ -51,7 +56,7 @@ module.directive('emptyHref', function emptyHrefFactory($log) {
                     };
 
                     // Fix init in disabled state
-                    if (!attrs.href) {
+                    if (!attrs.href && attrs.href !== '') {
                         // Handler modifies the object only when change occur.
                         // But during init, oldHref is undefined, and link is not properly disabled.
                         element.addClass('disabled').on('click', disabledHandler);
