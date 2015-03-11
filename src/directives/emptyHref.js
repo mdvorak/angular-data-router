@@ -17,10 +17,10 @@
  * @example
  * Usage
  * ```html
- *     <a api-href="{{links.example.href}} empty-href="hide">Hide when no link is given</a>
- *     <a api-href="{{links.example.href}} empty-href="disable">Disabled when no link is given</a>
- *     <a api-href="{{links.example.href}} empty-href="disabled">Same as disable</a>
- *     <a api-href="{{links.example.href}} empty-href="anything">Always visible and active, since attr is invalid</a>
+ *     <a api-href="links.example.href" empty-href="hide">Hide when no link is given</a>
+ *     <a api-href="links.example.href" empty-href="disable">Disabled when no link is given</a>
+ *     <a api-href="links.example.href" empty-href="disabled">Same as disable</a>
+ *     <a api-href="links.example.href" empty-href="anything">Always visible and active, since attr is invalid</a>
  * ```
  */
 module.directive('emptyHref', function emptyHrefFactory($log) {
