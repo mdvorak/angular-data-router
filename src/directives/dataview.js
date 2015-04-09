@@ -18,7 +18,7 @@
  *                                 is updated. Applies only to the main view, that is, without the `src` attribute.
  * @param {expression=} onload Onload handler.
  */
-module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $log, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
+module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $log, $parse, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
     return {
         restrict: 'EAC',
         terminal: true,
@@ -38,7 +38,9 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
 
             if (attr.hasOwnProperty('src')) {
                 // Custom context
-                context = {};
+                context = {
+                    reload: reload
+                };
 
                 // Custom view - watch for href changes
                 scope.$watch(hrefExp, function hrefWatch(href) {
@@ -52,6 +54,11 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
 
                 // Show view on route change
                 scope.$on('$routeChangeSuccess', showView);
+            }
+
+            // Publish
+            if (attr.name) {
+                $parse(attr.name).assign(scope, context);
             }
 
             // Implementation

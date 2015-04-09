@@ -253,7 +253,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              * @param {boolean=} forceReload If true, page is always refreshed (controller recreated). Otherwise only
              *                               when needed.
              */
-            $$reload: function reload(forceReload) {
+            reload: function reload(forceReload) {
                 var redirectTo;
 
                 // Forced redirect (Note: This matches search params as well)
@@ -291,7 +291,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                             $log.debug("Setting view to " + response.mediaType);
 
                             // Add reload implementation
-                            response.reload = $dataRouter.$$reload;
+                            response.reload = $dataRouter.reload;
 
                             // Set current
                             $dataRouter.current = response;
@@ -328,7 +328,7 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
 
             // Reload view on location change
             $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
-                $dataRouter.$$reload(true);
+                $dataRouter.reload(true);
             });
         }
 
