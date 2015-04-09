@@ -138,7 +138,7 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
                 function update(response) {
                     if (next === attr.next) {
                         // Update view data
-                        if (response.routeDataUpdate && context.current) {
+                        if (response && response.routeDataUpdate && context.current) {
                             $log.debug("Replacing view data of ", $element[0]);
 
                             // Update current (preserve listeners)
