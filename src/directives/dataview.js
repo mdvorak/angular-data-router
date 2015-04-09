@@ -17,6 +17,8 @@
  * @param {expression=} autoscroll Whether dataview should call `$anchorScroll` to scroll the viewport after the view
  *                                 is updated. Applies only to the main view, that is, without the `src` attribute.
  * @param {expression=} onload Onload handler.
+ * @param {expression=} name Name of the context, under which it will be published to the current scope. Works similar
+ *                           to the name of the `form` directive.
  */
 module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $log, $parse, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
     return {
