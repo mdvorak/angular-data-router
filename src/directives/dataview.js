@@ -142,7 +142,7 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
                             $log.debug("Replacing view data of ", $element[0]);
 
                             // Update current (preserve listeners)
-                            $$dataRouterEventSupport.$$extend($dataRouter.current, response);
+                            $$dataRouterEventSupport.$$extend(context.current, response);
 
                             // Fire event on the response (only safe way for both main view and fragments)
                             context.current.$broadcast('$routeUpdate', context.current);
