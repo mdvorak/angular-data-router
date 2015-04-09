@@ -16,20 +16,24 @@ according to the configured view.</li>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;dataview
        [src="{expression}"]
        [autoscroll="{expression}"]
-       [onload="{expression}"]&gt;
+       [onload="{expression}"]
+       [name="{expression}"]&gt;
 &lt;/dataview&gt;</pre>
 as attribute<pre class="prettyprint linenums">&lt;ANY dataview
      [src="{expression}"]
      [autoscroll="{expression}"]
-     [onload="{expression}"]&gt;
+     [onload="{expression}"]
+     [name="{expression}"]&gt;
    ...
 &lt;/ANY&gt;</pre>
-as class<pre class="prettyprint linenums">&lt;ANY class="dataview [src: {expression};] [autoscroll: {expression};] [onload: {expression};]"&gt;
+as class<pre class="prettyprint linenums">&lt;ANY class="dataview [src: {expression};] [autoscroll: {expression};] [onload: {expression};] [name: {expression};]"&gt;
    ...
 &lt;/ANY&gt;</pre>
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>src <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-expression">expression</a></td><td><div class="mdvorakdatarouter-dataview-page"><p>API URL to be displayed. If not set, main view is shown.</p>
 </div></td></tr><tr><td>autoscroll <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-expression">expression</a></td><td><div class="mdvorakdatarouter-dataview-page"><p>Whether dataview should call <code>$anchorScroll</code> to scroll the viewport after the view
 is updated. Applies only to the main view, that is, without the <code>src</code> attribute.</p>
 </div></td></tr><tr><td>onload <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-expression">expression</a></td><td><div class="mdvorakdatarouter-dataview-page"><p>Onload handler.</p>
+</div></td></tr><tr><td>name <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-expression">expression</a></td><td><div class="mdvorakdatarouter-dataview-page"><p>Name of the context, under which it will be published to the current scope. Works similar
+to the name of the <code>form</code> directive.</p>
 </div></td></tr></tbody></table></div>
 </div>

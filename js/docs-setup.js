@@ -153,7 +153,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Renders the view for the given data. This directive works in two modes.",
-      "keywords": "$anchorscroll $dataapi api applies attribute autoscroll browser call configured current data dataview directive displayed displays eac handler loaded location main mapped mapviewtoapi mdvorakdataapi mdvorakdatarouter method methods_mapviewtoapi modes onload renders resource scroll set src updated url view viewport works"
+      "keywords": "$anchorscroll $dataapi api applies attribute autoscroll browser call configured context current data dataview directive displayed displays eac form handler loaded location main mapped mapviewtoapi mdvorakdataapi mdvorakdatarouter method methods_mapviewtoapi modes onload published renders resource scope scroll set src updated url view viewport works"
     },
     {
       "section": "api",
@@ -162,7 +162,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Defines behavior when link has empty href attribute. It is complementary to apiHref",
-      "keywords": "ac active api api-href apihref attr attribute behavior complementary defines directive directives disable disabled empty empty-href emptyhref example hide href html ignored invalid link logged mdvorakdatarouter nghref usage visible warning"
+      "keywords": "ac active api api-href apihref attr attribute behavior complementary defines directive directives disable disabled empty empty-href emptyhref example hide href html ignored invalid link links logged mdvorakdatarouter nghref usage visible warning"
     },
     {
       "section": "api",

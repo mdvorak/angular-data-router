@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.2.0
+ * @license angular-data-router v0.2.1
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -822,7 +822,7 @@
                  * @param {boolean=} forceReload If true, page is always refreshed (controller recreated). Otherwise only
                  *                               when needed.
                  */
-                $$reload: function reload(forceReload) {
+                reload: function reload(forceReload) {
                     var redirectTo;
 
                     // Forced redirect (Note: This matches search params as well)
@@ -860,7 +860,7 @@
                                 $log.debug("Setting view to " + response.mediaType);
 
                                 // Add reload implementation
-                                response.reload = $dataRouter.$$reload;
+                                response.reload = $dataRouter.reload;
 
                                 // Set current
                                 $dataRouter.current = response;
@@ -897,7 +897,7 @@
 
                 // Reload view on location change
                 $rootScope.$on('$locationChangeSuccess', function locationChangeSuccess() {
-                    $dataRouter.$$reload(true);
+                    $dataRouter.reload(true);
                 });
             }
 
@@ -1217,8 +1217,10 @@
      * @param {expression=} autoscroll Whether dataview should call `$anchorScroll` to scroll the viewport after the view
      *                                 is updated. Applies only to the main view, that is, without the `src` attribute.
      * @param {expression=} onload Onload handler.
+     * @param {expression=} name Name of the context, under which it will be published to the current scope. Works similar
+     *                           to the name of the `form` directive.
      */
-    module.directive('dataview', ["$animate", "$anchorScroll", "$log", "$dataRouterLoader", "$dataRouter", "$$dataRouterEventSupport", function dataViewFactory($animate, $anchorScroll, $log, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
+    module.directive('dataview', ["$animate", "$anchorScroll", "$log", "$parse", "$dataRouterLoader", "$dataRouter", "$$dataRouterEventSupport", function dataViewFactory($animate, $anchorScroll, $log, $parse, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
         return {
             restrict: 'EAC',
             terminal: true,
@@ -1238,7 +1240,9 @@
 
                 if (attr.hasOwnProperty('src')) {
                     // Custom context
-                    context = {};
+                    context = {
+                        reload: reload
+                    };
 
                     // Custom view - watch for href changes
                     scope.$watch(hrefExp, function hrefWatch(href) {
@@ -1251,6 +1255,11 @@
 
                     // Show view on route change
                     scope.$on('$routeChangeSuccess', showView);
+                }
+
+                // Publish
+                if (attr.name) {
+                    $parse(attr.name).assign(scope, context);
                 }
 
                 // Implementation
@@ -1429,10 +1438,10 @@
      * @example
      * Usage
      * ```html
-     *     <a api-href="{{links.example.href}} empty-href="hide">Hide when no link is given</a>
-     *     <a api-href="{{links.example.href}} empty-href="disable">Disabled when no link is given</a>
-     *     <a api-href="{{links.example.href}} empty-href="disabled">Same as disable</a>
-     *     <a api-href="{{links.example.href}} empty-href="anything">Always visible and active, since attr is invalid</a>
+     *     <a api-href="links.example.href" empty-href="hide">Hide when no link is given</a>
+     *     <a api-href="links.example.href" empty-href="disable">Disabled when no link is given</a>
+     *     <a api-href="links.example.href" empty-href="disabled">Same as disable</a>
+     *     <a api-href="links.example.href" empty-href="anything">Always visible and active, since attr is invalid</a>
      * ```
      */
     module.directive('emptyHref', ["$log", function emptyHrefFactory($log) {
