@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.2.1
+ * @license angular-data-router v0.2.2
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -1217,6 +1217,8 @@
      * @param {expression=} autoscroll Whether dataview should call `$anchorScroll` to scroll the viewport after the view
      *                                 is updated. Applies only to the main view, that is, without the `src` attribute.
      * @param {expression=} onload Onload handler.
+     * @param {expression=} name Name of the context, under which it will be published to the current scope. Works similar
+     *                           to the name of the `form` directive.
      */
     module.directive('dataview', ["$animate", "$anchorScroll", "$log", "$parse", "$dataRouterLoader", "$dataRouter", "$$dataRouterEventSupport", function dataViewFactory($animate, $anchorScroll, $log, $parse, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
         return {
@@ -1335,7 +1337,7 @@
                     function update(response) {
                         if (next === attr.next) {
                             // Update view data
-                            if (response.routeDataUpdate && context.current) {
+                            if (response && response.routeDataUpdate && context.current) {
                                 $log.debug("Replacing view data of ", $element[0]);
 
                                 // Update current (preserve listeners)
