@@ -27,8 +27,7 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
         priority: 400,
         transclude: 'element',
         link: function dataViewLink(scope, $element, attr, ctrl, $transclude) {
-            var hrefExp = attr.src,
-                currentHref,
+            var currentHref,
                 currentScope,
                 currentElement,
                 previousLeaveAnimation,
@@ -45,7 +44,7 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
                 };
 
                 // Custom view - watch for href changes
-                scope.$watch(hrefExp, function hrefWatch(href) {
+                scope.$watch(attr.src, function hrefWatch(href) {
                     currentHref = href;
                     reload(true);
                 });
