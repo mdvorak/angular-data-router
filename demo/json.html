@@ -8,11 +8,17 @@
     <a api-href="'api/'">Api Root</a>
     <a entry-point-href>Entry Point</a>
 
-    <h2>Fragment</h2>
+    <h2>Fragment without type</h2>
 
     <dataview src="'api/sample.txt'" name="fragment"></dataview>
 
     <button type="button" ng-click="fragment.reload(true)">Reload fragment</button>
 
-    <div>{{$response.view.someValue}}</div>
+    <h2>Fragment with type</h2>
+    <dataview src="'api/sample.txt'" type="fragment"></dataview>
+
+    <h2>Debug</h2>
+
+    <div>someValue = {{$response.view.someValue}}</div>
+    <div>$viewType = {{$viewType}}</div>
 </div>

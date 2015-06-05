@@ -35,7 +35,7 @@
             });
 
             $dataRouterProvider.when('text/plain', {
-                template: '<pre>{{text}}</pre><button ng-click="textCtrl.reload()">Soft Reload</button><button ng-click="textCtrl.reload(true)">Force Reload</button><a api-href="\'api/sample.json\'">JSON</a>',
+                template: '<pre>{{text}}</pre><button ng-click="textCtrl.reload()">Soft Reload</button><button ng-click="textCtrl.reload(true)">Force Reload</button><a api-href="\'api/sample.json\'">JSON</a><div>$viewType = {{$viewType}}</div>',
                 dataAs: 'text',
                 controller: 'textCtrl',
                 controllerAs: 'textCtrl'

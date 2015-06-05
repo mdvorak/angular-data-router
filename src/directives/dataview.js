@@ -93,10 +93,7 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
 
                     var newScope = scope.$new();
                     newScope.$$dataRouterCtx = context;
-
-                    if (attr.type) {
-                        newScope.$viewType = attr.type;
-                    }
+                    newScope.$viewType = attr.type;
 
                     // Note: This will also link all children of ng-view that were contained in the original
                     // html. If that content contains controllers, ... they could pollute/change the scope.
