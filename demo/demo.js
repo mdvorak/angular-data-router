@@ -9,6 +9,17 @@
             // URL prefixes
             $dataRouterProvider.apiPrefix('api/');
 
+            // Globals
+            $dataRouterProvider.global({
+                resolve: {
+                    glob: function () {
+                        return 'Global Resolved Value';
+                    }
+                },
+                responseAs: '$response',
+                someValue: 42
+            });
+
             // Error route
             $dataRouterProvider.error({
                 templateUrl: 'error.html',
