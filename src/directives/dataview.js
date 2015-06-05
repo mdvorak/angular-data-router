@@ -19,6 +19,7 @@
  * @param {expression=} onload Onload handler.
  * @param {expression=} name Name of the context, under which it will be published to the current scope. Works similar
  *                           to the name of the `form` directive.
+ * @param {String=} type Type parameter, that is passed to child view on its scope under key `$viewType`.
  */
 module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $log, $parse, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
     return {
@@ -92,6 +93,10 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
 
                     var newScope = scope.$new();
                     newScope.$$dataRouterCtx = context;
+
+                    if (attr.type) {
+                        newScope.$viewType = attr.type;
+                    }
 
                     // Note: This will also link all children of ng-view that were contained in the original
                     // html. If that content contains controllers, ... they could pollute/change the scope.
@@ -193,6 +198,8 @@ module.directive('dataview', function dataViewFillContentFactory($compile, $cont
 
                 if (view.controller) {
                     locals.$scope = scope;
+                    locals.$viewType = scope.$viewType;
+
                     var controller = $controller(view.controller, locals);
 
                     if (view.controllerAs) {
