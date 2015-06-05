@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.2.1
+ * @license angular-data-router v0.2.4
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -189,6 +189,9 @@
      */
     module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         var provider = this;
+        var toString = Object.prototype.toString;
+
+        provider.globals = {};
 
         /**
          * @ngdoc method
@@ -221,15 +224,13 @@
          *     });
          * ```
          *
-         * @param {Object} config Configuration object. Currently only `"resolve"` key is supported.
+         * @param {Object} config Configuration object. Properties of object type are merged together instead of overwriting.
          * @returns {Object} Reference to the provider.
          */
         provider.global = function global(config) {
             if (!config) return provider;
 
-            if (angular.isObject(config.resolve)) {
-                provider.$globalResolve = angular.extend(provider.$globalResolve || {}, config.resolve);
-            }
+            provider.globals = $$mergeConfigObjects(provider.globals, config);
 
             return provider;
         };
@@ -420,6 +421,10 @@
                             }));
                         }
 
+                        // Merge view
+                        // Note: If this could be cached in some way, it would be nice
+                        view = $$mergeConfigObjects({}, provider.globals, view);
+
                         // Success
                         var result = {
                             url: url,
@@ -460,7 +465,7 @@
                         // Resolve view
                         if (response.view) {
                             // Prepare locals
-                            var locals = angular.extend({}, provider.$globalResolve, response.view.resolve);
+                            var locals = angular.extend({}, provider.globals.resolve, response.view.resolve);
                             var template;
 
                             // Built-in locals
@@ -567,6 +572,66 @@
             // Return
             return $dataRouterLoader;
         }];
+
+        /**
+         * @ngdoc method
+         * @methodOf mdvorakDataRouter.$dataRouterLoaderProvider
+         * @name $$mergeConfigObjects
+         * @private
+         *
+         * @description
+         * Merges configuration objects. Plain objects are merged, all other properties are overwritten.
+         * `undefined` values in `src` are ignored.
+         *
+         * @param {Object} dst Target object.
+         * @return {Object} Returns `dst` object.
+         */
+        function $$mergeConfigObjects(dst) {
+            if (!dst) dst = {};
+
+            // Multiple sources
+            for (var i = 1; i < arguments.length; i++) {
+                var src = arguments[i];
+
+                if (src) {
+                    // Manual merge
+                    var keys = Object.keys(src);
+
+                    for (var k = 0; k < keys.length; k++) {
+                        var key = keys[k];
+
+                        // Skip undefined entries
+                        if (angular.isUndefined(src[key])) return;
+
+                        // Current value
+                        var val = dst[key];
+
+                        // If both values are plain objects, merge them, otherwise overwrite
+                        if (isPlainObject(val) && isPlainObject(src[key])) {
+                            // Merge
+                            dst[key] = angular.extend(val, src[key]);
+                        } else {
+                            // Overwrite
+                            dst[key] = src[key];
+                        }
+                    }
+                }
+            }
+
+            return dst;
+        }
+
+        provider.$$mergeConfigObjects = $$mergeConfigObjects;
+
+        /**
+         * Checks whether object is plain Object, if it is Date or whatever, it returns true.
+         *
+         * @param {Object} obj Checked object
+         * @returns {boolean} true for POJO, false otherwise.
+         */
+        function isPlainObject(obj) {
+            return angular.isObject(obj) && toString.call(obj) === '[object Object]';
+        }
     });
 
     /**
@@ -1219,6 +1284,7 @@
      * @param {expression=} onload Onload handler.
      * @param {expression=} name Name of the context, under which it will be published to the current scope. Works similar
      *                           to the name of the `form` directive.
+     * @param {String=} type Type parameter, that is passed to child view on its scope under key `$viewType`.
      */
     module.directive('dataview', ["$animate", "$anchorScroll", "$log", "$parse", "$dataRouterLoader", "$dataRouter", "$$dataRouterEventSupport", function dataViewFactory($animate, $anchorScroll, $log, $parse, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
         return {
@@ -1227,8 +1293,7 @@
             priority: 400,
             transclude: 'element',
             link: function dataViewLink(scope, $element, attr, ctrl, $transclude) {
-                var hrefExp = attr.src,
-                    currentHref,
+                var currentHref,
                     currentScope,
                     currentElement,
                     previousLeaveAnimation,
@@ -1245,7 +1310,7 @@
                     };
 
                     // Custom view - watch for href changes
-                    scope.$watch(hrefExp, function hrefWatch(href) {
+                    scope.$watch(attr.src, function hrefWatch(href) {
                         currentHref = href;
                         reload(true);
                     });
@@ -1292,6 +1357,7 @@
 
                         var newScope = scope.$new();
                         newScope.$$dataRouterCtx = context;
+                        newScope.$viewType = attr.type;
 
                         // Note: This will also link all children of ng-view that were contained in the original
                         // html. If that content contains controllers, ... they could pollute/change the scope.
@@ -1337,11 +1403,11 @@
                     function update(response) {
                         if (next === attr.next) {
                             // Update view data
-                            if (response.routeDataUpdate && context.current) {
+                            if (response && response.routeDataUpdate && context.current) {
                                 $log.debug("Replacing view data of ", $element[0]);
 
                                 // Update current (preserve listeners)
-                                $$dataRouterEventSupport.$$extend($dataRouter.current, response);
+                                $$dataRouterEventSupport.$$extend(context.current, response);
 
                                 // Fire event on the response (only safe way for both main view and fragments)
                                 context.current.$broadcast('$routeUpdate', context.current);
@@ -1393,6 +1459,8 @@
 
                     if (view.controller) {
                         locals.$scope = scope;
+                        locals.$viewType = scope.$viewType;
+
                         var controller = $controller(view.controller, locals);
 
                         if (view.controllerAs) {
@@ -1429,7 +1497,7 @@
      * @priority 0
      * @element A
      *
-     * @param {Boolean} emptyHref Must be either `hide` or `disable`. Any other value is ignored and warning is logged.
+     * @param {String} emptyHref Must be either `hide` or `disable`. Any other value is ignored and warning is logged.
      *
      * @description
      * Defines behavior when link has empty href attribute. It is complementary to {@link mdvorakDataRouter.apiHref apiHref}

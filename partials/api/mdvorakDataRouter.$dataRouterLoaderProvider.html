@@ -8,7 +8,14 @@
 <a href="#/api/mdvorakDataRouter.$dataRouterRegistryProvider">$dataRouterRegistryProvider</a> and not here.</p>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_extracttype">extractType(response)</h3>
+<ul class="methods"><li><h3 id="methods_$$mergeconfigobjects">$$mergeConfigObjects(dst)</h3>
+<div class="$$mergeconfigobjects"><div class="-mergeconfigobjects-page"><p>Merges configuration objects. Plain objects are merged, all other properties are overwritten.
+<code>undefined</code> values in <code>src</code> are ignored.</p>
+</div><h5 id="methods_$$mergeconfigobjects_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>dst</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="-mergeconfigobjects-page"><p>Target object.</p>
+</div></td></tr></tbody></table><h5 id="methods_$$mergeconfigobjects_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="-mergeconfigobjects-page"><p>Returns <code>dst</code> object.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_extracttype">extractType(response)</h3>
 <div class="extracttype"><div class="extracttype-page"><p>Extracts media type from given response. Default implementation returns <code>Content-Type</code> header.</p>
 </div><h5 id="methods_extracttype_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>response</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="extracttype-page"><p>Response object, see <code>$http</code> documentation for details.</p>
 <p><em>Note that while <code>response</code> itself is never null, data property can be.</em></p>
@@ -26,7 +33,7 @@
 <li><h3 id="methods_global">global(config)</h3>
 <div class="global"><div class="global-page"><p>Sets global configuration for all routes. It is then merged into each view configuration, with view taking precedence.</p>
 <p><em>Note: This method is also available directly on <code>$dataRouter</code> to ease configuration.</em></p>
-</div><h5 id="methods_global_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Configuration object. Currently only <code>&quot;resolve&quot;</code> key is supported.</p>
+</div><h5 id="methods_global_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Configuration object. Properties of object type are merged together instead of overwriting.</p>
 </div></td></tr></tbody></table><h5 id="methods_global_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="global-page"><p>Reference to the provider.</p>
 </div></td></tr></table><h4 id="methods_global_example">Example</h4>
 <div class="example"><div class="global-page"><p>This example shows how to load additional data from URL provided in the response. <code>relatedData</code> object will be

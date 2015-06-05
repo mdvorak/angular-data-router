@@ -109,7 +109,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Provider allows configuration of loading and resolving views. Note that media types are registered in",
-      "keywords": "$data $datarouter $datarouterloader $datarouterloaderprovider $datarouterregistryprovider $http _links _note _type additional allows api application config configuration content-type controllers currently custom data default details directly documentation ease empty example extracts extracttype extracttypefromjson function global header href implementation js key load loading mdvorakdatarouter media merged method normalized note null object precedence property provided provider reference registered relateddata resolve resolving response return returns routes service sets supported type types url view views"
+      "keywords": "$data $datarouter $datarouterloader $datarouterloaderprovider $datarouterregistryprovider $http _links _note _type additional allows api application config configuration content-type controllers custom data default details directly documentation dst ease empty example extracts extracttype extracttypefromjson function global header href ignored implementation js load loading mdvorakdatarouter media merged merges method normalized note null object objects overwriting overwritten plain precedence properties property provided provider reference registered relateddata resolve resolving response return returns routes service sets src target type types undefined url values view views"
     },
     {
       "section": "api",
@@ -153,7 +153,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Renders the view for the given data. This directive works in two modes.",
-      "keywords": "$anchorscroll $dataapi api applies attribute autoscroll browser call configured context current data dataview directive displayed displays eac form handler loaded location main mapped mapviewtoapi mdvorakdataapi mdvorakdatarouter method methods_mapviewtoapi modes onload published renders resource scope scroll set src updated url view viewport works"
+      "keywords": "$anchorscroll $dataapi $viewtype api applies attribute autoscroll browser call child configured context current data dataview directive displayed displays eac form handler key loaded location main mapped mapviewtoapi mdvorakdataapi mdvorakdatarouter method methods_mapviewtoapi modes onload parameter passed published renders resource scope scroll set src type updated url view viewport works"
     },
     {
       "section": "api",
