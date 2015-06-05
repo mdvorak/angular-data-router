@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.2.4
+ * @license angular-data-router v0.2.5
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -1285,6 +1285,7 @@
      * @param {expression=} name Name of the context, under which it will be published to the current scope. Works similar
      *                           to the name of the `form` directive.
      * @param {String=} type Type parameter, that is passed to child view on its scope under key `$viewType`.
+     *                       If not set, value `default` is used.
      */
     module.directive('dataview', ["$animate", "$anchorScroll", "$log", "$parse", "$dataRouterLoader", "$dataRouter", "$$dataRouterEventSupport", function dataViewFactory($animate, $anchorScroll, $log, $parse, $dataRouterLoader, $dataRouter, $$dataRouterEventSupport) {
         return {
@@ -1357,7 +1358,7 @@
 
                         var newScope = scope.$new();
                         newScope.$$dataRouterCtx = context;
-                        newScope.$viewType = attr.type;
+                        newScope.$viewType = attr.type || 'default';
 
                         // Note: This will also link all children of ng-view that were contained in the original
                         // html. If that content contains controllers, ... they could pollute/change the scope.
