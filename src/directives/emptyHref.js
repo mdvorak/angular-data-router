@@ -8,7 +8,7 @@
  * @priority 0
  * @element A
  *
- * @param {Boolean} emptyHref Must be either `hide` or `disable`. Any other value is ignored and warning is logged.
+ * @param {String} emptyHref Must be either `hide` or `disable`. Any other value is ignored and warning is logged.
  *
  * @description
  * Defines behavior when link has empty href attribute. It is complementary to {@link mdvorakDataRouter.apiHref apiHref}
