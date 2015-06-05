@@ -8,14 +8,6 @@ The aim of this framework is to allow building of RESTful clients using angular,
 
 See also [API Documentation](https://mdvorak.github.io/angular-data-router#/api/mdvorakDataRouter).
 
-BREAKING CHANGE
----------------
-
-Since 0.2.0, usage of apiHref directive is changed. It is now expression instead of template. Please replace
-`<a api-href="{{mylink}}">` with `<a api-href="mylink">`. Program should not construct these URLs anyway, and it allows
-to distinguish between empty string and null value. This also fixes inconsistent behavior of emptyHref directive in some
-cases.
-
 Installation
 ------------
 
