@@ -234,7 +234,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                             statusText: "Application Error",
                             data: "Unknown content type " + mediaType,
                             config: response.config,
-                            headers: response.headers
+                            headers: response.headers,
+                            mediaType: mediaType
                         }));
                     }
 
