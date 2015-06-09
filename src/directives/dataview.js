@@ -90,7 +90,7 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
                     template = locals && locals.$template;
 
                 if (angular.isDefined(template)) {
-                    $log.debug("Setting view ", $element[0], " to ", context.current.mediaType);
+                    $log.debug("Setting view ", $element[0], " to ", context.current.type);
 
                     var newScope = scope.$new();
                     newScope.$$dataRouterCtx = context;

@@ -127,7 +127,7 @@
 /**
  * @ngdoc property
  * @propertyOf locals.$dataResponse
- * @name mediaType
+ * @name type
  * @returns {String}
  * Normalized media type of the response. For error view, it has special value `$error`.
  */
