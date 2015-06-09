@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.2.5
+ * @license angular-data-router v0.3.0
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -362,11 +362,11 @@
                         response.routeError = true;
 
                         // Try specific view first, then generic
-                        response.mediaType = '$error_' + response.status;
-                        response.view = $dataRouterRegistry.match(response.mediaType);
+                        response.type = '$error_' + response.status;
+                        response.view = $dataRouterRegistry.match(response.type);
 
                         if (!response.view) {
-                            response.mediaType = '$error';
+                            response.type = '$error';
                             response.view = $dataRouterRegistry.match('$error');
                         }
 
@@ -379,7 +379,7 @@
                     }
 
                     function isSameView(current, next) {
-                        return current && next && current.url === next.url && current.mediaType === next.mediaType;
+                        return current && next && current.url === next.url && current.type === next.type;
                     }
                 },
 
@@ -406,8 +406,8 @@
                         dataRouter: true
                     }).then(function dataLoaded(response) {
                         // Match existing resource
-                        var mediaType = $dataRouterRegistry.normalizeMediaType(provider.extractType(response)) || 'application/octet-stream';
-                        var view = $dataRouterRegistry.match(mediaType);
+                        var type = $dataRouterRegistry.normalizeMediaType(provider.extractType(response)) || 'application/octet-stream';
+                        var view = $dataRouterRegistry.match(type);
 
                         // Unknown media type
                         if (!view) {
@@ -415,9 +415,10 @@
                                 url: url,
                                 status: 999,
                                 statusText: "Application Error",
-                                data: "Unknown content type " + mediaType,
+                                data: "Unknown content type " + type,
                                 config: response.config,
-                                headers: response.headers
+                                headers: response.headers,
+                                type: type
                             }));
                         }
 
@@ -432,7 +433,7 @@
                             statusText: response.statusText,
                             headers: response.headers,
                             config: response.config,
-                            mediaType: mediaType,
+                            type: type,
                             data: response.data,
                             view: view
                         };
@@ -471,7 +472,7 @@
                             // Built-in locals
                             var builtInLocals = {
                                 $data: response.data,
-                                $dataType: response.mediaType,
+                                $dataType: response.type,
                                 $dataUrl: response.url,
                                 $dataResponse: response
                             };
@@ -487,7 +488,7 @@
                             }
 
                             // Load template
-                            template = $dataRouterLoader.$$loadTemplate(response.view, response.mediaType);
+                            template = $dataRouterLoader.$$loadTemplate(response.view, response.type);
 
                             if (angular.isDefined(template)) {
                                 locals['$template'] = template;
@@ -506,7 +507,7 @@
                                     url: response.url,
                                     status: 999,
                                     statusText: "Application Error",
-                                    data: "Failed to resolve view " + response.mediaType,
+                                    data: "Failed to resolve view " + response.type,
                                     config: {},
                                     headers: angular.noop
                                 }));
@@ -1354,7 +1355,7 @@
                         template = locals && locals.$template;
 
                     if (angular.isDefined(template)) {
-                        $log.debug("Setting view ", $element[0], " to ", context.current.mediaType);
+                        $log.debug("Setting view ", $element[0], " to ", context.current.type);
 
                         var newScope = scope.$new();
                         newScope.$$dataRouterCtx = context;
