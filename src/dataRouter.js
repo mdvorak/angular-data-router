@@ -254,17 +254,40 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
              * If the `url` is not in the configured API namespace, error is logged and nothing happens.
              *
              * @param {String=} url New resource URL. Performs location change.
-             * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change. Default is `true`.
+             * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change. Default is `false`.
              * @returns {String} Resource URL that is being currently viewed.
              */
             url: function urlFn(url, reload) {
-                if (reload !== false && $dataApi.url() == url) {
+                // Getter
+                if (arguments.length < 1) {
+                    return $dataApi.url();
+                }
+
+                // Setter
+                if (reload && $dataApi.url() == url) {
                     // Same URL, reload instead
                     $dataRouter.reload(true);
                 } else {
                     // Change URL
                     $dataApi.url(url);
                 }
+
+                return url;
+            },
+
+            /**
+             * @ngdoc method
+             * @propertyOf mdvorakDataRouter.$dataRouter
+             * @name navigate
+
+             * @description
+             * Navigates to resource URL. See {@link mdvorakDataRouter.$dataRouter.url $dataRouter.url()} for more details.
+             *
+             * @param {String=} url New resource URL.
+             * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change. Default is `true`.
+             */
+            navigate: function navigate(url, reload) {
+                $dataRouter.url(url, reload !== false);
             },
 
             /**

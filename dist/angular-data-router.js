@@ -262,6 +262,22 @@
             return response.headers('Content-Type');
         };
 
+        provider.responseExtensions = {
+            dataAs: function dataAs(scope, name, listener) {
+                var _this = this;
+                scope[name] = _this.data;
+
+                this.$on('$routeUpdate', function() {
+                    // Update data
+                    scope[name] = _this.data;
+
+                    if (angular.isFunction(listener)) {
+                        listener(_this.data);
+                    }
+                }, scope);
+            }
+        };
+
         /**
          * @ngdoc service
          * @name mdvorakDataRouter.$dataRouterLoader
@@ -550,24 +566,8 @@
             };
 
             // Converter function
-            var responseExtensions = {
-                dataAs: function dataAs(scope, name, listener) {
-                    var _this = this;
-                    scope[name] = _this.data;
-
-                    this.$on('$routeUpdate', function() {
-                        // Update data
-                        scope[name] = _this.data;
-
-                        if (angular.isFunction(listener)) {
-                            listener(_this.data);
-                        }
-                    }, scope);
-                }
-            };
-
             function asResponse(response) {
-                return angular.extend($$dataRouterEventSupport.$new(), response, responseExtensions);
+                return angular.extend($$dataRouterEventSupport.$new(), response, provider.responseExtensions);
             }
 
             // Return
@@ -879,6 +879,58 @@
                 current: undefined,
 
                 /**
+                 * @ngdoc method
+                 * @propertyOf mdvorakDataRouter.$dataRouter
+                 * @name url
+
+                 * @description
+                 * Gets or sets current view resource URL using {@link mdvorakDataApi.$dataApi.url $dataApi.url()}.
+                 *
+                 * If the `url` is not in the configured API namespace, error is logged and nothing happens.
+                 *
+                 * @param {String=} url New resource URL. Performs location change.
+                 * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change. Default is `false`.
+                 * @returns {String} Resource URL that is being currently viewed.
+                 */
+                url: function urlFn(url, reload) {
+                    // Getter
+                    if (arguments.length < 1) {
+                        return $dataApi.url();
+                    }
+
+                    // Setter
+                    if (reload && $dataApi.url() == url) {
+                        // Same URL, reload instead
+                        $dataRouter.reload(true);
+                    } else {
+                        // Change URL
+                        $dataApi.url(url);
+                    }
+
+                    return url;
+                },
+
+                /**
+                 * @ngdoc method
+                 * @propertyOf mdvorakDataRouter.$dataRouter
+                 * @name navigate
+
+                 * @description
+                 * Navigates to resource URL. See {@link mdvorakDataRouter.$dataRouter.url $dataRouter.url()} for more details.
+                 *
+                 * @param {String=} url New resource URL.
+                 * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change. Default is `true`.
+                 */
+                navigate: function navigate(url, reload) {
+                    $dataRouter.url(url, reload !== false);
+                },
+
+                /**
+                 * @ngdoc method
+                 * @propertyOf mdvorakDataRouter.$dataRouter
+                 * @name reload
+
+                 * @description
                  * Reloads data at current location. If content type remains same, only data are refreshed,
                  * and $routeUpdate event is invoked on $dataResponse object. If content type differs,
                  * full view refresh is performed (that is, controller is destroyed and recreated).
@@ -1318,13 +1370,26 @@
                 if (attr.hasOwnProperty('src')) {
                     // Custom context
                     context = {
-                        reload: reload
+                        reload: reloadImpl,
+                        navigate: function navigateLocal(url, reload) {
+                            if (currentHref == url) {
+                                // true is default
+                                if (reload !== false) {
+                                    // Reload
+                                    reloadImpl(true);
+                                }
+                            } else {
+                                // Navigate, but don't change src attribute itself
+                                currentHref = url;
+                                reloadImpl(true);
+                            }
+                        }
                     };
 
                     // Custom view - watch for href changes
                     scope.$watch(attr.src, function hrefWatch(href) {
                         currentHref = href;
-                        reload(true);
+                        reloadImpl(true);
                     });
                 } else {
                     // Main view - use $dataRouter as context
@@ -1400,7 +1465,7 @@
                  *
                  * @param forceReload {boolean=} Specifies whether view needs to be refreshed or just $routeUpdate event will be fired.
                  */
-                function reload(forceReload) {
+                function reloadImpl(forceReload) {
                     var next = attr.next = {};
 
                     if (currentHref) {
@@ -1428,9 +1493,12 @@
                                 context.current = response;
                                 attr.next = undefined;
 
-                                // Add reload implementation
+                                // Add reload and navigate implementations
                                 if (response) {
-                                    response.reload = reload;
+                                    response.reload = reloadImpl;
+                                    response.navigate = function navigateDelegate() {
+                                        context.navigate.apply(context, arguments);
+                                    };
                                 }
 
                                 // Show view

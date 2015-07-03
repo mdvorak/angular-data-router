@@ -42,13 +42,26 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
             if (attr.hasOwnProperty('src')) {
                 // Custom context
                 context = {
-                    reload: reload
+                    reload: reloadImpl,
+                    navigate: function navigateLocal(url, reload) {
+                        if (currentHref == url) {
+                            // true is default
+                            if (reload !== false) {
+                                // Reload
+                                reloadImpl(true);
+                            }
+                        } else {
+                            // Navigate, but don't change src attribute itself
+                            currentHref = url;
+                            reloadImpl(true);
+                        }
+                    }
                 };
 
                 // Custom view - watch for href changes
                 scope.$watch(attr.src, function hrefWatch(href) {
                     currentHref = href;
-                    reload(true);
+                    reloadImpl(true);
                 });
             }
             else {
@@ -125,7 +138,7 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
              *
              * @param forceReload {boolean=} Specifies whether view needs to be refreshed or just $routeUpdate event will be fired.
              */
-            function reload(forceReload) {
+            function reloadImpl(forceReload) {
                 var next = attr.next = {};
 
                 if (currentHref) {
@@ -153,9 +166,12 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
                             context.current = response;
                             attr.next = undefined;
 
-                            // Add reload implementation
+                            // Add reload and navigate implementations
                             if (response) {
-                                response.reload = reload;
+                                response.reload = reloadImpl;
+                                response.navigate = function navigateDelegate() {
+                                    context.navigate.apply(context, arguments);
+                                };
                             }
 
                             // Show view

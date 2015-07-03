@@ -186,6 +186,18 @@
 
 /**
  * @ngdoc method
+ * @propertyOf mdvorakDataRouter.$dataRouter
+ * @name navigate
+
+ * @description
+ * Allows changing of the current view url. It does not get, however, refected in parent view in any way, if applicable.
+ *
+ * @param {String=} url New resource URL.
+ * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change.
+ */
+
+/**
+ * @ngdoc method
  * @methodOf locals.$dataResponse
  * @name $on
  *
