@@ -244,6 +244,35 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
             current: undefined,
 
             /**
+             * @ngdoc method
+             * @propertyOf mdvorakDataRouter.$dataRouter
+             * @name url
+
+             * @description
+             * Gets or sets current view resource URL using {@link mdvorakDataApi.$dataApi.url $dataApi.url()}.
+             *
+             * If the `url` is not in the configured API namespace, error is logged and nothing happens.
+             *
+             * @param {String=} url New resource URL. Performs location change.
+             * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change. Default is `true`.
+             * @returns {String} Resource URL that is being currently viewed.
+             */
+            url: function urlFn(url, reload) {
+                if (reload !== false && $dataApi.url() == url) {
+                    // Same URL, reload instead
+                    $dataRouter.reload(true);
+                } else {
+                    // Change URL
+                    $dataApi.url(url);
+                }
+            },
+
+            /**
+             * @ngdoc method
+             * @propertyOf mdvorakDataRouter.$dataRouter
+             * @name reload
+
+             * @description
              * Reloads data at current location. If content type remains same, only data are refreshed,
              * and $routeUpdate event is invoked on $dataResponse object. If content type differs,
              * full view refresh is performed (that is, controller is destroyed and recreated).
