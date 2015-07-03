@@ -83,6 +83,22 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         return response.headers('Content-Type');
     };
 
+    provider.responseExtensions = {
+        dataAs: function dataAs(scope, name, listener) {
+            var _this = this;
+            scope[name] = _this.data;
+
+            this.$on('$routeUpdate', function () {
+                // Update data
+                scope[name] = _this.data;
+
+                if (angular.isFunction(listener)) {
+                    listener(_this.data);
+                }
+            }, scope);
+        }
+    };
+
     /**
      * @ngdoc service
      * @name mdvorakDataRouter.$dataRouterLoader
@@ -367,24 +383,8 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
         };
 
         // Converter function
-        var responseExtensions = {
-            dataAs: function dataAs(scope, name, listener) {
-                var _this = this;
-                scope[name] = _this.data;
-
-                this.$on('$routeUpdate', function () {
-                    // Update data
-                    scope[name] = _this.data;
-
-                    if (angular.isFunction(listener)) {
-                        listener(_this.data);
-                    }
-                }, scope);
-            }
-        };
-
         function asResponse(response) {
-            return angular.extend($$dataRouterEventSupport.$new(), response, responseExtensions);
+            return angular.extend($$dataRouterEventSupport.$new(), response, provider.responseExtensions);
         }
 
         // Return
