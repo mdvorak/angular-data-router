@@ -1135,8 +1135,12 @@
      * @param {expression} apiHref Any URL. Behavior changes whether this URL is inside API base or not.
      * @param {template=} type Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
      *                         browser performs full redirect.
+     *                         It is recommended to use `api-type` attribute, which is expression (same as `api-href` itself).
      * @param {template=} target Optional. Target of the link according to HTML specification. If it is specified, full redirect
      *                           is always performed. To force full reload instead of navigation, set this to `_self`.
+     * @param {expression} apiType Wrapper around `type` attribute. It is here to avoid confusion, when `api-href` is expression
+     *                             and `type` is template.
+     *                             It is recommend way of setting view type.
      *
      * @description
      * Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.
@@ -1162,9 +1166,9 @@
      *     <!-- href: api/some/parent type: application/x.example -->
      *     <a api-href="links.parent.href" type="{{links.parent.type}}">Back</a>
      *     <!-- href: external/url type: application/x.example -->
-     *     <a api-href="links.external.href" type="{{links.external.type}}">Website</a>
-     *     <!-- href: api/my/photo type: image/png -->
-     *     <a api-href="links.image.href" type="{{links.image.type}}">Image</a>
+     *     <a api-href="links.external.href" api-type="links.external.type">Website</a>
+     *     <!-- href: api/my/photo type: application/image.png -->
+     *     <a api-href="links.image.href" api-type="links.image.type">Image</a>
      *     <!-- href: external/url type: application/x.example -->
      *     <a api-href="links.external.href" target="_blank">New Window</a>
      * </div>
@@ -1183,7 +1187,7 @@
      *         $scope.links = {
      *             parent: {href: "api/some/parent", type: "application/x.example"},
      *             external: {href: "external/url", type: "application/x.example"},
-     *             image: {href: "api/my/photo", type: "image/png"}
+     *             image: {href: "api/my/photo", type: "application/image.png"}
      *         };
      *     });
      * </file>
@@ -1260,6 +1264,12 @@
                                 }
                             });
                         }
+                    });
+                }
+
+                if (attrs.apiType) {
+                    scope.$watch(attrs.apiType, function(type) {
+                        attrs.$set('type', type);
                     });
                 }
             }
