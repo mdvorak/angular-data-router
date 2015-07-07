@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.3.2
+ * @license angular-data-router v0.3.3
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
