@@ -342,8 +342,9 @@ module.provider('$dataRouter', function $dataRouterProvider($$dataRouterMatchMap
                         } else {
                             $log.debug("Setting view to " + response.mediaType);
 
-                            // Add reload implementation
+                            // Add reload and navigate implementations
                             response.reload = $dataRouter.reload;
+                            response.navigate = $dataRouter.navigate;
 
                             // Set current
                             $dataRouter.current = response;
