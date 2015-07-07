@@ -126,28 +126,28 @@ module.directive('apiHref', function apiHrefFactory($dataApi, $dataRouterRegistr
             var offWatch = scope.$watch(attrs.apiHref, updateHref);
             element.on('$destroy', offWatch); // We don't have own scope, so don't rely on its destruction
 
-            // Don't watch for type if it is not defined at all
-            if ('type' in attrs) {
-                attrs.$observe('type', updateHref);
-
-                element.on('click', function clickHandler() {
-                    // Invoke apply only if needed
-                    if (attrs.type && attrs.href) {
-                        scope.$applyAsync(function applyCallback() {
-                            // Race condition
-                            if (attrs.type) {
-                                $dataRouterLoader.prefetchTemplate(attrs.type);
-                            }
-                        });
-                    }
-                });
-            }
-
+            // Expression version of type attribute
             if (attrs.apiType) {
                 scope.$watch(attrs.apiType, function (type) {
                     attrs.$set('type', type);
                 });
             }
+
+            // Watch for type attribute
+            attrs.$observe('type', updateHref);
+
+            // Click handler that prefetches templates
+            element.on('click', function clickHandler() {
+                // Invoke apply only if needed
+                if (attrs.type && attrs.href) {
+                    scope.$applyAsync(function applyCallback() {
+                        // Race condition
+                        if (attrs.type) {
+                            $dataRouterLoader.prefetchTemplate(attrs.type);
+                        }
+                    });
+                }
+            });
         }
     };
 });
