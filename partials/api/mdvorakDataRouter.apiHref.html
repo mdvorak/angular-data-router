@@ -13,10 +13,11 @@ It supports HTML 5 mode as well hasbang mode.</p>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;A api-href="{expression}"
      [type="{template}"]
-     [target="{template}"]&gt;
+     [target="{template}"]
+     api-type="{expression}"&gt;
    ...
 &lt;/A&gt;</pre>
-as class<pre class="prettyprint linenums">&lt;A class="api-href: {expression}; [type: {template};] [target: {template};]"&gt;
+as class<pre class="prettyprint linenums">&lt;A class="api-href: {expression}; [type: {template};] [target: {template};] api-type: {expression};"&gt;
    ...
 &lt;/A&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
@@ -25,9 +26,13 @@ as class<pre class="prettyprint linenums">&lt;A class="api-href: {expression}; [
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>apiHref</td><td><a href="" class="label type-hint type-hint-expression">expression</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Any URL. Behavior changes whether this URL is inside API base or not.</p>
 </div></td></tr><tr><td>type <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
-browser performs full redirect.</p>
+browser performs full redirect.
+It is recommended to use <code>api-type</code> attribute, which is expression (same as <code>api-href</code> itself).</p>
 </div></td></tr><tr><td>target <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-template">template</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Optional. Target of the link according to HTML specification. If it is specified, full redirect
 is always performed. To force full reload instead of navigation, set this to <code>_self</code>.</p>
+</div></td></tr><tr><td>apiType</td><td><a href="" class="label type-hint type-hint-expression">expression</a></td><td><div class="mdvorakdatarouter-apihref-page"><p>Wrapper around <code>type</code> attribute. It is here to avoid confusion, when <code>api-href</code> is expression
+and <code>type</code> is template.
+It is recommend way of setting view type.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="mdvorakdatarouter-apihref-page"><p>This example shows behavior of the directive in different scenarios.</p>
@@ -47,9 +52,9 @@ If the type would not be set, data would be downloaded and error page would be s
     <!-- href: api/some/parent type: application/x.example -->
     <a api-href="links.parent.href" type="{{links.parent.type}}">Back</a>
     <!-- href: external/url type: application/x.example -->
-    <a api-href="links.external.href" type="{{links.external.type}}">Website</a>
-    <!-- href: api/my/photo type: image/png -->
-    <a api-href="links.image.href" type="{{links.image.type}}">Image</a>
+    <a api-href="links.external.href" api-type="links.external.type">Website</a>
+    <!-- href: api/my/photo type: application/image.png -->
+    <a api-href="links.image.href" api-type="links.image.type">Image</a>
     <!-- href: external/url type: application/x.example -->
     <a api-href="links.external.href" target="_blank">New Window</a>
 </div>
@@ -71,7 +76,7 @@ angular.module('sample', ['mdvorakDataRouter'])
         $scope.links = {
             parent: {href: "api/some/parent", type: "application/x.example"},
             external: {href: "external/url", type: "application/x.example"},
-            image: {href: "api/my/photo", type: "image/png"}
+            image: {href: "api/my/photo", type: "application/image.png"}
         };
     });
 </script>

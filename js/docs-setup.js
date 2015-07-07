@@ -91,7 +91,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Centerpiece of the data router. It tracks the $location and loads the main view data.",
-      "keywords": "$dataapi $dataresponse $datarouter $datarouterregistry $location api cases centerpiece controller current currently data easier instance life loaded loads locals main mdvorakdataapi mdvorakdatarouter note object property reference registry response router service signature tracks view work"
+      "keywords": "$dataapi $dataresponse $datarouter $datarouterregistry $location $routeupdate allows api applicable cases centerpiece change changing configured content controller current currently data default destroyed details differs easier error event false forcereload full instance invoked life listen loaded loads locals location logged main mdvorakdataapi mdvorakdatarouter method namespace navigate navigates needed note notified object parent performed performs property recreated refected reference refresh refreshed registry reload reloaded reloads remains resource response router service sets signature tracks true type url view viewed work"
     },
     {
       "section": "api",
@@ -144,7 +144,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "mdvorakDataRouter",
       "shortDescription": "Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.",
-      "keywords": "$datarouterprovider $scope _blank _self ac angular api api-href apihref apiprefix application attribute base behave behavior browser case changes code config configured controller data detail directive download downloaded error example external force full function hasbang href html html5mode ignored image inside js link links mapped maps mdvorakdatarouter media mode module navigates navigation ng-controller nghref opens optional parent performed performs points prefetched redirect reload replacement resource sample samplectrl scenarios screen server set sets specification supported supports target template templateurl translates triggers type url users view window"
+      "keywords": "$datarouterprovider $scope _blank _self ac angular api api-href api-type apihref apiprefix apitype application attribute avoid base behave behavior browser case changes code config configured confusion controller data detail directive download downloaded error example expression external force full function hasbang href html html5mode ignored image inside js link links mapped maps mdvorakdatarouter media mode module navigates navigation ng-controller nghref opens optional parent performed performs png points prefetched recommend recommended redirect reload replacement resource sample samplectrl scenarios screen server set sets setting specification supported supports target template templateurl translates triggers type url users view window wrapper"
     },
     {
       "section": "api",

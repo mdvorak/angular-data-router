@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.3.0
+ * @license angular-data-router v0.3.1
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -260,6 +260,22 @@
          */
         provider.extractType = function extractTypeFromContentType(response) {
             return response.headers('Content-Type');
+        };
+
+        provider.responseExtensions = {
+            dataAs: function dataAs(scope, name, listener) {
+                var _this = this;
+                scope[name] = _this.data;
+
+                this.$on('$routeUpdate', function() {
+                    // Update data
+                    scope[name] = _this.data;
+
+                    if (angular.isFunction(listener)) {
+                        listener(_this.data);
+                    }
+                }, scope);
+            }
         };
 
         /**
@@ -550,24 +566,8 @@
             };
 
             // Converter function
-            var responseExtensions = {
-                dataAs: function dataAs(scope, name, listener) {
-                    var _this = this;
-                    scope[name] = _this.data;
-
-                    this.$on('$routeUpdate', function() {
-                        // Update data
-                        scope[name] = _this.data;
-
-                        if (angular.isFunction(listener)) {
-                            listener(_this.data);
-                        }
-                    }, scope);
-                }
-            };
-
             function asResponse(response) {
-                return angular.extend($$dataRouterEventSupport.$new(), response, responseExtensions);
+                return angular.extend($$dataRouterEventSupport.$new(), response, provider.responseExtensions);
             }
 
             // Return
@@ -879,6 +879,58 @@
                 current: undefined,
 
                 /**
+                 * @ngdoc method
+                 * @propertyOf mdvorakDataRouter.$dataRouter
+                 * @name url
+
+                 * @description
+                 * Gets or sets current view resource URL using {@link mdvorakDataApi.$dataApi.url $dataApi.url()}.
+                 *
+                 * If the `url` is not in the configured API namespace, error is logged and nothing happens.
+                 *
+                 * @param {String=} url New resource URL. Performs location change.
+                 * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change. Default is `false`.
+                 * @returns {String} Resource URL that is being currently viewed.
+                 */
+                url: function urlFn(url, reload) {
+                    // Getter
+                    if (arguments.length < 1) {
+                        return $dataApi.url();
+                    }
+
+                    // Setter
+                    if (reload && $dataApi.url() == url) {
+                        // Same URL, reload instead
+                        $dataRouter.reload(true);
+                    } else {
+                        // Change URL
+                        $dataApi.url(url);
+                    }
+
+                    return url;
+                },
+
+                /**
+                 * @ngdoc method
+                 * @propertyOf mdvorakDataRouter.$dataRouter
+                 * @name navigate
+
+                 * @description
+                 * Navigates to resource URL. See {@link mdvorakDataRouter.$dataRouter.url $dataRouter.url()} for more details.
+                 *
+                 * @param {String=} url New resource URL.
+                 * @param {Boolean=} reload If `true`, data are reloaded even if `url` did not change. Default is `true`.
+                 */
+                navigate: function navigate(url, reload) {
+                    $dataRouter.url(url, reload !== false);
+                },
+
+                /**
+                 * @ngdoc method
+                 * @propertyOf mdvorakDataRouter.$dataRouter
+                 * @name reload
+
+                 * @description
                  * Reloads data at current location. If content type remains same, only data are refreshed,
                  * and $routeUpdate event is invoked on $dataResponse object. If content type differs,
                  * full view refresh is performed (that is, controller is destroyed and recreated).
@@ -1135,8 +1187,12 @@
      * @param {expression} apiHref Any URL. Behavior changes whether this URL is inside API base or not.
      * @param {template=} type Optional. Media type of target resource. If the type is supported, navigation is performed, if not,
      *                         browser performs full redirect.
+     *                         It is recommended to use `api-type` attribute, which is expression (same as `api-href` itself).
      * @param {template=} target Optional. Target of the link according to HTML specification. If it is specified, full redirect
      *                           is always performed. To force full reload instead of navigation, set this to `_self`.
+     * @param {expression} apiType Wrapper around `type` attribute. It is here to avoid confusion, when `api-href` is expression
+     *                             and `type` is template.
+     *                             It is recommend way of setting view type.
      *
      * @description
      * Translates API URL into view URL and sets it as href. It is replacement for ngHref directive.
@@ -1162,9 +1218,9 @@
      *     <!-- href: api/some/parent type: application/x.example -->
      *     <a api-href="links.parent.href" type="{{links.parent.type}}">Back</a>
      *     <!-- href: external/url type: application/x.example -->
-     *     <a api-href="links.external.href" type="{{links.external.type}}">Website</a>
-     *     <!-- href: api/my/photo type: image/png -->
-     *     <a api-href="links.image.href" type="{{links.image.type}}">Image</a>
+     *     <a api-href="links.external.href" api-type="links.external.type">Website</a>
+     *     <!-- href: api/my/photo type: application/image.png -->
+     *     <a api-href="links.image.href" api-type="links.image.type">Image</a>
      *     <!-- href: external/url type: application/x.example -->
      *     <a api-href="links.external.href" target="_blank">New Window</a>
      * </div>
@@ -1183,7 +1239,7 @@
      *         $scope.links = {
      *             parent: {href: "api/some/parent", type: "application/x.example"},
      *             external: {href: "external/url", type: "application/x.example"},
-     *             image: {href: "api/my/photo", type: "image/png"}
+     *             image: {href: "api/my/photo", type: "application/image.png"}
      *         };
      *     });
      * </file>
@@ -1262,6 +1318,12 @@
                         }
                     });
                 }
+
+                if (attrs.apiType) {
+                    scope.$watch(attrs.apiType, function(type) {
+                        attrs.$set('type', type);
+                    });
+                }
             }
         };
     }]);
@@ -1308,13 +1370,26 @@
                 if (attr.hasOwnProperty('src')) {
                     // Custom context
                     context = {
-                        reload: reload
+                        reload: reloadImpl,
+                        navigate: function navigateLocal(url, reload) {
+                            if (currentHref == url) {
+                                // true is default
+                                if (reload !== false) {
+                                    // Reload
+                                    reloadImpl(true);
+                                }
+                            } else {
+                                // Navigate, but don't change src attribute itself
+                                currentHref = url;
+                                reloadImpl(true);
+                            }
+                        }
                     };
 
                     // Custom view - watch for href changes
                     scope.$watch(attr.src, function hrefWatch(href) {
                         currentHref = href;
-                        reload(true);
+                        reloadImpl(true);
                     });
                 } else {
                     // Main view - use $dataRouter as context
@@ -1390,7 +1465,7 @@
                  *
                  * @param forceReload {boolean=} Specifies whether view needs to be refreshed or just $routeUpdate event will be fired.
                  */
-                function reload(forceReload) {
+                function reloadImpl(forceReload) {
                     var next = attr.next = {};
 
                     if (currentHref) {
@@ -1418,9 +1493,12 @@
                                 context.current = response;
                                 attr.next = undefined;
 
-                                // Add reload implementation
+                                // Add reload and navigate implementations
                                 if (response) {
-                                    response.reload = reload;
+                                    response.reload = reloadImpl;
+                                    response.navigate = function navigateDelegate() {
+                                        context.navigate.apply(context, arguments);
+                                    };
                                 }
 
                                 // Show view
