@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.3.1
+ * @license angular-data-router v0.3.2
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -977,8 +977,9 @@
                             } else {
                                 $log.debug("Setting view to " + response.mediaType);
 
-                                // Add reload implementation
+                                // Add reload and navigate implementations
                                 response.reload = $dataRouter.reload;
+                                response.navigate = $dataRouter.navigate;
 
                                 // Set current
                                 $dataRouter.current = response;
