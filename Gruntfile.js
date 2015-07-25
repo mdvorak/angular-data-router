@@ -11,13 +11,17 @@ module.exports = function (grunt) {
             build: 'build',
             dist: 'dist',
             docs: 'docs',
-            bower: 'bower_components'
+            bower: 'bower_components',
+
+            angular: require('./bower_components/angular/.bower.json').version,
+            module: 'dataRouterModule',
+            year: new Date().getUTCFullYear()
         },
         clean: {
             build: ['<%=cfg.build%>'],
             dist: ['<%=cfg.dist%>', '<%=cfg.docs%>'],
             docs: ['<%=cfg.docs%>'],
-            tmp: ['<%=cfg.build%>/router.js', '<%=cfg.build%>/api.js']
+            tmp: ['<%=cfg.build%>/out.js', '<%=cfg.build%>/api.js']
         },
 
         // Validate
@@ -62,7 +66,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    src: ['<%=cfg.build%>/dist/angular-data-router.js']
+                    src: ['<%=cfg.build%>/dist/<%=pkg.name%>.js']
                 }
             },
             demo: {
@@ -105,13 +109,13 @@ module.exports = function (grunt) {
         // Compile
         concat: {
             options: {
-                banner: '/**\n * @license angular-data-router v<%=pkg.version%>\n * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router\n * License: MIT\n */'
+                banner: '/**\n * @license <%=pkg.name%> v<%=pkg.version%>\n * (c) <%=cfg.year%> <%=pkg.author%> <%=pkg.homepage%>\n * License: <%=pkg.license%>\n */'
             },
-            router: {
+            module: {
                 options: {
                     get banner() {
                         var module = grunt.file.read('src/module.js');
-                        return '<%=concat.options.banner%>\n(function dataRouterModule(angular) {\n' + module + '\n';
+                        return '<%=concat.options.banner%>\n(function <%=cfg.module%>(angular) {\n' + module + '\n';
                     },
                     footer: '\n})(angular);',
                     process: function (src) {
@@ -119,7 +123,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: [{
-                    dest: '<%=cfg.build%>/router.js',
+                    dest: '<%=cfg.build%>/out.js',
                     src: [
                         '<%=cfg.src%>/dataRouterRegistry.js',
                         '<%=cfg.src%>/dataRouterLoader.js',
@@ -142,7 +146,10 @@ module.exports = function (grunt) {
                 },
                 files: [{
                     dest: '<%=cfg.build%>/api.js',
-                    src: ['<%=cfg.src%>/dataApi.js', '!<%=cfg.src%>/**/*.spec.js']
+                    src: [
+                        '<%=cfg.src%>/dataApi.js',
+                        '!<%=cfg.src%>/**/*.spec.js'
+                    ]
                 }]
             }
         },
@@ -151,8 +158,8 @@ module.exports = function (grunt) {
             build: {
                 files: [
                     {
-                        '<%=cfg.build%>/dist/angular-data-router.js': '<%=cfg.build%>/router.js',
-                        '<%=cfg.build%>/dist/components/data-api.js': '<%=cfg.build%>/api.js'
+                        '<%=cfg.build%>/dist/<%=pkg.name%>.js': '<%=cfg.build%>/out.js',
+                        '<%=cfg.build%>/dist/data-api.js': '<%=cfg.build%>/api.js'
                     }
                 ]
             }
@@ -164,8 +171,7 @@ module.exports = function (grunt) {
             },
             build: {
                 src: [
-                    '<%=cfg.build%>/dist/angular-data-router.js',
-                    '<%=cfg.build%>/dist/components/*.js'
+                    '<%=cfg.build%>/dist/**/*.js'
                 ]
             }
         },
@@ -173,7 +179,7 @@ module.exports = function (grunt) {
         uglify: {
             build: {
                 options: {
-                    banner: '/*\n angular-data-router v<%=pkg.version%>\n (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router\n License: MIT\n*/',
+                    banner: '/*\n <%=pkg.name%> v<%=pkg.version%>\n (c) <%=cfg.year%> <%=pkg.author%> <%=pkg.homepage%>\n License: <%=pkg.license%>\n*/',
                     sourceMap: true
                 },
                 files: [{
@@ -195,7 +201,7 @@ module.exports = function (grunt) {
                     '<%=cfg.bower%>/angular-mocks/angular-mocks.js',
 
                     // Application files
-                    '<%=cfg.build%>/dist/angular-data-router.js',
+                    '<%=cfg.build%>/dist/<%=pkg.name%>.js',
 
                     // Tests
                     '<%=cfg.src%>/**/*.spec.js'
@@ -249,17 +255,17 @@ module.exports = function (grunt) {
                 dest: 'docs',
                 html5Mode: false,
                 scripts: [
-                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js',
-                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular-animate.min.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/<%=cfg.angular=>/angular.min.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/<%=cfg.angular=>/angular-animate.min.js',
                     '<%=cfg.build%>/dist/angular-data-router.js'
                 ]
             },
             api: {
                 src: [
-                    '<%=cfg.build%>/dist/angular-data-router.js',
+                    '<%=cfg.build%>/dist/<%=pkg.name%>.js',
                     '<%=cfg.src%>/docs/**/*.js'
                 ],
-                title: 'Angular Data Router Documentation'
+                title: '<%=pkg.name%> Documentation'
             }
         },
         'gh-pages': {
@@ -291,7 +297,7 @@ module.exports = function (grunt) {
     });
 
     // Private tasks
-    grunt.registerTask('javascript', ['jshint:src', 'concat:router', 'concat:api', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build', 'clean:tmp']);
+    grunt.registerTask('javascript', ['jshint:src', 'concat:module', 'concat:api', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build', 'clean:tmp']);
 
     // Public tasks
     grunt.registerTask('default', ['jshint:grunt', 'clean:build', 'javascript', 'jshint:test', 'karma:default']);
