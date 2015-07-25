@@ -260,12 +260,12 @@ module.exports = function (grunt) {
                     '<%=cfg.build%>/dist/angular-data-router.js'
                 ]
             },
-            api: {
+            build: {
                 src: [
                     '<%=cfg.build%>/dist/<%=pkg.name%>.js',
                     '<%=cfg.src%>/docs/**/*.js'
                 ],
-                title: '<%=pkg.name%> Documentation'
+                title: '<%=pkg.description%> Documentation'
             }
         },
         'gh-pages': {

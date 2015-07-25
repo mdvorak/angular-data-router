@@ -3,8 +3,9 @@
   "version": "0.3.3",
   "homepage": "https://github.com/mdvorak/angular-data-router",
   "author": "Michal Dvorak",
-  "private": true,
   "license": "MIT",
+  "description": "Angular Data Router",
+  "private": true,
   "devDependencies": {
     "bower": "1.4.1",
     "grunt": "0.4.5",
