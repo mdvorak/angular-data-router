@@ -257,7 +257,7 @@ module.exports = function (grunt) {
                 scripts: [
                     'https://ajax.googleapis.com/ajax/libs/angularjs/<%=cfg.angular=>/angular.min.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/<%=cfg.angular=>/angular-animate.min.js',
-                    '<%=cfg.build%>/dist/angular-data-router.js'
+                    '<%=cfg.build%>/dist/<%=pkg.name%>.js'
                 ]
             },
             build: {
