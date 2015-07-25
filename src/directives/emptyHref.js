@@ -3,7 +3,6 @@
 /**
  * @ngdoc directive
  * @name mdvorakDataRouter.emptyHref
- * @kind directive
  * @restrict AC
  * @priority 0
  * @element A
