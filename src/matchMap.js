@@ -15,13 +15,15 @@ function DataRouterMatchMap() {
     this.$exact = {};
     this.$matchers = [];
 
+    var wildcardPattern = /[*?]/;
+
     this.addMatcher = function addMatcher(pattern, data) {
         if (angular.isFunction(pattern)) {
             this.$matchers.push({
                 m: pattern,
                 d: data
             });
-        } else if (pattern.indexOf('*') > -1) {
+        } else if (wildcardPattern.test(pattern)) {
             // Register matcher
             this.$matchers.push({
                 m: wildcardMatcherFactory(pattern),
@@ -57,8 +59,9 @@ function DataRouterMatchMap() {
     }
 
     function wildcardToRegex(s) {
-        return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1')
+        return s.replace(/([-()\[\]{}+.$\^|,:#<!\\])/g, '\\$1')
             .replace(/\x08/g, '\\x08')
-            .replace(/[*]+/, '.*');
+            .replace(/[*]+/g, '.*')
+            .replace(/[?]/g, '.');
     }
 }
