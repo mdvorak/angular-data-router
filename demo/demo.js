@@ -41,7 +41,11 @@
                 controllerAs: 'textCtrl'
             });
         })
-        .controller('textCtrl', function ($dataResponse) {
+        .controller('textCtrl', function ($scope, $dataResponse) {
+            if ($scope.text !== $dataResponse.data) {
+                throw new Error("Bug in dataAs");
+            }
+
             this.reload = function reload(force) {
                 $dataResponse.reload(force);
             };

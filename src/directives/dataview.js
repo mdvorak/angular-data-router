@@ -210,6 +210,18 @@ module.directive('dataview', function dataViewFillContentFactory($compile, $cont
             if (view) {
                 $element.data('$dataResponse', current);
 
+                if (view.dataAs) {
+                    scope[view.dataAs] = current.data;
+
+                    current.$on('$routeUpdate', function routeDataUpdated(e, response) {
+                        scope[view.dataAs] = response.data;
+                    }, scope);
+                }
+
+                if (view.responseAs) {
+                    scope[view.responseAs] = current;
+                }
+
                 if (view.controller) {
                     locals.$scope = scope;
                     locals.$viewType = scope.$viewType;
@@ -222,18 +234,6 @@ module.directive('dataview', function dataViewFillContentFactory($compile, $cont
 
                     $element.data('$ngControllerController', controller);
                     $element.children().data('$ngControllerController', controller);
-                }
-
-                if (view.dataAs) {
-                    scope[view.dataAs] = current.data;
-
-                    current.$on('$routeUpdate', function routeDataUpdated(e, response) {
-                        scope[view.dataAs] = response.data;
-                    }, scope);
-                }
-
-                if (view.responseAs) {
-                    scope[view.responseAs] = current;
                 }
             }
 
