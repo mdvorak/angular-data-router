@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.3.3
+ * @license angular-data-router v0.3.4
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -40,6 +40,8 @@
          * This method is also available on {@link mdvorakDataApi.$dataApi#methods_normalizeUrl $dataApi} object.
          *
          * @param {String} href URL to be normalized. Can be absolute, server-relative or context relative.
+         *                      <p>If the href is empty string, base href is returned.</p>
+         *                      <p>Otherwise, when it is `null` or `undefined`, `null` is returned.</p>
          * @returns {String} Normalized URL, including full hostname.
          */
         provider.normalizeUrl = function normalizeUrl(href) {
@@ -135,6 +137,7 @@
          * This method is also available on {@link mdvorakDataApi.$dataApi#methods_mapViewToApi $dataApi} object.
          *
          * @param {String} url Resource url. It must be inside API namespace. If it is not, `null` is returned.
+         *                     <p>If the url equals to api prefix, empty string is returned.</p>
          * @returns {String} View path.
          */
         provider.mapApiToView = function mapApiToView(url) {
@@ -160,7 +163,7 @@
         this.$get = ["$log", "$location", function $dataApiFactory($log, $location) {
             $log.debug("Using API prefix " + provider.$apiPrefix);
 
-            var $dataApi = {
+            return {
                 /**
                  * @ngdoc method
                  * @methodOf mdvorakDataApi.$dataApi
@@ -205,6 +208,7 @@
                  * Counterpart to {@link mdvorakDataApi.$dataApi#methods_mapViewToApi mapViewToApi}.
                  *
                  * @param {String} url Resource url. It must be inside API namespace. If it is not, `null` is returned.
+                 *                     <p>If the url equals to api prefix, empty string is returned.</p>
                  * @returns {String} View path.
                  */
                 mapApiToView: function mapApiToView(url) {
@@ -219,7 +223,8 @@
                  * @description
                  * Gets or sets current view resource URL (it internally modifies `$location.url()`).
                  *
-                 * If the `url` is not in the configured API namespace, error is logged and nothing happens.
+                 * * If the `url` is not in the configured API namespace, error is logged and nothing happens.
+                 * * If the `url` equals to api prefix, it is performed redirect to page base href.
                  *
                  * @param {String=} url New resource URL. Performs location change.
                  * @returns {String} Resource URL that is being currently viewed.
@@ -254,14 +259,14 @@
                  * Note that in HTML5 mode, there should be always specified base tag ending with `/` to get expected behavior.
                  *
                  * @param {String} href URL to be normalized. Can be absolute, server-relative or context relative.
+                 *                      <p>If the href is empty string, base href is returned.</p>
+                 *                      <p>Otherwise, when it is `null` or `undefined`, `null` is returned.</p>
                  * @returns {String} Normalized URL, including full hostname.
                  */
                 normalizeUrl: function normalizeUrl(href) {
                     return provider.normalizeUrl(href);
                 }
             };
-
-            return $dataApi;
         }];
     });
 
