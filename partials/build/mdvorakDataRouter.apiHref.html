@@ -9,6 +9,26 @@ It supports HTML 5 mode as well hasbang mode.</p>
 <p>Following code sets href to <code>#/users/12347</code> or <code>users/12347</code> for html5Mode respectively.</p>
 <pre><code class="lang-html">    &lt;a api-href=&quot;&#39;api/users/12347;&quot;&gt;User Detail&lt;/a&gt;
 </code></pre>
+<p>When <code>apiHref</code> resolves to the configured api prefix, it redirects to the base href of the application.
+<h4 id="description_source">Source</h4>
+<div source-edit="sample" source-edit-deps="angular.js controller.js" source-edit-html="index.html" source-edit-css="" source-edit-js="controller.js" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html" ng-html-wrap-loaded="sample angular.js controller.js"></pre>
+<script type="text/ng-template" id="index.html">
+    <a api-href="'api/'">Api Prefix</a>
+</script>
+</div>
+<div class="tab-pane" title="controller.js">
+<pre class="prettyprint linenums" ng-set-text="controller.js"></pre>
+<script type="text/ng-template" id="controller.js">
+angular.module('sample', ['mdvorakDataApi'])
+    .config(function ($dataApiProvider) {
+        $dataApiProvider.prefix('api/');
+    });
+</script>
+</div>
+</div><h4 id="description_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="sample" ng-set-html="index.html" ng-eval-javascript="controller.js"></div>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;A api-href="{expression}"
@@ -44,10 +64,10 @@ prefetched. This link would behave same even without type attribute, but templat
 If the type would not be set, data would be downloaded and error page would be shown afterwards.</li>
 <li><strong>New Window</strong> opens the link in new window, regardless where it points, since it has target specified.
 <h4 id="example_source">Source</h4>
-<div source-edit="sample" source-edit-deps="angular.js controller.js" source-edit-html="index.html" source-edit-css="" source-edit-js="controller.js" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="sample" source-edit-deps="angular.js controller.js" source-edit-html="index.html-0" source-edit-css="" source-edit-js="controller.js" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html" ng-html-wrap-loaded="sample angular.js controller.js"></pre>
-<script type="text/ng-template" id="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-0" ng-html-wrap-loaded="sample angular.js controller.js"></pre>
+<script type="text/ng-template" id="index.html-0">
 <div ng-controller="sampleCtrl">
     <!-- href: api/some/parent type: application/x.example -->
     <a api-href="links.parent.href" type="{{links.parent.type}}">Back</a>
@@ -82,7 +102,7 @@ angular.module('sample', ['mdvorakDataRouter'])
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="sample" ng-set-html="index.html" ng-eval-javascript="controller.js"></div></li>
+<div class="well doc-example-live animate-container" ng-embed-app="sample" ng-set-html="index.html-0" ng-eval-javascript="controller.js"></div></li>
 </ul>
 </div></div>
 </div>

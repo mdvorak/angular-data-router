@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.3.1
+ * @license angular-data-router v0.3.3
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -81,8 +81,11 @@
          * Configures view for error page. Error page is displayed when resource or view template cannot be loaded or
          * any of the resolvables fails.
          *
-         * @param {Number=} status HTTP response status code this error view is for. This is optional argument, you should
-         * always have defined generic error view as well.
+         * @param {Number|String=} status HTTP response status code this error view is for.
+         *                                It can be both number or string representing numeric value. In string, `'?'` char
+         *                                can be used as substitution for any number, allowing to match multiple codes with
+         *                                one definition. `'4??'` will match any 4xx error code.
+         *                                This is optional argument, you should always have defined generic error view as well.
          * @param {Object} config Configuration object, as in
          * {@link mdvorakDataRouter.$dataRouterRegistryProvider#methods_when when(config)}.
          */
@@ -91,7 +94,7 @@
 
             if (angular.isObject(status)) {
                 config = status;
-            } else if (angular.isNumber(status)) {
+            } else {
                 name = '$error_' + status;
             }
 
@@ -977,8 +980,9 @@
                             } else {
                                 $log.debug("Setting view to " + response.mediaType);
 
-                                // Add reload implementation
+                                // Add reload and navigate implementations
                                 response.reload = $dataRouter.reload;
+                                response.navigate = $dataRouter.navigate;
 
                                 // Set current
                                 $dataRouter.current = response;
@@ -1038,13 +1042,15 @@
         this.$exact = {};
         this.$matchers = [];
 
+        var wildcardPattern = /[*?]/;
+
         this.addMatcher = function addMatcher(pattern, data) {
             if (angular.isFunction(pattern)) {
                 this.$matchers.push({
                     m: pattern,
                     d: data
                 });
-            } else if (pattern.indexOf('*') > -1) {
+            } else if (wildcardPattern.test(pattern)) {
                 // Register matcher
                 this.$matchers.push({
                     m: wildcardMatcherFactory(pattern),
@@ -1081,9 +1087,10 @@
         }
 
         function wildcardToRegex(s) {
-            return s.replace(/([-()\[\]{}+?.$\^|,:#<!\\])/g, '\\$1')
+            return s.replace(/([-()\[\]{}+.$\^|,:#<!\\])/g, '\\$1')
                 .replace(/\x08/g, '\\x08')
-                .replace(/[*]+/, '.*');
+                .replace(/[*]+/g, '.*')
+                .replace(/[?]/g, '.');
         }
     }
 
@@ -1179,7 +1186,6 @@
     /**
      * @ngdoc directive
      * @name mdvorakDataRouter.apiHref
-     * @kind directive
      * @restrict AC
      * @priority 90
      * @element A
@@ -1202,6 +1208,19 @@
      * ```html
      *     <a api-href="'api/users/12347;">User Detail</a>
      * ```
+     *
+     * When `apiHref` resolves to the configured api prefix, it redirects to the base href of the application.
+     * <example module="sample">
+     * <file name="index.html">
+     *     <a api-href="'api/'">Api Prefix</a>
+     * </file>
+     * <file name="controller.js">
+     * angular.module('sample', ['mdvorakDataApi'])
+     *     .config(function ($dataApiProvider) {
+     *         $dataApiProvider.prefix('api/');
+     *     });
+     * </file>
+     * </example>
      *
      * @example
      * This example shows behavior of the directive in different scenarios.
@@ -1302,28 +1321,28 @@
                 var offWatch = scope.$watch(attrs.apiHref, updateHref);
                 element.on('$destroy', offWatch); // We don't have own scope, so don't rely on its destruction
 
-                // Don't watch for type if it is not defined at all
-                if ('type' in attrs) {
-                    attrs.$observe('type', updateHref);
-
-                    element.on('click', function clickHandler() {
-                        // Invoke apply only if needed
-                        if (attrs.type && attrs.href) {
-                            scope.$applyAsync(function applyCallback() {
-                                // Race condition
-                                if (attrs.type) {
-                                    $dataRouterLoader.prefetchTemplate(attrs.type);
-                                }
-                            });
-                        }
-                    });
-                }
-
+                // Expression version of type attribute
                 if (attrs.apiType) {
                     scope.$watch(attrs.apiType, function(type) {
                         attrs.$set('type', type);
                     });
                 }
+
+                // Watch for type attribute
+                attrs.$observe('type', updateHref);
+
+                // Click handler that prefetches templates
+                element.on('click', function clickHandler() {
+                    // Invoke apply only if needed
+                    if (attrs.type && attrs.href) {
+                        scope.$applyAsync(function applyCallback() {
+                            // Race condition
+                            if (attrs.type) {
+                                $dataRouterLoader.prefetchTemplate(attrs.type);
+                            }
+                        });
+                    }
+                });
             }
         };
     }]);
@@ -1537,6 +1556,18 @@
                 if (view) {
                     $element.data('$dataResponse', current);
 
+                    if (view.dataAs) {
+                        scope[view.dataAs] = current.data;
+
+                        current.$on('$routeUpdate', function routeDataUpdated(e, response) {
+                            scope[view.dataAs] = response.data;
+                        }, scope);
+                    }
+
+                    if (view.responseAs) {
+                        scope[view.responseAs] = current;
+                    }
+
                     if (view.controller) {
                         locals.$scope = scope;
                         locals.$viewType = scope.$viewType;
@@ -1550,18 +1581,6 @@
                         $element.data('$ngControllerController', controller);
                         $element.children().data('$ngControllerController', controller);
                     }
-
-                    if (view.dataAs) {
-                        scope[view.dataAs] = current.data;
-
-                        current.$on('$routeUpdate', function routeDataUpdated(e, response) {
-                            scope[view.dataAs] = response.data;
-                        }, scope);
-                    }
-
-                    if (view.responseAs) {
-                        scope[view.responseAs] = current;
-                    }
                 }
 
                 link(scope);
@@ -1572,7 +1591,6 @@
     /**
      * @ngdoc directive
      * @name mdvorakDataRouter.emptyHref
-     * @kind directive
      * @restrict AC
      * @priority 0
      * @element A
@@ -1651,7 +1669,6 @@
     /**
      * @ngdoc directive
      * @name mdvorakDataRouter.entryPointHref
-     * @kind directive
      * @restrict AC
      * @priority 90
      * @element A
@@ -1710,6 +1727,8 @@
          * This method is also available on {@link mdvorakDataApi.$dataApi#methods_normalizeUrl $dataApi} object.
          *
          * @param {String} href URL to be normalized. Can be absolute, server-relative or context relative.
+         *                      <p>If the href is empty string, base href is returned.</p>
+         *                      <p>Otherwise, when it is `null` or `undefined`, `null` is returned.</p>
          * @returns {String} Normalized URL, including full hostname.
          */
         provider.normalizeUrl = function normalizeUrl(href) {
@@ -1805,6 +1824,7 @@
          * This method is also available on {@link mdvorakDataApi.$dataApi#methods_mapViewToApi $dataApi} object.
          *
          * @param {String} url Resource url. It must be inside API namespace. If it is not, `null` is returned.
+         *                     <p>If the url equals to api prefix, empty string is returned.</p>
          * @returns {String} View path.
          */
         provider.mapApiToView = function mapApiToView(url) {
@@ -1830,7 +1850,7 @@
         this.$get = ["$log", "$location", function $dataApiFactory($log, $location) {
             $log.debug("Using API prefix " + provider.$apiPrefix);
 
-            var $dataApi = {
+            return {
                 /**
                  * @ngdoc method
                  * @methodOf mdvorakDataApi.$dataApi
@@ -1875,6 +1895,7 @@
                  * Counterpart to {@link mdvorakDataApi.$dataApi#methods_mapViewToApi mapViewToApi}.
                  *
                  * @param {String} url Resource url. It must be inside API namespace. If it is not, `null` is returned.
+                 *                     <p>If the url equals to api prefix, empty string is returned.</p>
                  * @returns {String} View path.
                  */
                 mapApiToView: function mapApiToView(url) {
@@ -1889,7 +1910,8 @@
                  * @description
                  * Gets or sets current view resource URL (it internally modifies `$location.url()`).
                  *
-                 * If the `url` is not in the configured API namespace, error is logged and nothing happens.
+                 * * If the `url` is not in the configured API namespace, error is logged and nothing happens.
+                 * * If the `url` equals to api prefix, it is performed redirect to page base href.
                  *
                  * @param {String=} url New resource URL. Performs location change.
                  * @returns {String} Resource URL that is being currently viewed.
@@ -1924,14 +1946,14 @@
                  * Note that in HTML5 mode, there should be always specified base tag ending with `/` to get expected behavior.
                  *
                  * @param {String} href URL to be normalized. Can be absolute, server-relative or context relative.
+                 *                      <p>If the href is empty string, base href is returned.</p>
+                 *                      <p>Otherwise, when it is `null` or `undefined`, `null` is returned.</p>
                  * @returns {String} Normalized URL, including full hostname.
                  */
                 normalizeUrl: function normalizeUrl(href) {
                     return provider.normalizeUrl(href);
                 }
             };
-
-            return $dataApi;
         }];
     });
 
