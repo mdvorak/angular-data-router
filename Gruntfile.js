@@ -265,7 +265,7 @@ module.exports = function (grunt) {
                     '<%=cfg.build%>/dist/<%=pkg.name%>.js',
                     '<%=cfg.src%>/docs/**/*.js'
                 ],
-                title: '<%=pkg.description%> Documentation'
+                title: '<%=pkg.description%> Documentation v<%=pkg.version%>'
             }
         },
         'gh-pages': {
