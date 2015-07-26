@@ -1209,19 +1209,6 @@
      *     <a api-href="'api/users/12347;">User Detail</a>
      * ```
      *
-     * When `apiHref` resolves to the configured api prefix, it redirects to the base href of the application.
-     * <example module="sample">
-     * <file name="index.html">
-     *     <a api-href="'api/'">Api Prefix</a>
-     * </file>
-     * <file name="controller.js">
-     * angular.module('sample', ['mdvorakDataApi'])
-     *     .config(function ($dataApiProvider) {
-     *         $dataApiProvider.prefix('api/');
-     *     });
-     * </file>
-     * </example>
-     *
      * @example
      * This example shows behavior of the directive in different scenarios.
      *
@@ -1231,6 +1218,7 @@
      * * **Image** link shows image full screen or triggers download (depends on the server), since the type is not supported.
      * If the type would not be set, data would be downloaded and error page would be shown afterwards.
      * * **New Window** opens the link in new window, regardless where it points, since it has target specified.
+     *
      * <example module="sample">
      * <file name="index.html">
      * <div ng-controller="sampleCtrl">
@@ -1260,6 +1248,19 @@
      *             external: {href: "external/url", type: "application/x.example"},
      *             image: {href: "api/my/photo", type: "application/image.png"}
      *         };
+     *     });
+     * </file>
+     * </example>
+     *
+     * When `apiHref` resolves to the configured api prefix, it redirects to the base href of the application.
+     * <example module="apiPrefix">
+     * <file name="apiPrefix.html">
+     *     <a api-href="'api/'">Api Prefix</a>
+     * </file>
+     * <file name="apiPrefix.js">
+     * angular.module('apiPrefix', ['mdvorakDataRouter'])
+     *     .config(function ($dataApiProvider) {
+     *         $dataApiProvider.prefix('api/');
      *     });
      * </file>
      * </example>
@@ -1331,7 +1332,7 @@
                 // Watch for type attribute
                 attrs.$observe('type', updateHref);
 
-                // Click handler that prefetches templates
+                // Click handler that pre-fetches templates
                 element.on('click', function clickHandler() {
                     // Invoke apply only if needed
                     if (attrs.type && attrs.href) {

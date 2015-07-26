@@ -7,12 +7,12 @@
 <div class="description"><div class="locals-dataresponse-page"><p><code>$dataResponse</code> is the whole response object, which provides same attributes as <code>$http</code> plus some more.
 The instance never changes for the given view, its data might however.</p>
 <h4 id="description_data-reloading">Data reloading</h4>
-<p>You can reload the data of this view by calling <a href="#/build/locals.$dataResponse#methods_reload">reload(boolean)</a> method.
+<p>You can reload the data of this view by calling <a href="#/api/locals.$dataResponse#methods_reload">reload(boolean)</a> method.
 Router handles everything for you as if it would be first load, including errors.</p>
 <p>When you pass <code>true</code> as the argument, your view controller will always be destroyed and recreated, and view recompiled.
 If the view is main view, route change lifecycle will occur (<code>$routeChange*</code> events will be fired).</p>
 <p>When you pass <code>false</code> or <code>undefined</code>, behavior depends on the response. If request succeeds, the media type and URL
-does not change, the <a href="#/build/locals.$dataResponse#events_$routeupdate">$routeUpdate</a> event will be fired and it is up
+does not change, the <a href="#/api/locals.$dataResponse#events_$routeupdate">$routeUpdate</a> event will be fired and it is up
 to the controller to update the view (note that if you are using <code>dataAs</code> view configuration, scope variable will be
 updated automatically). If something changes (when request fails, media type of the response is <code>$error</code>), full
 reload is performed, as if you would pass <code>true</code> as the argument.</p>
@@ -52,7 +52,7 @@ reload is performed, as if you would pass <code>true</code> as the argument.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="methods_dataas">dataAs(scope, name, listener)</h3>
-<div class="dataas"><div class="dataas-page"><p>Stores the data object (and watches for <a href="#/build/locals.$dataResponse#events_$routeupdate">$routeUpdate</a> event)
+<div class="dataas"><div class="dataas-page"><p>Stores the data object (and watches for <a href="#/api/locals.$dataResponse#events_$routeupdate">$routeUpdate</a> event)
 in the scope. Performs automatic listener deregistration when the scope is destroyed.</p>
 <p>This is programatic alternative for view configuration <code>dataAs</code>.</p>
 </div><h5 id="methods_dataas_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>scope</td><td><a href="" class="label type-hint type-hint-scope">Scope</a></td><td><div class="dataas-page"><p>Scope where the data will be set to.</p>
@@ -66,7 +66,7 @@ or always recreate the view. Note that even when you don&#39;t want to recreate 
 new view is always created.</p>
 </div><h5 id="methods_reload_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>forceReload <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="reload-page"><p>If true, view is always refreshed (controller recreated). Otherwise it is recreated
 only if media type of the response changes. If the view remains same,
-<a href="#/build/locals.$dataResponse#events_$routeupdate">$routeUpdate</a> event is fired and it is up to the controller to update
+<a href="#/api/locals.$dataResponse#events_$routeupdate">$routeUpdate</a> event is fired and it is up to the controller to update
 the view.</p>
 </div></td></tr></tbody></table></div>
 </li>
@@ -79,7 +79,7 @@ the view.</p>
 </li>
 <li><h3 id="properties_data">data</h3>
 <div class="data"><div class="data-page"><p>Note that data can be null or pretty much anything. It is not modified by the router itself.</p>
-</div><h5 id="properties_data_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="data-page"><p>The loaded data. Same as <a href="#/build/locals.$data">$data</a>.</p>
+</div><h5 id="properties_data_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="data-page"><p>The loaded data. Same as <a href="#/api/locals.$data">$data</a>.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="properties_headers">headers</h3>
@@ -100,7 +100,7 @@ the view.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="properties_url">url</h3>
-<div class="url"><h5 id="properties_url_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="url-page"><p>API URL of the loaded resource. Same as <a href="#/build/locals.$dataUrl">$dataUrl</a> object.</p>
+<div class="url"><h5 id="properties_url_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="url-page"><p>API URL of the loaded resource. Same as <a href="#/api/locals.$dataUrl">$dataUrl</a> object.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="properties_view">view</h3>

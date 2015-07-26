@@ -5,13 +5,13 @@
 </h1>
 <div><h2 id="description">Description</h2>
 <div class="description"><div class="mdvorakdataapi-dataapi-page"><p>Extension of Angular <code>$location</code>. It maps view URLs to API and vice versa.
-Use <a href="#/build/mdvorakDataApi.$dataApi#methods_url">url()</a> method to get or set current API location.</p>
+Use <a href="#/api/mdvorakDataApi.$dataApi#methods_url">url()</a> method to get or set current API location.</p>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>
 <ul class="methods"><li><h3 id="methods_mapapitoview">mapApiToView(url)</h3>
 <div class="mapapitoview"><div class="mapapitoview-page"><p>Maps resource URL to view path. Can be overridden during configuration.
 By default it maps API url to view paths one to one.</p>
-<p>Counterpart to <a href="#/build/mdvorakDataApi.$dataApi#methods_mapviewtoapi">mapViewToApi</a>.</p>
+<p>Counterpart to <a href="#/api/mdvorakDataApi.$dataApi#methods_mapviewtoapi">mapViewToApi</a>.</p>
 </div><h5 id="methods_mapapitoview_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>url</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mapapitoview-page"><p>Resource url. It must be inside API namespace. If it is not, <code>null</code> is returned.</p>
 <p>If the url equals to api prefix, empty string is returned.</p></div></td></tr></tbody></table><h5 id="methods_mapapitoview_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mapapitoview-page"><p>View path.</p>
 </div></td></tr></table></div>
@@ -19,7 +19,7 @@ By default it maps API url to view paths one to one.</p>
 <li><h3 id="methods_mapviewtoapi">mapViewToApi(path)</h3>
 <div class="mapviewtoapi"><div class="mapviewtoapi-page"><p>Maps view path to resource URL. Can be overridden during configuration.
 By default it maps path to API one to one.</p>
-<p>Counterpart to <a href="#/build/mdvorakDataApi.$dataApi#methods_mapapitoview">mapApiToView</a>.</p>
+<p>Counterpart to <a href="#/api/mdvorakDataApi.$dataApi#methods_mapapitoview">mapApiToView</a>.</p>
 </div><h5 id="methods_mapviewtoapi_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>path</td><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mapviewtoapi-page"><p>View path, as in <code>$location.path()</code>.</p>
 </div></td></tr></tbody></table><h5 id="methods_mapviewtoapi_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">String</a></td><td><div class="mapviewtoapi-page"><p>Resource url, for e.g. HTTP requests.</p>
 </div></td></tr></table></div>
