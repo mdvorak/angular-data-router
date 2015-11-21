@@ -1,5 +1,5 @@
 /**
- * @license angular-data-router v0.3.4
+ * @license angular-data-router v0.3.5
  * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
@@ -27,6 +27,33 @@
     module.provider('$dataRouterRegistry', ["$$dataRouterMatchMap", function $dataRouterRegistryProvider($$dataRouterMatchMap) {
         var provider = this;
         var views = provider.$$views = $$dataRouterMatchMap.create();
+
+        // Expression taken from ngController directive
+        var CTRL_REG = /^(\S+)(\s+as\s+(\w+))?$/;
+
+        // Creates copy of the configuration, preprocesses it and validates it
+        provider.$$parseConfig = function $$parseConfig(config, mediaType) {
+            // Make our copy
+            config = angular.copy(config);
+
+            // Validate
+            if (angular.isString(config.controller)) {
+                var ctrlMatch = config.controller.match(CTRL_REG);
+                if (!ctrlMatch) {
+                    throw new Error("Badly formed controller string '" + config.controller + "' for route '" + mediaType + "'.");
+                }
+
+                if (ctrlMatch[3] && config.controllerAs) {
+                    throw new Error("Defined both controllerAs and 'controller as' expressions for route '" + mediaType + "'.");
+                }
+
+                // Reconfigure
+                config.controller = ctrlMatch[1];
+                if (ctrlMatch[3]) config.controllerAs = ctrlMatch[3];
+            }
+
+            return config;
+        };
 
         /**
          * @ngdoc method
@@ -56,9 +83,10 @@
          *                        Same behavior as in ngRoute.
          */
         provider.when = function when(mediaType, config) {
-            // Make our copy
-            config = angular.copy(config);
+            // Parse
+            config = provider.$$parseConfig(config, mediaType);
 
+            // Add
             if (angular.isFunction(mediaType)) {
                 // Matcher function
                 views.addMatcher(mediaType, config);
@@ -98,7 +126,8 @@
                 name = '$error_' + status;
             }
 
-            views.addMatcher(name, angular.copy(config));
+            // Parse and add
+            views.addMatcher(name, provider.$$parseConfig(config, name));
             return provider;
         };
 
