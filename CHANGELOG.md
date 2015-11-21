@@ -2,9 +2,10 @@
 # 0.3.5
 
 - Added changelog
-- Added support for 'controller as' expression in route definitions (#15). From now on, you can use
-    
-    $dataRouterProvider.when('x.sample', {
-        templateUrl: 'sample.html',
-        controller: 'SampleCtrl as sampleCtrl'
-    });
+- Added support for 'controller as' expression in route definitions ([#15](https://github.com/mdvorak/angular-data-router/issues/15)). From now on, you can use
+```    
+$dataRouterProvider.when('x.sample', {
+    templateUrl: 'sample.html',
+    controller: 'SampleCtrl as sampleCtrl'
+});
+```
