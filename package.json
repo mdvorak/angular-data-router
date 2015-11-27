@@ -39,15 +39,18 @@
     "phantomjs": "1.9.17"
   },
   "scripts": {
+    "postinstall": "bower update",
     "bower": "bower update",
     "test": "grunt default",
     "start": "grunt demo",
-    "prerelease": "bower update",
     "dist": "grunt dist",
     "docs": "grunt docs",
     "debug": "grunt debug",
-    "release": "grunt release-patch",
-    "minor": "grunt release-minor",
-    "major": "grunt release-major"
+    "prerelease-patch": "bower update",
+    "prerelease-minor": "bower update",
+    "prerelease-major": "bower update",
+    "release-patch": "grunt release-patch",
+    "release-minor": "grunt release-minor",
+    "release-major": "grunt release-major"
   }
 }
