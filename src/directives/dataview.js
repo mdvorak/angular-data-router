@@ -139,7 +139,7 @@ module.directive('dataview', function dataViewFactory($animate, $anchorScroll, $
              * @param forceReload {boolean=} Specifies whether view needs to be refreshed or just $routeUpdate event will be fired.
              */
             function reloadImpl(forceReload) {
-                var next = attr.next = {};
+                var next = attr.next = Object.create(null);
 
                 if (currentHref) {
                     // Load data

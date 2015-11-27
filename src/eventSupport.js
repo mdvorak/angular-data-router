@@ -24,7 +24,7 @@ module.factory('$$dataRouterEventSupport', function dataRouterEventSupportFactor
         constructor: EventSupport,
 
         $on: function (name, listener, scope) {
-            if (!this.$$listeners) this.$$listeners = {};
+            if (!this.$$listeners) this.$$listeners = Object.create(null);
 
             var namedListeners = this.$$listeners[name];
             if (!namedListeners) {

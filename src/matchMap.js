@@ -12,7 +12,7 @@ module.constant('$$dataRouterMatchMap', {
  * @constructor
  */
 function DataRouterMatchMap() {
-    this.$exact = {};
+    this.$exact = Object.create(null);
     this.$matchers = [];
 
     var wildcardPattern = /[*?]/;

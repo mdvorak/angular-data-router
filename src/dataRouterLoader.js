@@ -12,7 +12,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
     var provider = this;
     var toString = Object.prototype.toString;
 
-    provider.globals = {};
+    provider.globals = Object.create(null);
 
     /**
      * @ngdoc method
@@ -257,7 +257,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
 
                     // Merge view
                     // Note: If this could be cached in some way, it would be nice
-                    view = $$mergeConfigObjects({}, provider.globals, view);
+                    view = $$mergeConfigObjects(Object.create(null), provider.globals, view);
 
                     // Success
                     var result = {
@@ -299,7 +299,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                     // Resolve view
                     if (response.view) {
                         // Prepare locals
-                        var locals = angular.extend({}, provider.globals.resolve, response.view.resolve);
+                        var locals = angular.extend(Object.create(null), provider.globals.resolve, response.view.resolve);
                         var template;
 
                         // Built-in locals
@@ -317,7 +317,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
                                     $injector.get(value) : $injector.invoke(value, '$dataRouterLoader', builtInLocals);
                             });
                         } else {
-                            locals = {};
+                            locals = Object.create(null);
                         }
 
                         // Load template
@@ -405,7 +405,7 @@ module.provider('$dataRouterLoader', function dataRouterLoaderProvider() {
      * @return {Object} Returns `dst` object.
      */
     function $$mergeConfigObjects(dst) {
-        if (!dst) dst = {};
+        if (!dst) dst = Object.create(null);
 
         // Multiple sources
         for (var i = 1; i < arguments.length; i++) {
