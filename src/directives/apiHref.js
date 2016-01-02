@@ -86,81 +86,89 @@ module.directive('apiHref', function apiHrefFactory($dataApi, $dataRouterRegistr
     return {
         restrict: 'AC',
         priority: 90,
-        link: function apiHrefLink(scope, element, attrs) {
-            var hasTarget = 'target' in attrs;
-            var apiHrefGetter = $parse(attrs.apiHref);
+        compile: function entryPointHrefCompile(element, attrs) {
+            // #18 This will force angular-material to think, this really is an anchor
+            attrs.href = null;
 
-            function setHref(href, target) {
-                attrs.$set('href', href);
+            // Return post-link function
+            return apiHrefLink;
+        }
+    };
 
-                if (!hasTarget) {
-                    attrs.$set('target', href ? target : null);
-                }
+    function apiHrefLink(scope, element, attrs) {
+        var hasTarget = 'target' in attrs;
+        var apiHrefGetter = $parse(attrs.apiHref);
+
+        function setHref(href, target) {
+            attrs.$set('href', href);
+
+            if (!hasTarget) {
+                attrs.$set('target', href ? target : null);
+            }
+        }
+
+        function updateHref() {
+            var href = apiHrefGetter(scope);
+
+            // Do we have a type? And it is supported?
+            if (attrs.type && !$dataRouterRegistry.isKnownType(attrs.type)) {
+                // If not, do not modify the URL
+                setHref(href, '_self');
+                return;
             }
 
-            function updateHref() {
-                var href = apiHrefGetter(scope);
+            if (angular.isString(href)) {
+                // Map URL
+                var mappedHref = $dataApi.mapApiToView(href);
 
-                // Do we have a type? And it is supported?
-                if (attrs.type && !$dataRouterRegistry.isKnownType(attrs.type)) {
-                    // If not, do not modify the URL
+                // Use URL directly
+                if (!angular.isString(mappedHref)) {
                     setHref(href, '_self');
                     return;
                 }
 
-                if (angular.isString(href)) {
-                    // Map URL
-                    var mappedHref = $dataApi.mapApiToView(href);
-
-                    // Use URL directly
-                    if (!angular.isString(mappedHref)) {
-                        setHref(href, '_self');
-                        return;
-                    }
-
-                    // Hashbang mode
-                    if (!$location.$$html5) {
-                        mappedHref = '#/' + mappedHref;
-                    } else if (mappedHref === '') {
-                        // HTML 5 mode and we are going to the base, so force it
-                        // (it is special case, since href="" does not work with angular)
-                        // In normal cases, browser handles relative URLs on its own
-                        mappedHref = $browser.baseHref();
-                    }
-
-                    setHref(mappedHref, null);
-                } else {
-                    // Reset href
-                    setHref();
+                // Hashbang mode
+                if (!$location.$$html5) {
+                    mappedHref = '#/' + mappedHref;
+                } else if (mappedHref === '') {
+                    // HTML 5 mode and we are going to the base, so force it
+                    // (it is special case, since href="" does not work with angular)
+                    // In normal cases, browser handles relative URLs on its own
+                    mappedHref = $browser.baseHref();
                 }
+
+                setHref(mappedHref, null);
+            } else {
+                // Reset href
+                setHref();
             }
+        }
 
-            // Update href accordingly
-            var offWatch = scope.$watch(attrs.apiHref, updateHref);
-            element.on('$destroy', offWatch); // We don't have own scope, so don't rely on its destruction
+        // Update href accordingly
+        var offWatch = scope.$watch(attrs.apiHref, updateHref);
+        element.on('$destroy', offWatch); // We don't have own scope, so don't rely on its destruction
 
-            // Expression version of type attribute
-            if (attrs.apiType) {
-                scope.$watch(attrs.apiType, function (type) {
-                    attrs.$set('type', type);
-                });
-            }
-
-            // Watch for type attribute
-            attrs.$observe('type', updateHref);
-
-            // Click handler that pre-fetches templates
-            element.on('click', function clickHandler() {
-                // Invoke apply only if needed
-                if (attrs.type && attrs.href) {
-                    scope.$applyAsync(function applyCallback() {
-                        // Race condition
-                        if (attrs.type) {
-                            $dataRouterLoader.prefetchTemplate(attrs.type);
-                        }
-                    });
-                }
+        // Expression version of type attribute
+        if (attrs.apiType) {
+            scope.$watch(attrs.apiType, function (type) {
+                attrs.$set('type', type);
             });
         }
-    };
+
+        // Watch for type attribute
+        attrs.$observe('type', updateHref);
+
+        // Click handler that pre-fetches templates
+        element.on('click', function clickHandler() {
+            // Invoke apply only if needed
+            if (attrs.type && attrs.href) {
+                scope.$applyAsync(function applyCallback() {
+                    // Race condition
+                    if (attrs.type) {
+                        $dataRouterLoader.prefetchTemplate(attrs.type);
+                    }
+                });
+            }
+        });
+    }
 });
