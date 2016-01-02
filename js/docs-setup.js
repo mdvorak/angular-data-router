@@ -1,6 +1,6 @@
 NG_DOCS={
   "sections": {
-    "api": "Angular Data Router Documentation v0.3.5"
+    "api": "Angular Data Router Documentation v0.3.6"
   },
   "pages": [
     {
