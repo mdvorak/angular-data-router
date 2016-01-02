@@ -20,8 +20,14 @@ module.directive('entryPointHref', function entryPointHrefFactory($browser, $loc
     return {
         restrict: 'AC',
         priority: 90,
-        link: function entryPointHrefLink(scope, element, attrs) {
-            attrs.$set('href', baseHref);
+        compile: function entryPointHrefCompile(element, attrs) {
+            // #18 This will force angular-material to think, this really is an anchor
+            attrs.href = null;
+
+            // Return post-link function
+            return function entryPointHrefLink(scope, element, attrs) {
+                attrs.$set('href', baseHref);
+            };
         }
     };
 });

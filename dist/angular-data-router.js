@@ -1,6 +1,6 @@
 /**
  * @license angular-data-router v0.3.5
- * (c) 2015 Michal Dvorak https://github.com/mdvorak/angular-data-router
+ * (c) 2016 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
 (function dataRouterModule(angular) {
@@ -223,7 +223,7 @@
         var provider = this;
         var toString = Object.prototype.toString;
 
-        provider.globals = {};
+        provider.globals = Object.create(null);
 
         /**
          * @ngdoc method
@@ -472,7 +472,7 @@
 
                         // Merge view
                         // Note: If this could be cached in some way, it would be nice
-                        view = $$mergeConfigObjects({}, provider.globals, view);
+                        view = $$mergeConfigObjects(Object.create(null), provider.globals, view);
 
                         // Success
                         var result = {
@@ -514,7 +514,7 @@
                         // Resolve view
                         if (response.view) {
                             // Prepare locals
-                            var locals = angular.extend({}, provider.globals.resolve, response.view.resolve);
+                            var locals = angular.extend(Object.create(null), provider.globals.resolve, response.view.resolve);
                             var template;
 
                             // Built-in locals
@@ -532,7 +532,7 @@
                                         $injector.get(value) : $injector.invoke(value, '$dataRouterLoader', builtInLocals);
                                 });
                             } else {
-                                locals = {};
+                                locals = Object.create(null);
                             }
 
                             // Load template
@@ -620,7 +620,7 @@
          * @return {Object} Returns `dst` object.
          */
         function $$mergeConfigObjects(dst) {
-            if (!dst) dst = {};
+            if (!dst) dst = Object.create(null);
 
             // Multiple sources
             for (var i = 1; i < arguments.length; i++) {
@@ -1068,7 +1068,7 @@
      * @constructor
      */
     function DataRouterMatchMap() {
-        this.$exact = {};
+        this.$exact = Object.create(null);
         this.$matchers = [];
 
         var wildcardPattern = /[*?]/;
@@ -1146,7 +1146,7 @@
             constructor: EventSupport,
 
             $on: function(name, listener, scope) {
-                if (!this.$$listeners) this.$$listeners = {};
+                if (!this.$$listeners) this.$$listeners = Object.create(null);
 
                 var namedListeners = this.$$listeners[name];
                 if (!namedListeners) {
@@ -1298,83 +1298,91 @@
         return {
             restrict: 'AC',
             priority: 90,
-            link: function apiHrefLink(scope, element, attrs) {
-                var hasTarget = 'target' in attrs;
-                var apiHrefGetter = $parse(attrs.apiHref);
+            compile: function entryPointHrefCompile(element, attrs) {
+                // #18 This will force angular-material to think, this really is an anchor
+                attrs.href = null;
 
-                function setHref(href, target) {
-                    attrs.$set('href', href);
+                // Return post-link function
+                return apiHrefLink;
+            }
+        };
 
-                    if (!hasTarget) {
-                        attrs.$set('target', href ? target : null);
-                    }
+        function apiHrefLink(scope, element, attrs) {
+            var hasTarget = 'target' in attrs;
+            var apiHrefGetter = $parse(attrs.apiHref);
+
+            function setHref(href, target) {
+                attrs.$set('href', href);
+
+                if (!hasTarget) {
+                    attrs.$set('target', href ? target : null);
+                }
+            }
+
+            function updateHref() {
+                var href = apiHrefGetter(scope);
+
+                // Do we have a type? And it is supported?
+                if (attrs.type && !$dataRouterRegistry.isKnownType(attrs.type)) {
+                    // If not, do not modify the URL
+                    setHref(href, '_self');
+                    return;
                 }
 
-                function updateHref() {
-                    var href = apiHrefGetter(scope);
+                if (angular.isString(href)) {
+                    // Map URL
+                    var mappedHref = $dataApi.mapApiToView(href);
 
-                    // Do we have a type? And it is supported?
-                    if (attrs.type && !$dataRouterRegistry.isKnownType(attrs.type)) {
-                        // If not, do not modify the URL
+                    // Use URL directly
+                    if (!angular.isString(mappedHref)) {
                         setHref(href, '_self');
                         return;
                     }
 
-                    if (angular.isString(href)) {
-                        // Map URL
-                        var mappedHref = $dataApi.mapApiToView(href);
-
-                        // Use URL directly
-                        if (!angular.isString(mappedHref)) {
-                            setHref(href, '_self');
-                            return;
-                        }
-
-                        // Hashbang mode
-                        if (!$location.$$html5) {
-                            mappedHref = '#/' + mappedHref;
-                        } else if (mappedHref === '') {
-                            // HTML 5 mode and we are going to the base, so force it
-                            // (it is special case, since href="" does not work with angular)
-                            // In normal cases, browser handles relative URLs on its own
-                            mappedHref = $browser.baseHref();
-                        }
-
-                        setHref(mappedHref, null);
-                    } else {
-                        // Reset href
-                        setHref();
+                    // Hashbang mode
+                    if (!$location.$$html5) {
+                        mappedHref = '#/' + mappedHref;
+                    } else if (mappedHref === '') {
+                        // HTML 5 mode and we are going to the base, so force it
+                        // (it is special case, since href="" does not work with angular)
+                        // In normal cases, browser handles relative URLs on its own
+                        mappedHref = $browser.baseHref();
                     }
+
+                    setHref(mappedHref, null);
+                } else {
+                    // Reset href
+                    setHref();
                 }
+            }
 
-                // Update href accordingly
-                var offWatch = scope.$watch(attrs.apiHref, updateHref);
-                element.on('$destroy', offWatch); // We don't have own scope, so don't rely on its destruction
+            // Update href accordingly
+            var offWatch = scope.$watch(attrs.apiHref, updateHref);
+            element.on('$destroy', offWatch); // We don't have own scope, so don't rely on its destruction
 
-                // Expression version of type attribute
-                if (attrs.apiType) {
-                    scope.$watch(attrs.apiType, function(type) {
-                        attrs.$set('type', type);
-                    });
-                }
-
-                // Watch for type attribute
-                attrs.$observe('type', updateHref);
-
-                // Click handler that pre-fetches templates
-                element.on('click', function clickHandler() {
-                    // Invoke apply only if needed
-                    if (attrs.type && attrs.href) {
-                        scope.$applyAsync(function applyCallback() {
-                            // Race condition
-                            if (attrs.type) {
-                                $dataRouterLoader.prefetchTemplate(attrs.type);
-                            }
-                        });
-                    }
+            // Expression version of type attribute
+            if (attrs.apiType) {
+                scope.$watch(attrs.apiType, function(type) {
+                    attrs.$set('type', type);
                 });
             }
-        };
+
+            // Watch for type attribute
+            attrs.$observe('type', updateHref);
+
+            // Click handler that pre-fetches templates
+            element.on('click', function clickHandler() {
+                // Invoke apply only if needed
+                if (attrs.type && attrs.href) {
+                    scope.$applyAsync(function applyCallback() {
+                        // Race condition
+                        if (attrs.type) {
+                            $dataRouterLoader.prefetchTemplate(attrs.type);
+                        }
+                    });
+                }
+            });
+        }
     }]);
 
     /**
@@ -1515,7 +1523,7 @@
                  * @param forceReload {boolean=} Specifies whether view needs to be refreshed or just $routeUpdate event will be fired.
                  */
                 function reloadImpl(forceReload) {
-                    var next = attr.next = {};
+                    var next = attr.next = Object.create(null);
 
                     if (currentHref) {
                         // Load data
@@ -1716,8 +1724,14 @@
         return {
             restrict: 'AC',
             priority: 90,
-            link: function entryPointHrefLink(scope, element, attrs) {
-                attrs.$set('href', baseHref);
+            compile: function entryPointHrefCompile(element, attrs) {
+                // #18 This will force angular-material to think, this really is an anchor
+                attrs.href = null;
+
+                // Return post-link function
+                return function entryPointHrefLink(scope, element, attrs) {
+                    attrs.$set('href', baseHref);
+                };
             }
         };
     }]);
