@@ -1,12 +1,12 @@
 {
   "name": "angular-data-router",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "homepage": "https://github.com/mdvorak/angular-data-router",
   "author": "Michal Dvorak",
   "license": "MIT",
   "description": "Angular Data Router",
+  "main": "angular-data-router.min.js",
   "dependencies": {
     "angular": ">=1.3 <2"
-  },
-  "main": "angular-data-router.js"
+  }
 }
