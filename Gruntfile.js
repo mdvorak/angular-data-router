@@ -226,6 +226,9 @@ module.exports = function (grunt) {
                     cwd: '<%=cfg.build%>/dist',
                     dest: '<%=cfg.dist%>',
                     src: ['**']
+                }, {
+                    dest: '<%=cfg.dist%>/',
+                    src: ['LICENCE']
                 }]
             }
         },
@@ -296,7 +299,7 @@ module.exports = function (grunt) {
             }
         }
     });
-    
+
     // dist/package.json
     grunt.registerTask('prepare-package', function () {
         var pkg = grunt.file.readJSON('package.json');
