@@ -52,8 +52,8 @@
     "release-patch": "grunt release-patch",
     "release-minor": "grunt release-minor",
     "release-major": "grunt release-major",
-    "postrelease-patch": "npm publish",
-    "postrelease-minor": "npm publish",
-    "postrelease-major": "npm publish"
+    "postrelease-patch": "npm publish dist/",
+    "postrelease-minor": "npm publish dist/",
+    "postrelease-major": "npm publish dist/"
   }
 }
