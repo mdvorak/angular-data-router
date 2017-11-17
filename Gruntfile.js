@@ -227,8 +227,10 @@ module.exports = function (grunt) {
                     dest: '<%=cfg.dist%>',
                     src: ['**']
                 }, {
-                    dest: '<%=cfg.dist%>/',
-                    src: ['LICENCE']
+                    expand: true,
+                    cwd: '.',
+                    dest: '<%=cfg.dist%>',
+                    src: ['LICENCE', '*.md']
                 }]
             }
         },
