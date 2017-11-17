@@ -296,6 +296,16 @@ module.exports = function (grunt) {
             }
         }
     });
+    
+    // dist/package.json
+    grunt.registerTask('prepare-package', function () {
+        var pkg = grunt.file.readJSON('package.json');
+        delete pkg.devDependencies;
+        delete pkg.scripts;
+        pkg.main = 'angular-data-router.js';
+
+        grunt.file.write('dist/package.json', JSON.stringify(pkg, null, 2));
+    });
 
     // Private tasks
     grunt.registerTask('javascript', ['jshint:src', 'concat:module', 'concat:api', 'ngAnnotate:build', 'jshint:bundle', 'jsbeautifier:build', 'uglify:build', 'clean:tmp']);
@@ -306,7 +316,7 @@ module.exports = function (grunt) {
     grunt.registerTask('demo', ['jshint:demo', 'clean:docs', 'default', 'ngdocs', 'connect:server', 'watch']);
 
     grunt.registerTask('docs', ['jshint:grunt', 'clean:build', 'clean:docs', 'javascript', 'ngdocs', 'gh-pages']);
-    grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist']);
+    grunt.registerTask('dist', ['default', 'clean:dist', 'copy:dist', 'prepare-package']);
 
     grunt.registerTask('release-patch', ['git-is-clean', 'bump-only:patch', 'dist', 'gitadd:dist', 'bump-commit', 'git-is-clean']);
     grunt.registerTask('release-minor', ['git-is-clean', 'bump-only:minor', 'dist', 'gitadd:dist', 'bump-commit', 'git-is-clean']);
