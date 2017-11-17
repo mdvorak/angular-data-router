@@ -302,7 +302,6 @@ module.exports = function (grunt) {
         var pkg = grunt.file.readJSON('package.json');
         delete pkg.devDependencies;
         delete pkg.scripts;
-        pkg.main = 'angular-data-router.js';
 
         grunt.file.write('dist/package.json', JSON.stringify(pkg, null, 2));
     });
