@@ -67,7 +67,7 @@ describe("mdvorakDataApi", function () {
                 });
 
                 afterEach(function () {
-                    angular.element(baseElement).remove();
+                    angular.element(headElement).find('base').remove();
                 });
 
                 it("should return null for undefined or null", function () {

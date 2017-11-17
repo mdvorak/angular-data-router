@@ -197,6 +197,7 @@ module.exports = function (grunt) {
                 singleRun: true,
                 files: [
                     // Libraries
+                    'polyfills.js',
                     '<%=cfg.bower%>/angular/angular.js',
                     '<%=cfg.bower%>/angular-mocks/angular-mocks.js',
 
