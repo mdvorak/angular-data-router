@@ -28,9 +28,10 @@ module.directive('emptyHref', function emptyHrefFactory($log) {
         priority: 0,
         link: function emptyHrefLink(scope, element, attrs) {
             var observer;
+            var emptyHrefAttr = attrs['emptyHref'] ? attrs['emptyHref'].toLowerCase() : attrs['emptyHref'];
 
             // Modes
-            switch (angular.lowercase(attrs['emptyHref'])) {
+            switch (emptyHrefAttr) {
                 case 'hide':
                     observer = function hrefHideObserver(href) {
                         element.toggleClass('ng-hide', !href && href !== '');

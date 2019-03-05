@@ -6,6 +6,9 @@
             // HTML 5 mode (works both, try it out)
             $locationProvider.html5Mode(false);
 
+            // Override angularjs 1.6 default hash prefix from '!' to '' as it was in 1.5
+            $locationProvider.hashPrefix('');
+
             // URL prefixes
             $dataRouterProvider.apiPrefix('api/');
 
