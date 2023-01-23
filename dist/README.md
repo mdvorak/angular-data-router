@@ -14,6 +14,10 @@ Installation
 Either download and include `dist/` files in your project, or use [bower](http://bower.io/):
 
     bower install angular-data-router --save
+    
+or use [npm](https://npmjs.com)
+
+    npm install angular-data-router --save
 
 Configuration
 -------------

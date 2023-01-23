@@ -1,14 +1,16 @@
 {
   "name": "angular-data-router",
   "homepage": "https://mdvorak.github.io/angular-data-router",
-  "repository": "git@github.com:mdvorak/angular-data-router.git",
+  "repository": {
+    "url": "git@github.com:mdvorak/angular-data-router.git",
+    "type": "git"
+  },
   "authors": [
     "Michal Dvořák <mikee@mdvorak.org>"
   ],
   "license": "MIT",
   "main": [
-    "dist/angular-data-router.min.js",
-    "dist/angular-data-router.min.js.map"
+    "dist/angular-data-router.js"
   ],
   "ignore": [
     "package.json",

@@ -193,7 +193,8 @@ module.exports = function (grunt) {
         // Tests
         karma: {
             options: {
-                frameworks: ['detectBrowsers', 'jasmine'],
+                frameworks: ['jasmine'],
+                browsers: ['Chrome'],
                 singleRun: true,
                 files: [
                     // Libraries

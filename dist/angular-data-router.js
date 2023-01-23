@@ -1,6 +1,6 @@
 /**
  * @license angular-data-router v0.3.10
- * (c) 2017 Michal Dvorak https://github.com/mdvorak/angular-data-router
+ * (c) 2023 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
 (function dataRouterModule(angular) {
@@ -1654,9 +1654,10 @@
             priority: 0,
             link: function emptyHrefLink(scope, element, attrs) {
                 var observer;
+                var emptyHrefAttr = attrs['emptyHref'] ? attrs['emptyHref'].toLowerCase() : attrs['emptyHref'];
 
                 // Modes
-                switch (angular.lowercase(attrs['emptyHref'])) {
+                switch (emptyHrefAttr) {
                     case 'hide':
                         observer = function hrefHideObserver(href) {
                             element.toggleClass('ng-hide', !href && href !== '');

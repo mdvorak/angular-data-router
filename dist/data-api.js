@@ -1,6 +1,6 @@
 /**
  * @license angular-data-router v0.3.10
- * (c) 2017 Michal Dvorak https://github.com/mdvorak/angular-data-router
+ * (c) 2023 Michal Dvorak https://github.com/mdvorak/angular-data-router
  * License: MIT
  */
 (function dataApiModule(angular) {

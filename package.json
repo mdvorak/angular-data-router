@@ -10,7 +10,7 @@
     "angular": ">=1.3 <2"
   },
   "devDependencies": {
-    "bower": "1.4.1",
+    "bower": "1.8.14",
     "grunt": "0.4.5",
     "grunt-bump": "0.3.1",
     "grunt-cli": "0.1.13",
@@ -29,7 +29,7 @@
     "grunt-ng-annotate": "1.0.1",
     "grunt-ngdocs": "0.2.8",
     "jasmine-core": "2.3.4",
-    "karma": "0.13.3",
+    "karma": "0.13.22",
     "karma-chrome-launcher": "0.2.0",
     "karma-detect-browsers": "2.0.1",
     "karma-firefox-launcher": "0.1.6",
